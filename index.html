@@ -1,0 +1,228 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phiếu Thu/Chi - Hệ Thống Kế Toán</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+    <div class="container" id="voucher-form">
+        <h1 id="form-title">PHIẾU THU/CHI</h1>
+        
+        <div class="form-header">
+            <div class="company-info">
+                <div class="form-group">
+                    <label for="company">Công ty:</label>
+                    <select id="company" name="company" required onchange="updateCompanyDetails()">
+                        <option value="">-- Chọn công ty --</option>
+                    </select>
+                    <div class="error-message"></div>
+                    <div id="company-details" class="company-details">
+                        <p id="company-address"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="voucher-info">
+                <div class="form-group">
+                    <label for="voucher-type">Loại phiếu:</label>
+                    <select id="voucher-type" name="voucher-type" required>
+                        <option value="">-- Chọn loại phiếu --</option>
+                    </select>
+                    <div class="error-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="voucher-number">Số phiếu:</label>
+                    <input type="text" id="voucher-number" name="voucher-number" value="TL-2023-" required readonly>
+                </div>
+                <div class="form-group">
+                    <label for="voucher-date">Ngày lập phiếu:</label>
+                    <input type="date" id="voucher-date" name="voucher-date" required>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="employee">Người đề nghị:</label>
+                <select id="employee" name="employee" required onchange="updateEmployeeDepartment()">
+                    <option value="">-- Chọn nhân viên --</option>
+                </select>
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="department">Bộ phận:</label>
+                <input type="text" id="department" name="department" readonly>
+            </div>
+        </div>
+        
+        <h2>Thông tin đối tượng</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="payee-dropdown">Chọn người nộp/nhận:</label>
+                <select id="payee-dropdown" name="payee-dropdown" onchange="document.getElementById('payee-name').value = this.value;">
+                    <option value="">-- Chọn người nộp/nhận --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="payee-name">Họ tên người nộp/nhận:</label>
+                <input type="text" id="payee-name" name="payee-name" required>
+                <div class="error-message"></div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="currency">Loại tiền:</label>
+                <select id="currency" name="currency" required>
+                        <option value="">-- Chọn loại tiền --</option>
+                </select>
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="amount">Tổng số tiền:</label>
+                <input type="text" id="amount" name="amount" required readonly>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="amount-in-words">Số tiền bằng chữ:</label>
+                <input type="text" id="amount-in-words" name="amount-in-words" readonly>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="reason">Lý do:</label>
+                <textarea id="reason" name="reason" required></textarea>
+                <div class="error-message"></div>
+            </div>
+        </div>
+
+        <h2>
+            Bảng kê tài liệu đính kèm
+            <span class="tooltip-icon">
+                ℹ️
+                <span class="tooltip-text">
+                    HƯỚNG DẪN BẢNG KÊ CHI PHÍ: <br>
+                    • STT: Tự động tăng, không cần nhập <br>
+                    • Nội dung: Mô tả chi tiết khoản chi <br>
+                    • Số tiền: Nhập số, tự động format tiền Việt Nam <br>
+                    • Đính kèm: Tải lên các tài liệu liên quan đến khoản chi này
+                </span>
+            </span>
+        </h2>
+        <div class="table-actions">
+            <button type="button" class="btn-secondary" id="add-row-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Thêm dòng
+            </button>
+            <button type="button" class="btn-secondary" id="copy-excel-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                Dán từ Excel
+            </button>
+            <button type="button" class="btn-secondary" id="import-table-excel-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Nhập file Excel
+            </button>
+        </div>
+
+        <div class="expense-table-container">
+            <table class="expense-table">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Nội dung</th>
+                        <th>Số tiền</th>
+                        <th>Đính kèm</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="expense-table-body">
+                </tbody>
+            </table>
+            <div class="expense-table-footer">
+                <span>Tổng cộng:</span> <span id="grand-total">0 VNĐ</span>
+            </div>
+        </div>
+        
+        <div class="approval-section">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="approver">Người phê duyệt:</label>
+                    <select id="approver" name="approver" required>
+                        <option value="">-- Chọn người phê duyệt --</option>
+                    </select>
+                    <div class="error-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="approval-status-display">Trạng thái phê duyệt:</label>
+                    <div class="status-indicator status-pending" id="approval-status-display">
+                        Chờ phê duyệt
+                    </div>
+                </div>
+            </div>
+            <div class="approval-history">
+                <h3>Lịch sử phê duyệt</h3>
+                <ul id="approval-history-list">
+                    <li>Chưa có yêu cầu phê duyệt nào được gửi.</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="button-row">
+            <button type="button" class="btn-primary" id="save-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                Lưu phiếu
+            </button>
+            <button type="button" class="btn-success" id="send-approval-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                Gửi phê duyệt
+            </button>
+            <div class="loading-indicator" id="loading-indicator">
+                <div class="spinner"></div>
+                <span>Đang gửi...</span>
+            </div>
+            <button type="button" class="btn-secondary" id="export-pdf-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                Xuất PDF
+            </button>
+            <button type="button" class="btn-secondary" id="export-excel-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Xuất Excel
+            </button>
+            <button type="button" class="btn-secondary" id="import-excel-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Nhập từ Excel (Form)
+            </button>
+            <button type="button" class="btn-secondary" id="sync-sheets-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+                Đồng bộ với Google Sheets
+            </button>
+        </div>
+    </div>
+    
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
+    
+    <!-- Auto-save Indicator -->
+    <div class="auto-save-indicator" id="auto-save-indicator"></div>
+    
+    <!-- Confirmation Dialog -->
+    <div class="confirmation-overlay" id="confirmation-overlay">
+        <div class="confirmation-dialog">
+            <h3 id="confirmation-title">Xác nhận</h3>
+            <p id="confirmation-message"></p>
+            <div class="confirmation-actions">
+                <button type="button" class="btn-secondary" id="confirmation-cancel">Hủy</button>
+                <button type="button" class="btn-danger" id="confirmation-confirm">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>

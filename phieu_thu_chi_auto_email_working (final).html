@@ -1,0 +1,2824 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Phiếu Thu/Chi - Hệ Thống Kế Toán</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #4285F4;
+            --secondary-color: #34A853;
+            --accent-color: #FBBC05;
+            --text-color: #202124;
+            --light-gray: #f5f5f5;
+            --border-color: #dadce0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --success-color: #34A853;
+            --error-color: #EA4335;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #fff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px var(--shadow-color);
+            padding: 30px;
+            border: 1px solid var(--border-color);
+        }
+        
+        h1, h2 {
+            font-weight: 700;
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            letter-spacing: 0.5px;
+        }
+
+        h2 {
+            font-size: 22px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        h2 .tooltip-icon {
+            cursor: help;
+            font-size: 18px;
+            color: var(--primary-color);
+            position: relative;
+        }
+
+        h2 .tooltip-icon .tooltip-text {
+            visibility: hidden;
+            width: 300px;
+            background-color: var(--text-color);
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -150px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.4;
+        }
+
+        h2 .tooltip-icon .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--text-color) transparent transparent transparent;
+        }
+
+        h2 .tooltip-icon:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .company-info, .voucher-info {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .form-row {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+        
+        select {
+            background-color: white;
+            cursor: pointer;
+            height: 42px;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #3367d6;
+        }
+        
+        .btn-secondary {
+            background-color: white;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #f1f5fe;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #2d9047;
+        }
+
+        .btn-danger {
+            background-color: #EA4335;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #d62c1c;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 15px;
+            max-width: fit-content;
+        }
+        
+        .status-pending {
+            background-color: #fff8e1;
+            color: #ff9800;
+            border: 1px solid #ffe0b2;
+        }
+        
+        .status-approved {
+            background-color: #e8f5e9;
+            color: #4caf50;
+            border: 1px solid #c8e6c9;
+        }
+
+        .status-rejected {
+            background-color: #ffebee;
+            color: #f44336;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .amounts {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--light-gray);
+            border-radius: 8px;
+        }
+        
+        .amount-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .amount-row.total {
+            font-weight: 700;
+            font-size: 18px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border-color);
+            margin-top: 10px;
+        }
+        
+        .upload-container {
+            border: 2px dashed var(--border-color);
+            padding: 20px;
+            text-align: center;
+            border-radius: 6px;
+            background-color: var(--light-gray);
+            transition: background-color 0.3s;
+            cursor: pointer;
+        }
+        
+        .upload-container:hover {
+            background-color: #ebebeb;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .company-details {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .company-details.show {
+            display: block;
+        }
+        
+        .approval-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .approval-history {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .approval-history h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .approval-history ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .approval-history li {
+            margin-bottom: 5px;
+            padding-left: 10px;
+            border-left: 3px solid var(--border-color);
+        }
+
+        /* Expense section fields - inside Bảng kê section */
+        .expense-section-fields {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+            border: 1px solid var(--border-color);
+        }
+
+        .expense-section-fields .form-group {
+            margin-bottom: 15px;
+        }
+
+        .expense-section-fields .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        .expense-section-fields label {
+            font-weight: 500;
+            color: var(--text-color);
+            margin-bottom: 8px;
+        }
+
+        .expense-section-fields textarea {
+            min-height: 100px;
+        }
+
+        /* Table styles */
+        .expense-table-container {
+            margin-top: 30px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .expense-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        .expense-table th, .expense-table td {
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .expense-table th {
+            background-color: var(--light-gray);
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        .expense-table td input[type="text"],
+        .expense-table td input[type="number"] {
+            border: none;
+            padding: 5px;
+            width: 100%;
+            background-color: transparent;
+        }
+
+        .expense-table td input[type="number"] {
+            text-align: right;
+        }
+
+        .expense-table td .remove-row-btn {
+            background-color: transparent;
+            color: var(--error-color);
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .expense-table td .remove-row-btn:hover {
+            color: #a00;
+            transform: none;
+        }
+
+        .expense-table-footer {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            padding: 15px 20px;
+            background-color: var(--light-gray);
+            border-top: 1px solid var(--border-color);
+            border-radius: 0 0 8px 8px;
+            font-weight: 700;
+            font-size: 18px;
+            gap: 10px;
+        }
+
+        .expense-table-footer .footer-row {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+        }
+
+        .expense-table-footer .footer-row span:first-child {
+            margin-right: 10px;
+            color: var(--text-color);
+            font-weight: 600;
+        }
+
+        .expense-table-footer .footer-row span:last-child {
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .attachment-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 150px;
+        }
+
+        .attachment-cell .attachment-button {
+            padding: 6px 10px;
+            font-size: 14px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            max-width: fit-content;
+        }
+
+        .attachment-cell .attachment-button:hover {
+            background-color: #3367d6;
+        }
+
+        .attachment-cell .file-list {
+            font-size: 12px;
+            color: #555;
+            max-height: 60px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            padding: 5px;
+            border-radius: 4px;
+            background-color: #fcfcfc;
+        }
+
+        .attachment-cell .file-list p {
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .loading-indicator {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            margin-left: 15px;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .loading-indicator.show {
+            display: flex;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary-color);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Validation Styles */
+        .form-group {
+            position: relative;
+        }
+
+        .error-message {
+            color: var(--error-color);
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+            animation: slideDown 0.3s ease;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        input.invalid, select.invalid, textarea.invalid {
+            border-color: var(--error-color) !important;
+            box-shadow: 0 0 0 2px rgba(234, 67, 53, 0.2) !important;
+        }
+
+        input.valid, select.valid, textarea.valid {
+            border-color: var(--success-color) !important;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Toast Notification Styles */
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background-color: white;
+            border-radius: 8px;
+            padding: 16px 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 300px;
+            max-width: 400px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            animation: slideInRight 0.3s ease;
+            border-left: 4px solid;
+        }
+
+        .toast.success {
+            border-left-color: var(--success-color);
+        }
+
+        .toast.error {
+            border-left-color: var(--error-color);
+        }
+
+        .toast.info {
+            border-left-color: var(--primary-color);
+        }
+
+        .toast.warning {
+            border-left-color: var(--accent-color);
+        }
+
+        .toast-icon {
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .toast-content {
+            flex: 1;
+        }
+
+        .toast-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .toast-message {
+            font-size: 14px;
+            color: #666;
+        }
+
+        .toast-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .toast-close:hover {
+            color: var(--text-color);
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* Auto-save Indicator */
+        .auto-save-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            display: none;
+            z-index: 9999;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .auto-save-indicator.show {
+            display: block;
+        }
+
+        .auto-save-indicator.saving {
+            background-color: var(--primary-color);
+        }
+
+        .auto-save-indicator.saved {
+            background-color: var(--success-color);
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Confirmation Dialog */
+        .confirmation-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 10001;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .confirmation-overlay.show {
+            display: flex;
+        }
+
+        .confirmation-dialog {
+            background-color: white;
+            border-radius: 8px;
+            padding: 24px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            animation: scaleIn 0.2s ease;
+        }
+
+        @keyframes scaleIn {
+            from {
+                transform: scale(0.9);
+                opacity: 0;
+            }
+            to {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .confirmation-dialog h3 {
+            margin-bottom: 12px;
+            color: var(--text-color);
+            font-size: 18px;
+        }
+
+        .confirmation-dialog p {
+            margin-bottom: 20px;
+            color: #666;
+        }
+
+        .confirmation-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: flex-end;
+        }
+
+        .confirmation-actions button {
+            min-width: 80px;
+        }
+
+        /* File validation styles */
+        .file-error {
+            color: var(--error-color);
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .file-size-info {
+            font-size: 11px;
+            color: #666;
+            margin-top: 4px;
+        }
+
+        /* Search dropdown styles */
+        .searchable-select {
+            position: relative;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .dropdown-options {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            background: white;
+            display: none;
+            position: absolute;
+            width: 100%;
+            z-index: 1000;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .dropdown-options.show {
+            display: block;
+        }
+
+        .dropdown-option {
+            padding: 10px 15px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .dropdown-option:hover {
+            background-color: var(--light-gray);
+        }
+
+        .dropdown-option.hidden {
+            display: none;
+        }
+
+        /* File preview styles */
+        .file-preview-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .file-preview-item {
+            position: relative;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            padding: 8px;
+            background: var(--light-gray);
+            max-width: 150px;
+        }
+
+        .file-preview-item img {
+            max-width: 100%;
+            max-height: 100px;
+            border-radius: 4px;
+        }
+
+        .file-preview-item .file-name {
+            font-size: 11px;
+            margin-top: 5px;
+            word-break: break-word;
+        }
+
+        .file-preview-item .file-remove {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: var(--error-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 10002;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-preview-modal.show {
+            display: flex;
+        }
+
+        .file-preview-modal img,
+        .file-preview-modal iframe {
+            max-width: 90%;
+            max-height: 90%;
+        }
+
+        .file-preview-modal .close-preview {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: white;
+            color: var(--text-color);
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            font-size: 24px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .form-group {
+                min-width: 100%;
+            }
+            
+            .button-row, .table-actions {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+
+            .form-header {
+                flex-direction: column;
+            }
+
+            .toast-container {
+                left: 20px;
+                right: 20px;
+                top: 10px;
+            }
+
+            .toast {
+                min-width: auto;
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="voucher-form">
+        <h1 id="form-title">PHIẾU THU/CHI</h1>
+        
+        <div class="form-header">
+            <div class="company-info">
+                <div class="form-group">
+                    <label for="company">Công ty:</label>
+                    <select id="company" name="company" required onchange="updateCompanyDetails()">
+                        <option value="">-- Chọn công ty --</option>
+                    </select>
+                    <div class="error-message"></div>
+                    <div id="company-details" class="company-details">
+                        <p id="company-address"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="voucher-info">
+                <div class="form-group">
+                    <label for="voucher-type">Loại phiếu:</label>
+                    <select id="voucher-type" name="voucher-type" required>
+                        <option value="">-- Chọn loại phiếu --</option>
+                    </select>
+                    <div class="error-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="voucher-number">Số phiếu:</label>
+                    <input type="text" id="voucher-number" name="voucher-number" value="TL-2023-" required readonly>
+                </div>
+                <div class="form-group">
+                    <label for="voucher-date">Ngày lập phiếu:</label>
+                    <input type="date" id="voucher-date" name="voucher-date" required>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="employee">Người đề nghị:</label>
+                <select id="employee" name="employee" required onchange="updateEmployeeDepartment()">
+                    <option value="">-- Chọn nhân viên --</option>
+                </select>
+                <div class="error-message"></div>
+            </div>
+            <div class="form-group">
+                <label for="department">Bộ phận:</label>
+                <input type="text" id="department" name="department" readonly>
+            </div>
+        </div>
+        
+        <h2>Thông tin đối tượng</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="payee-dropdown">Chọn người nộp/nhận:</label>
+                <select id="payee-dropdown" name="payee-dropdown" onchange="document.getElementById('payee-name').value = this.value;">
+                    <option value="">-- Chọn người nộp/nhận --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="payee-name">Họ tên người nộp/nhận:</label>
+                <input type="text" id="payee-name" name="payee-name" required>
+                <div class="error-message"></div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group" style="width: 100%;">
+                <label for="reason">Lý do:</label>
+                <textarea id="reason" name="reason" required></textarea>
+                <div class="error-message"></div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="amount">Tổng số tiền:</label>
+                <input type="text" id="amount" name="amount" required readonly>
+            </div>
+        </div>
+
+        <h2>
+            Bảng kê tài liệu đính kèm
+            <span class="tooltip-icon">
+                ℹ️
+                <span class="tooltip-text">
+                    HƯỚNG DẪN BẢNG KÊ CHI PHÍ: <br>
+                    • STT: Tự động tăng, không cần nhập <br>
+                    • Nội dung: Mô tả chi tiết khoản chi <br>
+                    • Số tiền: Nhập số, tự động format tiền Việt Nam <br>
+                    • Đính kèm: Tải lên các tài liệu liên quan đến khoản chi này
+                </span>
+            </span>
+        </h2>
+        
+        <div class="expense-section-fields">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="currency">Loại tiền:</label>
+                    <select id="currency" name="currency" required>
+                        <option value="">-- Chọn loại tiền --</option>
+                    </select>
+                    <div class="error-message"></div>
+                </div>
+            </div>
+            
+            <!-- Hidden input for amount-in-words (for JavaScript compatibility) -->
+            <input type="hidden" id="amount-in-words" name="amount-in-words">
+        </div>
+        
+        <div class="table-actions">
+            <button type="button" class="btn-secondary" id="add-row-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Thêm dòng
+            </button>
+            <button type="button" class="btn-secondary" id="copy-excel-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                Dán từ Excel
+            </button>
+            <button type="button" class="btn-secondary" id="import-table-excel-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Nhập file Excel
+            </button>
+        </div>
+
+        <div class="expense-table-container">
+            <table class="expense-table">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Nội dung</th>
+                        <th>Số tiền</th>
+                        <th>Đính kèm</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="expense-table-body">
+                </tbody>
+            </table>
+            <div class="expense-table-footer">
+                <div class="footer-row">
+                    <span>Tổng cộng:</span> <span id="grand-total">0 VNĐ</span>
+                </div>
+                <div class="footer-row">
+                    <span>Số tiền bằng chữ:</span> <span id="amount-in-words-display"></span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="approval-section">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="approver">Người phê duyệt:</label>
+                    <select id="approver" name="approver" required>
+                        <option value="">-- Chọn người phê duyệt --</option>
+                    </select>
+                    <div class="error-message"></div>
+                </div>
+                <div class="form-group">
+                    <label for="approval-status-display">Trạng thái phê duyệt:</label>
+                    <div class="status-indicator status-pending" id="approval-status-display">
+                        Chờ phê duyệt
+                    </div>
+                </div>
+            </div>
+            <div class="approval-history">
+                <h3>Lịch sử phê duyệt</h3>
+                <ul id="approval-history-list">
+                    <li>Chưa có yêu cầu phê duyệt nào được gửi.</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="button-row">
+            <button type="button" class="btn-primary" id="save-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                Lưu phiếu
+            </button>
+            <button type="button" class="btn-success" id="send-approval-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                Gửi phê duyệt
+            </button>
+            <div class="loading-indicator" id="loading-indicator">
+                <div class="spinner"></div>
+                <span>Đang gửi...</span>
+            </div>
+            <button type="button" class="btn-secondary" id="export-pdf-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                Xuất PDF
+            </button>
+            <button type="button" class="btn-secondary" id="export-excel-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Xuất Excel
+            </button>
+            <button type="button" class="btn-secondary" id="import-excel-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Nhập từ Excel (Form)
+            </button>
+            <button type="button" class="btn-secondary" id="sync-sheets-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+                Đồng bộ với Google Sheets
+            </button>
+            <button type="button" class="btn-secondary" id="change-sheets-id-btn" onclick="changeSpreadsheetId()" title="Thay đổi Google Sheets ID">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Đổi Sheets ID
+            </button>
+            <button type="button" class="btn-secondary" id="save-template-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                Lưu Template
+            </button>
+            <button type="button" class="btn-secondary" id="load-template-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Load Template
+            </button>
+        </div>
+    </div>
+    
+    <!-- Toast Notification Container -->
+    <div class="toast-container" id="toast-container"></div>
+    
+    <!-- Auto-save Indicator -->
+    <div class="auto-save-indicator" id="auto-save-indicator"></div>
+    
+    <!-- Confirmation Dialog -->
+    <div class="confirmation-overlay" id="confirmation-overlay">
+        <div class="confirmation-dialog">
+            <h3 id="confirmation-title">Xác nhận</h3>
+            <p id="confirmation-message"></p>
+            <div class="confirmation-actions">
+                <button type="button" class="btn-secondary" id="confirmation-cancel">Hủy</button>
+                <button type="button" class="btn-danger" id="confirmation-confirm">Xác nhận</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const data = (function(b64){
+  const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  return JSON.parse(new TextDecoder('utf-8').decode(bytes));
+})("eyJmb3JtX3RpdGxlIjoiUEhJ4bq+VSBUSFUvQ0hJIiwidm91Y2hlcl90eXBlcyI6WyJUaHUiLCJDaGkiXSwiY3VycmVuY3lfb3B0aW9ucyI6WyJWTsSQIiwiVVNEIiwiRVVSIl0sImNvbXBhbnlfbmFtZXMiOlsiQ8OUTkcgVFkgVE5ISCBUxq8gVuG6pE4gVExDIiwiQ8OUTkcgVFkgVE5ISCBFR0cgVkVOVFVSRVMiLCJDw5RORyBUWSBD4buUIFBI4bqmTiDEkOG6plUgVMavIENISU5IIFBIT05HIiwiQ8OUTkcgVFkgVE5ISCBNRURJQSBJTlNJREVSIiwiQ8OUTkcgVFkgQ+G7lCBQSOG6pk4gxJDhuqZVIFTGryBUTEMgR1JPVVAiLCJDw5RORyBUWSBD4buUIFBI4bqmTiBXT1JLU01BUlQiLCJDw5RORyBUWSBD4buUIFBI4bqmTiBJTlNJREVSUyIsIkPDlE5HIFRZIFROSEggRUdHIFZFTlRVUkVTIiwiQ8OUTkcgVFkgVFLDgUNIIE5ISeG7hk0gSOG7rlUgSOG6oE4gROG7ikNIIFbhu6QgUklPVCBHQU1FUyJdLCJlbXBsb3llZV9uYW1lcyI6WyJMw6ogTmfDom4gQW5oIiwiTmd1eeG7hW4gVsSDbiBDaGluaCIsIkzDqiBUaMO5eSBMaW5oIiwiTmd1eeG7hW4gTOG7sWMiLCJMw6ogTWluaCIsIkzDqiBNaW5oIEFuaCIsIk5ndXnhu4VuIFRo4buLIE5oYW5oIiwiTMawIEvhu7MgTmjDoyIsIk5ndXllbiBQaG9uZyIsIlRy4bqnbiBUaGFuaCIsIkFuaCBUaMawIFRow6FpIFRo4buLIiwiTmd1eeG7hW4gTMawIEFuaCBUaMawIiwiTmd1eWVuIFRpbW90aHkiLCJOZ3V5ZW4gVGluYSBMaW5oIiwiUGjhuqFtIFRyw60iXSwiYXBwcm92ZXJfbmFtZXMiOlsiTMOqIE5nw6JuIEFuaCIsIk5ndXnhu4VuIFbEg24gQ2hpbmgiLCJMw6ogVGjDuXkgTGluaCIsIk5ndXnhu4VuIEzhu7FjIiwiTMOqIE1pbmgiLCJMw6ogTWluaCBBbmgiLCJOZ3V54buFbiBUaOG7iyBOaGFuaCIsIkzGsCBL4buzIE5ow6MiLCJOZ3V5ZW4gUGhvbmciLCJUcuG6p24gVGhhbmgiLCJBbmggVGjGsCBUaMOhaSBUaOG7iyIsIk5ndXnhu4VuIEzGsCBBbmggVGjGsCIsIk5ndXllbiBUaW1vdGh5IiwiTmd1eWVuIFRpbmEgTGluaCIsIlBo4bqhbSBUcsOtIl0sImNvbXBhbmllc19kYXRhIjpbeyJUw6puIGPDtG5nIHR5IHZp4bq/dCB04bqvdCI6IlRMQyIsIlTDqm4gY8O0bmcgdHkiOiJDw5RORyBUWSBUTkhIIFTGryBW4bqkTiBUTEMiLCLEkOG7i2EgY2jhu4kiOiJCLjMuMDksIFThuqduZyAzLCBMw7QgQiwgU+G7kSAzNC0zNSBC4bq/biBWw6JuIMSQ4buTbiwgUGjGsOG7nW5nIDEzLCBRdeG6rW4gNCwgVGjDoG5oIHBo4buRIEjhu5MgQ2jDrSBNaW5oLCBWaeG7h3QgTmFtIiwiTcOjIHPhu5EgdGh14bq/IjoiMDMxMzUxOTc1NiIsIkVtYWlsIMSQ4bqhaSBkaeG7h24gcGjDoXAgbHXhuq10IjoiYW5oLmxlQG1lZGlhaW5zaWRlci52biIsIsSQ4bqhaSBkaeG7h24gcGjDoXAgbHXhuq10IjoiTMOqIE5nw6JuIEFuaCIsIkNo4buvIGvDvSDEkOG6oWkgZGnhu4duIHBow6FwIGx14bqtdCI6IiIsIkVtYWlsIEvhur8gdG/DoW4gdHLGsOG7n25nIjoibmd1eWVubmhhbmg4NjNAZ21haWwuY29tIiwiS+G6vyB0b8OhbiB0csaw4bufbmciOiJOZ3V54buFbiBUaOG7iyBOaGFuaCIsIkNo4buvIGvDvSBL4bq/IHRvw6FuIHRyxrDhu59uZyI6IiIsIkVtYWlsIFRo4bunIHF14bu5IjoibGluaC5sZUB0bC1jLmNvbS52biIsIlRo4bunIHF14bu5IjoiTMOqIFRodeG7syBMaW5oIiwiQ2jhu68ga8O9IFRo4bunIHF14bu5IjoiIiwiTmfDoHkgaGnhu4d1IGzhu7FjIjoiMTIvMjIvMjAyNSJ9LHsiVMOqbiBjw7RuZyB0eSB2aeG6v3QgdOG6r3QiOiJFLlYiLCJUw6puIGPDtG5nIHR5IjoiQ8OUTkcgVFkgVE5ISCBFR0cgVkVOVFVSRVMiLCLEkOG7i2EgY2jhu4kiOiJCLjMuMDksIFThuqduZyAzLCBMw7QgQiwgU+G7kSAzNC0zNSBC4bq/biBWw6JuIMSQ4buTbiwgUGjGsOG7nW5nIDEzLCBRdeG6rW4gNCwgVGjDoG5oIHBo4buRIEjhu5MgQ2jDrSBNaW5oLCBWaeG7h3QgTmFtIiwiTcOjIHPhu5EgdGh14bq/IjoiMDMxNDQ5NDA2MCIsIkVtYWlsIMSQ4bqhaSBkaeG7h24gcGjDoXAgbHXhuq10IjoiYW5oLmxlQG1lZGlhaW5zaWRlci52biIsIsSQ4bqhaSBkaeG7h24gcGjDoXAgbHXhuq10IjoiTMOqIE5nw6JuIEFuaCIsIkNo4buvIGvDvSDEkOG6oWkgZGnhu4duIHBow6FwIGx14bqtdCI6IiIsIkVtYWlsIEvhur8gdG/DoW4gdHLGsOG7n25nIjoibmd1eWVubmhhbmg4NjNAZ21haWwuY29tIiwiS+G6vyB0b8OhbiB0csaw4bufbmciOiJOZ3V54buFbiBUaOG7iyBOaGFuaCIsIkNo4buvIGvDvSBL4bq/IHRvw6FuIHRyxrDhu59uZyI6IiIsIkVtYWlsIFRo4bunIHF14bu5IjoibGluaC5sZUB0bC1jLmNvbS52biIsIlRo4bunIHF14bu5IjoiTMOqIFRodeG7syBMaW5oIiwiQ2jhu68ga8O9IFRo4bunIHF14bu5IjoiIiwiTmfDoHkgaGnhu4d1IGzhu7FjIjoiMTIvMjIvMjAyNSJ9LHsiVMOqbiBjw7RuZyB0eSB2aeG6v3QgdOG6r3QiOiJDLlAiLCJUw6puIGPDtG5nIHR5IjoiQ8OUTkcgVFkgQ+G7lCBQSOG6pk4gxJDhuqZVIFTGryBDSElOSCBQSE9ORyIsIsSQ4buLYSBjaOG7iSI6IkIuMy4wOSwgVOG6p25nIDMsIEzDtCBCLCBT4buRIDM0LTM1IELhur9uIFbDom4gxJDhu5NuLCBQaMaw4budbmcgMTMsIFF14bqtbiA0LCBUaMOgbmggcGjhu5EgSOG7kyBDaMOtIE1pbmgsIFZp4buHdCBOYW0iLCJNw6Mgc+G7kSB0aHXhur8iOiIwMzE0MDk3NTA3IiwiRW1haWwgxJDhuqFpIGRp4buHbiBwaMOhcCBsdeG6rXQiOiJhbmgubGVAbWVkaWFpbnNpZGVyLnZuIiwixJDhuqFpIGRp4buHbiBwaMOhcCBsdeG6rXQiOiJMw6ogTmfDom4gQW5oIiwiQ2jhu68ga8O9IMSQ4bqhaSBkaeG7h24gcGjDoXAgbHXhuq10IjoiIiwiRW1haWwgS+G6vyB0b8OhbiB0csaw4bufbmciOiJuZ3V5ZW5uaGFuaDg2M0BnbWFpbC5jb20iLCJL4bq/IHRvw6FuIHRyxrDhu59uZyI6Ik5ndXnhu4VuIFRo4buLIE5oYW5oIiwiQ2jhu68ga8O9IEvhur8gdG/DoW4gdHLGsOG7n25nIjoiIiwiRW1haWwgVGjhu6cgcXXhu7kiOiJsaW5oLmxlQHRsLWMuY29tLnZuIiwiVGjhu6cgcXXhu7kiOiJMw6ogVGh14buzIExpbmgiLCJDaOG7ryBrw70gVGjhu6cgcXXhu7kiOiIiLCJOZ8OgeSBoaeG7h3UgbOG7sWMiOiIxMi8yMi8yMDI1In0seyJUw6puIGPDtG5nIHR5IHZp4bq/dCB04bqvdCI6Ik0uSSIsIlTDqm4gY8O0bmcgdHkiOiJDw5RORyBUWSBUTkhIIE1FRElBIElOU0lERVIiLCLEkOG7i2EgY2jhu4kiOiJCLjMuMDksIFThuqduZyAzLCBMw7QgQiwgU+G7kSAzNC0zNSBC4bq/biBWw6JuIMSQ4buTbiwgUGjGsOG7nW5nIDEzLCBRdeG6rW4gNCwgVGjDoG5oIHBo4buRIEjhu5MgQ2jDrSBNaW5oLCBWaeG7h3QgTmFtIiwiTcOjIHPhu5EgdGh14bq/IjoiMDMxNTM4MDQyOSIsIkVtYWlsIMSQ4bqhaSBkaeG7h24gcGjDoXAgbHXhuq10IjoiYW5oLmxlQG1lZGlhaW5zaWRlci52biIsIsSQ4bqhaSBkaeG7h24gcGjDoXAgbHXhuq10IjoiTMOqIE5nw6JuIEFuaCIsIkNo4buvIGvDvSDEkOG6oWkgZGnhu4duIHBow6FwIGx14bqtdCI6IiIsIkVtYWlsIEvhur8gdG/DoW4gdHLGsOG7n25nIjoibmd1eWVubmhhbmg4NjNAZ21haWwuY29tIiwiS+G6vyB0b8OhbiB0csaw4bufbmciOiJOZ3V54buFbiBUaOG7iyBOaGFuaCIsIkNo4buvIGvDvSBL4bq/IHRvw6FuIHRyxrDhu59uZyI6IiIsIkVtYWlsIFRo4bunIHF14bu5IjoibGluaC5sZUB0bC1jLmNvbS52biIsIlRo4bunIHF14bu5IjoiTMOqIFRodeG7syBMaW5oIiwiQ2jhu68ga8O9IFRo4bunIHF14bu5IjoiIiwiTmfDoHkgaGnhu4d1IGzhu7FjIjoiMTIvMjIvMjAyNSJ9LHsiVMOqbiBjw7RuZyB0eSB2aeG6v3QgdOG6r3QiOiJUTENHIiwiVMOqbiBjw7RuZyB0eSI6IkPDlE5HIFRZIEPhu5QgUEjhuqZOIMSQ4bqmVSBUxq8gVExDIEdST1VQIiwixJDhu4thIGNo4buJIjoiQi4zLjA5LCBU4bqnbmcgMywgTMO0IEIsIFPhu5EgMzQtMzUgQuG6v24gVsOibiDEkOG7k24sIFBoxrDhu51uZyAxMywgUXXhuq1uIDQsIFRow6BuaCBwaOG7kSBI4buTIENow60gTWluaCwgVmnhu4d0IE5hbSIsIk3DoyBz4buRIHRodeG6vyI6IjAzMTUzMDc2NzYiLCJFbWFpbCDEkOG6oWkgZGnhu4duIHBow6FwIGx14bqtdCI6ImFuaC5sZUBtZWRpYWluc2lkZXIudm4iLCLEkOG6oWkgZGnhu4duIHBow6FwIGx14bqtdCI6IkzDqiBOZ8OibiBBbmgiLCJDaOG7ryBrw70gxJDhuqFpIGRp4buHbiBwaMOhcCBsdeG6rXQiOiIiLCJFbWFpbCBL4bq/IHRvw6FuIHRyxrDhu59uZyI6Im5ndXllbm5oYW5oODYzQGdtYWlsLmNvbSIsIkvhur8gdG/DoW4gdHLGsOG7n25nIjoiTmd1eeG7hW4gVGjhu4sgTmhhbmgiLCJDaOG7ryBrw70gS+G6vyB0b8OhbiB0csaw4bufbmciOiIiLCJFbWFpbCBUaOG7pyBxdeG7uSI6ImxpbmgubGVAdGwtYy5jb20udm4iLCJUaOG7pyBxdeG7uSI6IkzDqiBUaHXhu7MgTGluaCIsIkNo4buvIGvDvSBUaOG7pyBxdeG7uSI6IiIsIk5nw6B5IGhp4buHdSBs4buxYyI6IjEyLzIyLzIwMjUifSx7IlTDqm4gY8O0bmcgdHkgdmnhur90IHThuq90IjoiVy5TIiwiVMOqbiBjw7RuZyB0eSI6IkPDlE5HIFRZIEPhu5QgUEjhuqZOIFdPUktTTUFSVCIsIsSQ4buLYSBjaOG7iSI6IkIuMy4wOSwgVOG6p25nIDMsIEzDtCBCLCBT4buRIDM0LTM1IELhur9uIFbDom4gxJDhu5NuLCBQaMaw4budbmcgMTMsIFF14bqtbiA0LCBUaMOgbmggcGjhu5EgSOG7kyBDaMOtIE1pbmgsIFZp4buHdCBOYW0iLCJNw6Mgc+G7kSB0aHXhur8iOiIwMzE1MjQwMjA2IiwiRW1haWwgxJDhuqFpIGRp4buHbiBwaMOhcCBsdeG6rXQiOiJhbmgubGVAbWVkaWFpbnNpZGVyLnZuIiwixJDhuqFpIGRp4buHbiBwaMOhcCBsdeG6rXQiOiJMw6ogTmfDom4gQW5oIiwiQ2jhu68ga8O9IMSQ4bqhaSBkaeG7h24gcGjDoXAgbHXhuq10IjoiIiwiRW1haWwgS+G6vyB0b8OhbiB0csaw4bufbmciOiJuZ3V5ZW5uaGFuaDg2M0BnbWFpbC5jb20iLCJL4bq/IHRvw6FuIHRyxrDhu59uZyI6Ik5ndXnhu4VuIFRo4buLIE5oYW5oIiwiQ2jhu68ga8O9IEvhur8gdG/DoW4gdHLGsOG7n25nIjoiIiwiRW1haWwgVGjhu6cgcXXhu7kiOiJsaW5oLmxlQHRsLWMuY29tLnZuIiwiVGjhu6cgcXXhu7kiOiJMw6ogVGh14buzIExpbmgiLCJDaOG7ryBrw70gVGjhu6cgcXXhu7kiOiIiLCJOZ8OgeSBoaeG7h3UgbOG7sWMiOiIxMi8yMi8yMDI1In0seyJUw6puIGPDtG5nIHR5IHZp4bq/dCB04bqvdCI6IklOUyIsIlTDqm4gY8O0bmcgdHkiOiJDw5RORyBUWSBD4buUIFBI4bqmTiBJTlNJREVSUyIsIsSQ4buLYSBjaOG7iSI6IkIuMy4wOSwgVOG6p25nIDMsIEzDtCBCLCBT4buRIDM0LTM1IELhur9uIFbDom4gxJDhu5NuLCBQaMaw4budbmcgWMOzbSBDaGnhur91LCBUaMOgbmggcGjhu5EgSOG7kyBDaMOtIE1pbmgsIFZp4buHdCBOYW0iLCJNw6Mgc+G7kSB0aHXhur8iOiIwMzEzNTIyODA4IiwiRW1haWwgxJDhuqFpIGRp4buHbiBwaMOhcCBsdeG6rXQiOiJsaW5oLmxlQHRsLWMuY29tLnZuIiwixJDhuqFpIGRp4buHbiBwaMOhcCBsdeG6rXQiOiJMw6ogVGh14buzIExpbmgiLCJDaOG7ryBrw70gxJDhuqFpIGRp4buHbiBwaMOhcCBsdeG6rXQiOiIiLCJFbWFpbCBL4bq/IHRvw6FuIHRyxrDhu59uZyI6Im5ndXllbm5oYW5oODYzQGdtYWlsLmNvbSIsIkvhur8gdG/DoW4gdHLGsOG7n25nIjoiTmd1eeG7hW4gVGjhu4sgTmhhbmgiLCJDaOG7ryBrw70gS+G6vyB0b8OhbiB0csaw4bufbmciOiIiLCJFbWFpbCBUaOG7pyBxdeG7uSI6ImxpbmgubGVAdGwtYy5jb20udm4iLCJUaOG7pyBxdeG7uSI6IkzDqiBUaHXhu7MgTGluaCIsIkNo4buvIGvDvSBUaOG7pyBxdeG7uSI6IiIsIk5nw6B5IGhp4buHdSBs4buxYyI6IjEyLzIyLzIwMjUifSx7IlTDqm4gY8O0bmcgdHkgdmnhur90IHThuq90IjoiRVZfS1RUXzIwNU5UUCIsIlTDqm4gY8O0bmcgdHkiOiJDw5RORyBUWSBUTkhIIEVHRyBWRU5UVVJFUyIsIsSQ4buLYSBjaOG7iSI6IkIuMy4wOSwgVOG6p25nIDMsIEzDtCBCLCBT4buRIDM0LTM1IELhur9uIFbDom4gxJDhu5NuLCBQaMaw4budbmcgMTMsIFF14bqtbiA0LCBUaMOgbmggcGjhu5EgSOG7kyBDaMOtIE1pbmgsIFZp4buHdCBOYW0iLCJNw6Mgc+G7kSB0aHXhur8iOiIwMzE0NDk0MDYwIiwiRW1haWwgxJDhuqFpIGRp4buHbiBwaMOhcCBsdeG6rXQiOiJhbmgubGVAbWVkaWFpbnNpZGVyLnZuIiwixJDhuqFpIGRp4buHbiBwaMOhcCBsdeG6rXQiOiJMw6ogTmfDom4gQW5oIiwiQ2jhu68ga8O9IMSQ4bqhaSBkaeG7h24gcGjDoXAgbHXhuq10IjoiIiwiRW1haWwgS+G6vyB0b8OhbiB0csaw4bufbmciOiJuZ3V5ZW5uaGFuaDg2M0BnbWFpbC5jb20iLCJL4bq/IHRvw6FuIHRyxrDhu59uZyI6Ik5ndXnhu4VuIFRo4buLIE5oYW5oIiwiQ2jhu68ga8O9IEvhur8gdG/DoW4gdHLGsOG7n25nIjoiIiwiRW1haWwgVGjhu6cgcXXhu7kiOiJsaW5oLmxlQHRsLWMuY29tLnZuIiwiVGjhu6cgcXXhu7kiOiJMw6ogVGh14buzIExpbmgiLCJDaOG7ryBrw70gVGjhu6cgcXXhu7kiOiIiLCJOZ8OgeSBoaeG7h3UgbOG7sWMiOiIxMi8yMi8yMDI1In0seyJUw6puIGPDtG5nIHR5IHZp4bq/dCB04bqvdCI6IlJJT1QiLCJUw6puIGPDtG5nIHR5IjoiQ8OUTkcgVFkgVFLDgUNIIE5ISeG7hk0gSOG7rlUgSOG6oE4gROG7ikNIIFbhu6QgUklPVCBHQU1FUyIsIsSQ4buLYSBjaOG7iSI6IlThuqduZyAxMSwgVMOyYSBuaMOgIE1pc3Mgw6FvIETDoGksIHPhu5EgMjEgxJDGsOG7nW5nIE5ndXnhu4VuLCBQaMaw4budbmcgQuG6v24gTmdow6kgLCBRdeG6rW4gMSAsIFRQIEjhu5MgQ2jDrSBNaW5oIiwiTcOjIHPhu5EgdGh14bq/IjoiMDMxNDQxOTA3MCIsIkVtYWlsIMSQ4bqhaSBkaeG7h24gcGjDoXAgbHXhuq10IjoibGluaC5sZUB0bC1jLmNvbS52biIsIsSQ4bqhaSBkaeG7h24gcGjDoXAgbHXhuq10IjoiUGjhuqFtIEtpw6puIFPGoW4iLCJDaOG7ryBrw70gxJDhuqFpIGRp4buHbiBwaMOhcCBsdeG6rXQiOiIiLCJFbWFpbCBL4bq/IHRvw6FuIHRyxrDhu59uZyI6Im5ndXllbm5oYW5oODYzQGdtYWlsLmNvbSIsIkvhur8gdG/DoW4gdHLGsOG7n25nIjoiTMOqIFRodeG7syBMaW5oIiwiQ2jhu68ga8O9IEvhur8gdG/DoW4gdHLGsOG7n25nIjoiIiwiRW1haWwgVGjhu6cgcXXhu7kiOiJsaW5oLmxlQHRsLWMuY29tLnZuIiwiVGjhu6cgcXXhu7kiOiJMw6ogVGh14buzIExpbmgiLCJDaOG7ryBrw70gVGjhu6cgcXXhu7kiOiIiLCJOZ8OgeSBoaeG7h3UgbOG7sWMiOiIxMi8yMi8yMDI1In1dfQ==");;
+
+        // IMPORTANT: Replace this with your actual Google Apps Script Web App URL
+        // Instructions:
+        // 1. Go to script.google.com and create a new project.
+        // 2. Copy the Apps Script code provided below into Code.gs.
+        // 3. Save the project.
+        // 4. Click "Deploy" -> "New deployment".
+        // 5. Select "Web app" as the type.
+        // 6. Set "Execute as" to "Me" (your Google account).
+        // 7. Set "Who has access" to "Anyone".
+        // 8. Click "Deploy".
+        // 9. Copy the "Web app URL" and paste it here.
+        // 10. Ensure your Google account has permissions to send emails via Gmail (usually default).
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyLJ_5Hgfmg-Z-3nxCzlyFlKItOC7ZOuXSTvvj6P_MjeX_8TtG2ZN2otLD2afUqLM_8/exec';
+
+        // Initialize email mappings based on provided exact emails and company data
+        const employeeEmailMap = {
+            "Lê Ngân Anh": "anh.le@mediainsider.vn",
+            "Nguyễn Văn Chinh": "chinh.nguyen@mediainsider.vn",
+            "Lê Thùy Linh": "linh.le@tl-c.com.vn",
+            "Nguyễn Lực": "hieuluc.nguyen@gmail.com"
+        };
+
+        const approverEmailMap = {
+            "Lê Ngân Anh": "anh.le@mediainsider.vn",
+            "Nguyễn Văn Chinh": "chinh.nguyen@mediainsider.vn",
+            "Lê Thùy Linh": "linh.le@tl-c.com.vn",
+            "Nguyễn Lực": "hieuluc.nguyen@gmail.com"
+        };
+
+        // Augment employeeEmailMap and approverEmailMap with emails from companies_data
+        data.companies_data.forEach(company => {
+            if (company["Đại diện pháp luật"] && company["Email Đại diện pháp luật"]) {
+                employeeEmailMap[company["Đại diện pháp luật"]] = company["Email Đại diện pháp luật"];
+                approverEmailMap[company["Đại diện pháp luật"]] = company["Email Đại diện pháp luật"];
+            }
+            if (company["Kế toán trưởng"] && company["Email Kế toán trưởng"]) {
+                employeeEmailMap[company["Kế toán trưởng"]] = company["Email Kế toán trưởng"];
+                approverEmailMap[company["Kế toán trưởng"]] = company["Email Kế toán trưởng"];
+            }
+            if (company["Thủ quỹ"] && company["Email Thủ quỹ"]) {
+                employeeEmailMap[company["Thủ quỹ"]] = company["Email Thủ quỹ"];
+                // Thủ quỹ might not always be an approver, but including for completeness if they are in approver_names
+                approverEmailMap[company["Thủ quỹ"]] = company["Email Thủ quỹ"];
+            }
+        });
+
+        // Add employee departments (assuming this data exists or can be derived)
+        // For demonstration, creating a simple map. In a real app, this would come from backend.
+        data.employee_departments = {};
+        data.employee_names.forEach(name => {
+            if (name === "Lê Ngân Anh") data.employee_departments[name] = "Ban Giám đốc";
+            else if (name === "Nguyễn Văn Chinh") data.employee_departments[name] = "Phòng Kinh doanh";
+            else if (name === "Lê Thùy Linh") data.employee_departments[name] = "Phòng Kế toán";
+            else if (name === "Nguyễn Lực") data.employee_departments[name] = "Phòng Kỹ thuật";
+            else if (name === "Nguyễn Thị Nhanh") data.employee_departments[name] = "Phòng Kế toán";
+            else data.employee_departments[name] = "Phòng ban khác";
+        });
+
+
+        let expenseItems = [];
+        let approvalHistory = [];
+        let autoSaveTimeout = null;
+        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+        const AUTO_SAVE_DELAY = 2000; // 2 seconds
+
+        // Toast Notification Functions
+        function showToast(message, type = 'info', title = '') {
+            const toastContainer = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            
+            const icons = {
+                success: '✅',
+                error: '❌',
+                info: 'ℹ️',
+                warning: '⚠️'
+            };
+            
+            toast.innerHTML = `
+                <span class="toast-icon">${icons[type] || icons.info}</span>
+                <div class="toast-content">
+                    ${title ? `<div class="toast-title">${title}</div>` : ''}
+                    <div class="toast-message">${message}</div>
+                </div>
+                <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+            `;
+            
+            toastContainer.appendChild(toast);
+            
+            // Auto remove after 5 seconds
+            setTimeout(() => {
+                toast.style.animation = 'slideInRight 0.3s ease reverse';
+                setTimeout(() => toast.remove(), 300);
+            }, 5000);
+        }
+
+        // Confirmation Dialog Functions
+        function showConfirmation(message, title = 'Xác nhận') {
+            return new Promise((resolve) => {
+                const overlay = document.getElementById('confirmation-overlay');
+                const titleEl = document.getElementById('confirmation-title');
+                const messageEl = document.getElementById('confirmation-message');
+                const confirmBtn = document.getElementById('confirmation-confirm');
+                const cancelBtn = document.getElementById('confirmation-cancel');
+                
+                titleEl.textContent = title;
+                messageEl.textContent = message;
+                overlay.classList.add('show');
+                
+                const handleConfirm = () => {
+                    overlay.classList.remove('show');
+                    confirmBtn.removeEventListener('click', handleConfirm);
+                    cancelBtn.removeEventListener('click', handleCancel);
+                    resolve(true);
+                };
+                
+                const handleCancel = () => {
+                    overlay.classList.remove('show');
+                    confirmBtn.removeEventListener('click', handleConfirm);
+                    cancelBtn.removeEventListener('click', handleCancel);
+                    resolve(false);
+                };
+                
+                confirmBtn.addEventListener('click', handleConfirm);
+                cancelBtn.addEventListener('click', handleCancel);
+            });
+        }
+
+        // Validation Functions
+        function validateField(fieldId, value, fieldName) {
+            const field = document.getElementById(fieldId);
+            const errorEl = field.parentElement.querySelector('.error-message');
+            
+            if (!field) return true;
+            
+            let isValid = true;
+            let errorMessage = '';
+            
+            // Required field validation
+            if (field.hasAttribute('required') && !value) {
+                isValid = false;
+                errorMessage = `${fieldName} là bắt buộc`;
+            }
+            
+            // Specific validations
+            if (value) {
+                if (fieldId === 'payee-name' && value.length < 2) {
+                    isValid = false;
+                    errorMessage = 'Tên người nộp/nhận phải có ít nhất 2 ký tự';
+                }
+                if (fieldId === 'reason' && value.length < 10) {
+                    isValid = false;
+                    errorMessage = 'Lý do phải có ít nhất 10 ký tự';
+                }
+            }
+            
+            // Update UI
+            if (isValid) {
+                field.classList.remove('invalid');
+                field.classList.add('valid');
+                if (errorEl) {
+                    errorEl.classList.remove('show');
+                }
+            } else {
+                field.classList.remove('valid');
+                field.classList.add('invalid');
+                if (errorEl) {
+                    errorEl.textContent = errorMessage;
+                    errorEl.classList.add('show');
+                } else {
+                    const newErrorEl = document.createElement('div');
+                    newErrorEl.className = 'error-message show';
+                    newErrorEl.textContent = errorMessage;
+                    field.parentElement.appendChild(newErrorEl);
+                }
+            }
+            
+            return isValid;
+        }
+
+        function validateAllFields() {
+            const fields = [
+                { id: 'company', name: 'Công ty' },
+                { id: 'voucher-type', name: 'Loại phiếu' },
+                { id: 'employee', name: 'Người đề nghị' },
+                { id: 'payee-name', name: 'Người nộp/nhận' },
+                { id: 'currency', name: 'Loại tiền' },
+                { id: 'reason', name: 'Lý do' }
+            ];
+            
+            let isValid = true;
+            fields.forEach(field => {
+                const element = document.getElementById(field.id);
+                if (!validateField(field.id, element ? element.value : '', field.name)) {
+                    isValid = false;
+                }
+            });
+            
+            // Validate expense items
+            if (expenseItems.length === 0) {
+                showToast('Vui lòng nhập ít nhất một dòng chi tiết', 'error');
+                isValid = false;
+            } else {
+                const invalidItems = expenseItems.filter(item => !item.content || item.amount === 0);
+                if (invalidItems.length > 0) {
+                    showToast('Vui lòng điền đầy đủ Nội dung và Số tiền cho tất cả các dòng', 'error');
+                    isValid = false;
+                }
+            }
+            
+            return isValid;
+        }
+
+        // Auto-save Functions
+        function saveToLocalStorage() {
+            try {
+                const formData = {
+                    company: document.getElementById('company').value,
+                    voucherType: document.getElementById('voucher-type').value,
+                    employee: document.getElementById('employee').value,
+                    payeeName: document.getElementById('payee-name').value,
+                    currency: document.getElementById('currency').value,
+                    reason: document.getElementById('reason').value,
+                    voucherDate: document.getElementById('voucher-date').value,
+                    voucherNumber: document.getElementById('voucher-number').value,
+                    approver: document.getElementById('approver').value,
+                    expenseItems: expenseItems.map(item => ({
+                        content: item.content,
+                        amount: item.amount,
+                        attachments: item.attachments.map(f => ({ name: f.name, size: f.size }))
+                    })),
+                    approvalHistory: approvalHistory,
+                    lastSaved: new Date().toISOString()
+                };
+                
+                localStorage.setItem('voucher_draft', JSON.stringify(formData));
+                showAutoSaveIndicator('saved');
+            } catch (error) {
+                console.error('Error saving to localStorage:', error);
+            }
+        }
+
+        function loadFromLocalStorage() {
+            try {
+                const saved = localStorage.getItem('voucher_draft');
+                if (saved) {
+                    const formData = JSON.parse(saved);
+                    
+                    // Restore form fields
+                    if (formData.company) document.getElementById('company').value = formData.company;
+                    if (formData.voucherType) document.getElementById('voucher-type').value = formData.voucherType;
+                    if (formData.employee) {
+                        document.getElementById('employee').value = formData.employee;
+                        updateEmployeeDepartment();
+                    }
+                    if (formData.payeeName) document.getElementById('payee-name').value = formData.payeeName;
+                    if (formData.currency) document.getElementById('currency').value = formData.currency;
+                    if (formData.reason) document.getElementById('reason').value = formData.reason;
+                    if (formData.voucherDate) document.getElementById('voucher-date').value = formData.voucherDate;
+                    if (formData.voucherNumber) document.getElementById('voucher-number').value = formData.voucherNumber;
+                    if (formData.approver) document.getElementById('approver').value = formData.approver;
+                    
+                    // Restore expense items (without file objects)
+                    if (formData.expenseItems && formData.expenseItems.length > 0) {
+                        expenseItems = formData.expenseItems.map(item => ({
+                            content: item.content,
+                            amount: item.amount,
+                            attachments: [] // Files can't be restored from localStorage
+                        }));
+                        renderExpenseTable();
+                    }
+                    
+                    if (formData.approvalHistory) {
+                        approvalHistory = formData.approvalHistory;
+                        renderApprovalHistory();
+                    }
+                    
+                    updateCompanyDetails();
+                    updateGrandTotal();
+                    
+                    showToast('Đã khôi phục dữ liệu đã lưu', 'info', 'Khôi phục');
+                }
+            } catch (error) {
+                console.error('Error loading from localStorage:', error);
+            }
+        }
+
+        function showAutoSaveIndicator(status) {
+            const indicator = document.getElementById('auto-save-indicator');
+            indicator.className = `auto-save-indicator ${status} show`;
+            
+            if (status === 'saving') {
+                indicator.textContent = 'Đang lưu...';
+            } else if (status === 'saved') {
+                indicator.textContent = 'Đã lưu tự động';
+                setTimeout(() => {
+                    indicator.classList.remove('show');
+                }, 2000);
+            }
+        }
+
+        function debounceAutoSave() {
+            if (autoSaveTimeout) {
+                clearTimeout(autoSaveTimeout);
+            }
+            
+            showAutoSaveIndicator('saving');
+            autoSaveTimeout = setTimeout(() => {
+                saveToLocalStorage();
+            }, AUTO_SAVE_DELAY);
+        }
+
+        // File Validation
+        function validateFile(file) {
+            if (file.size > MAX_FILE_SIZE) {
+                showToast(`File "${file.name}" quá lớn. Kích thước tối đa là 10MB`, 'error');
+                return false;
+            }
+            return true;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeForm();
+            setCurrentDate();
+            generateVoucherNumber();
+            renderExpenseTable();
+
+            // Load saved data
+            loadFromLocalStorage();
+
+            // Add event listeners for buttons
+            document.getElementById('export-pdf-btn').addEventListener('click', exportToPDF);
+            document.getElementById('export-excel-btn').addEventListener('click', exportToExcel);
+            document.getElementById('import-excel-btn').addEventListener('click', importFromExcelForm);
+            document.getElementById('sync-sheets-btn').addEventListener('click', syncWithGoogleSheets);
+            document.getElementById('save-template-btn').addEventListener('click', saveTemplate);
+            document.getElementById('load-template-btn').addEventListener('click', loadTemplate);
+            document.getElementById('save-btn').addEventListener('click', saveVoucher);
+            document.getElementById('send-approval-btn').addEventListener('click', sendForApproval);
+            
+            // Initialize searchable dropdowns
+            initializeSearchableDropdowns();
+            
+            document.getElementById('add-row-btn').addEventListener('click', addExpenseRow);
+            document.getElementById('copy-excel-btn').addEventListener('click', copyFromExcelToTable);
+            document.getElementById('import-table-excel-btn').addEventListener('click', importExcelToTable);
+
+            // Add real-time validation listeners
+            const fieldsToValidate = ['company', 'voucher-type', 'employee', 'payee-name', 'currency', 'reason'];
+            fieldsToValidate.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field) {
+                    field.addEventListener('blur', function() {
+                        const fieldNames = {
+                            'company': 'Công ty',
+                            'voucher-type': 'Loại phiếu',
+                            'employee': 'Người đề nghị',
+                            'payee-name': 'Người nộp/nhận',
+                            'currency': 'Loại tiền',
+                            'reason': 'Lý do'
+                        };
+                        validateField(fieldId, this.value, fieldNames[fieldId]);
+                        debounceAutoSave();
+                    });
+                    
+                    field.addEventListener('input', function() {
+                        // Remove invalid class on input
+                        if (this.classList.contains('invalid')) {
+                            this.classList.remove('invalid');
+                            const errorEl = this.parentElement.querySelector('.error-message');
+                            if (errorEl) errorEl.classList.remove('show');
+                        }
+                        debounceAutoSave();
+                    });
+                }
+            });
+
+            renderApprovalHistory();
+        });
+        
+        function initializeForm() {
+            document.getElementById('form-title').textContent = data.form_title;
+            
+            const companySelect = document.getElementById('company');
+            data.company_names.forEach(company => {
+                const option = document.createElement('option');
+                option.value = company;
+                option.textContent = company;
+                companySelect.appendChild(option);
+            });
+            
+            const employeeSelect = document.getElementById('employee');
+            const payeeDropdown = document.getElementById('payee-dropdown');
+            data.employee_names.forEach(employee => {
+                const option = document.createElement('option');
+                option.value = employee;
+                option.textContent = employee;
+                employeeSelect.appendChild(option);
+
+                const payeeOption = option.cloneNode(true);
+                payeeDropdown.appendChild(payeeOption);
+            });
+            
+            const voucherTypeSelect = document.getElementById('voucher-type');
+            data.voucher_types.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                voucherTypeSelect.appendChild(option);
+            });
+            
+            const currencySelect = document.getElementById('currency');
+            data.currency_options.forEach(currency => {
+                const option = document.createElement('option');
+                option.value = currency;
+                option.textContent = currency;
+                currencySelect.appendChild(option);
+            });
+            
+            const approverSelect = document.getElementById('approver');
+            data.approver_names.forEach(approver => {
+                const option = document.createElement('option');
+                option.value = approver;
+                option.textContent = approver;
+                approverSelect.appendChild(option);
+            });
+        }
+        
+        function updateCompanyDetails() {
+            const companySelect = document.getElementById('company');
+            const companyDetails = document.getElementById('company-details');
+            const companyAddress = document.getElementById('company-address');
+            
+            const selectedCompany = companySelect.value;
+            
+            if (selectedCompany) {
+                const companyData = data.companies_data.find(c => c["Tên công ty"] === selectedCompany);
+                if (companyData) {
+                    companyAddress.textContent = `Địa chỉ: ${companyData["Địa chỉ"]}`;
+                    companyDetails.classList.add('show');
+                }
+            } else {
+                companyDetails.classList.remove('show');
+            }
+        }
+
+        function updateEmployeeDepartment() {
+            const employeeSelect = document.getElementById('employee');
+            const departmentInput = document.getElementById('department');
+            const selectedEmployee = employeeSelect.value;
+
+            if (selectedEmployee && data.employee_departments) {
+                departmentInput.value = data.employee_departments[selectedEmployee] || '';
+            } else {
+                departmentInput.value = '';
+            }
+        }
+        
+        function setCurrentDate() {
+            const today = new Date();
+            const formattedDate = today.toISOString().substr(0, 10);
+            document.getElementById('voucher-date').value = formattedDate;
+        }
+        
+        function generateVoucherNumber() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            
+            const voucherNumber = `TL-${year}${month}-${randomNum}`;
+            document.getElementById('voucher-number').value = voucherNumber;
+        }
+        
+        function updateAmountInWords() {
+            const amountInput = document.getElementById('amount');
+            const amount = parseCurrency(amountInput.value) || 0;
+            const amountInWordsInput = document.getElementById('amount-in-words');
+            const amountInWordsDisplay = document.getElementById('amount-in-words-display');
+            
+            const amountInWords = amount > 0 ? convertNumberToWords(amount) + " đồng" : "";
+            
+            if (amountInWordsInput) {
+                amountInWordsInput.value = amountInWords;
+            }
+            if (amountInWordsDisplay) {
+                amountInWordsDisplay.textContent = amountInWords || "Không đồng";
+            }
+        }
+        
+        function convertNumberToWords(num) {
+            const units = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+            const teens = ['mười', 'mười một', 'mười hai', 'mười ba', 'mười bốn', 'mười lăm', 'mười sáu', 'mười bảy', 'mười tám', 'mười chín'];
+            const tens = ['', 'mười', 'hai mươi', 'ba mươi', 'bốn mươi', 'năm mươi', 'sáu mươi', 'bảy mươi', 'tám mươi', 'chín mươi'];
+            const scales = ['', 'nghìn', 'triệu', 'tỷ'];
+
+            function convertLessThanOneThousand(n) {
+                let s = '';
+                if (n >= 100) {
+                    s += units[Math.floor(n / 100)] + ' trăm ';
+                    n %= 100;
+                }
+                if (n >= 20) {
+                    s += tens[Math.floor(n / 10)] + ' ';
+                    n %= 10;
+                }
+                if (n >= 10) {
+                    s += teens[n - 10] + ' ';
+                    n = 0;
+                }
+                if (n > 0) {
+                    s += units[n] + ' ';
+                }
+                return s.trim();
+            }
+
+            if (num === 0) return 'Không';
+
+            let result = '';
+            let i = 0;
+            let tempNum = num;
+
+            while (tempNum > 0) {
+                const chunk = tempNum % 1000;
+                if (chunk !== 0) {
+                    let chunkWords = convertLessThanOneThousand(chunk);
+                    result = chunkWords + ' ' + scales[i] + ' ' + result;
+                }
+                tempNum = Math.floor(tempNum / 1000);
+                i++;
+            }
+            return result.trim().replace(/\s+/g, ' ').replace(/mươi một/g, 'mươi mốt').replace(/mươi năm/g, 'mươi lăm').replace(/một trăm/g, 'một trăm').replace(/linh một/g, 'lẻ một').replace(/linh năm/g, 'lẻ năm');
+        }
+        
+        function exportToPDF() {
+            const element = document.getElementById('voucher-form');
+            const opt = {
+                margin: 10,
+                filename: 'phieu_chi_thu.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            html2pdf().set(opt).from(element).save();
+            showToast('Đã xuất PDF thành công!', 'success', 'Thành công');
+        }
+        
+        function exportToExcel() {
+            try {
+                // Validate form before export
+                if (!validateAllFields()) {
+                    showToast('Vui lòng điền đầy đủ thông tin trước khi xuất Excel', 'error', 'Lỗi validation');
+                    return;
+                }
+
+                // Create workbook
+                const wb = XLSX.utils.book_new();
+                
+                // Sheet 1: Form Data
+                const formData = [
+                    ['PHIẾU THU/CHI - THÔNG TIN CHÍNH'],
+                    [],
+                    ['Công ty', document.getElementById('company').value],
+                    ['Loại phiếu', document.getElementById('voucher-type').value],
+                    ['Số phiếu', document.getElementById('voucher-number').value],
+                    ['Ngày lập phiếu', document.getElementById('voucher-date').value],
+                    ['Người đề nghị', document.getElementById('employee').value],
+                    ['Bộ phận', document.getElementById('department').value],
+                    ['Người nộp/nhận', document.getElementById('payee-name').value],
+                    ['Loại tiền', document.getElementById('currency').value],
+                    ['Tổng số tiền', document.getElementById('amount').value],
+                    ['Số tiền bằng chữ', document.getElementById('amount-in-words').value],
+                    ['Lý do', document.getElementById('reason').value],
+                    ['Người phê duyệt', document.getElementById('approver').value],
+                    ['Trạng thái', document.getElementById('approval-status-display').textContent]
+                ];
+                
+                const ws1 = XLSX.utils.aoa_to_sheet(formData);
+                XLSX.utils.book_append_sheet(wb, ws1, 'Thông tin phiếu');
+                
+                // Sheet 2: Expense Items
+                const expenseData = [
+                    ['STT', 'Nội dung', 'Số tiền', 'Số file đính kèm']
+                ];
+                
+                expenseItems.forEach((item, index) => {
+                    expenseData.push([
+                        index + 1,
+                        item.content || '',
+                        item.amount || 0,
+                        item.attachments ? item.attachments.length : 0
+                    ]);
+                });
+                
+                // Add total row
+                const grandTotal = expenseItems.reduce((sum, item) => sum + (item.amount || 0), 0);
+                expenseData.push(['', 'TỔNG CỘNG', grandTotal, '']);
+                
+                const ws2 = XLSX.utils.aoa_to_sheet(expenseData);
+                
+                // Set column widths
+                ws2['!cols'] = [
+                    { wch: 5 },   // STT
+                    { wch: 40 },  // Nội dung
+                    { wch: 15 },  // Số tiền
+                    { wch: 15 }   // Số file đính kèm
+                ];
+                
+                XLSX.utils.book_append_sheet(wb, ws2, 'Chi tiết chi phí');
+                
+                // Sheet 3: Approval History
+                const historyData = [
+                    ['Thời gian', 'Hành động', 'Người thực hiện', 'Gửi đến']
+                ];
+                
+                if (approvalHistory.length > 0) {
+                    approvalHistory.forEach(entry => {
+                        historyData.push([
+                            entry.timestamp || '',
+                            entry.action || '',
+                            entry.by || '',
+                            entry.to || ''
+                        ]);
+                    });
+                } else {
+                    historyData.push(['Chưa có lịch sử phê duyệt']);
+                }
+                
+                const ws3 = XLSX.utils.aoa_to_sheet(historyData);
+                XLSX.utils.book_append_sheet(wb, ws3, 'Lịch sử phê duyệt');
+                
+                // Generate filename with date
+                const today = new Date();
+                const dateStr = today.toISOString().split('T')[0].replace(/-/g, '');
+                const voucherNumber = document.getElementById('voucher-number').value.replace(/[^a-zA-Z0-9]/g, '_');
+                const filename = `Phieu_Thu_Chi_${voucherNumber}_${dateStr}.xlsx`;
+                
+                // Export file
+                XLSX.writeFile(wb, filename);
+                showToast('Đã xuất Excel thành công!', 'success', 'Thành công');
+                
+            } catch (error) {
+                console.error('Error exporting to Excel:', error);
+                showToast('Có lỗi xảy ra khi xuất Excel: ' + error.message, 'error', 'Lỗi');
+            }
+        }
+        
+        function importFromExcelForm() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.xlsx, .xls';
+            
+            input.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    
+                    if (jsonData.length > 0) {
+                        const row = jsonData[0];
+                        if (row.company) document.getElementById('company').value = row.company;
+                        if (row.employee) document.getElementById('employee').value = row.employee;
+                        if (row.payeeName) document.getElementById('payee-name').value = row.payeeName;
+                        if (row.reason) document.getElementById('reason').value = row.reason;
+                        if (row.approver) document.getElementById('approver').value = row.approver;
+                        
+                        updateCompanyDetails();
+                        updateEmployeeDepartment();
+                        updateGrandTotal(); 
+                        debounceAutoSave();
+                        showToast('Đã nhập dữ liệu từ Excel vào form chính thành công!', 'success', 'Thành công');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            });
+            
+            input.click();
+        }
+        
+        // Google Sheets Configuration
+        const GOOGLE_SHEETS_CONFIG = {
+            spreadsheetId: localStorage.getItem('google_sheets_id') || '',
+            sheetName: 'Phiếu Thu Chi',
+            apiKey: ''
+        };
+
+        // Load saved spreadsheet ID
+        if (GOOGLE_SHEETS_CONFIG.spreadsheetId) {
+            console.log('Loaded saved Spreadsheet ID:', GOOGLE_SHEETS_CONFIG.spreadsheetId);
+        }
+
+        async function syncWithGoogleSheets() {
+            try {
+                if (!validateAllFields()) {
+                    showToast('Vui lòng điền đầy đủ thông tin trước khi đồng bộ', 'error', 'Lỗi validation');
+                    return;
+                }
+
+                // Check Google Apps Script URL
+                if (!GOOGLE_APPS_SCRIPT_WEB_APP_URL || GOOGLE_APPS_SCRIPT_WEB_APP_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+                    const setupUrl = confirm('Chưa cấu hình Google Apps Script URL.\n\nBạn có muốn xem hướng dẫn setup không?');
+                    if (setupUrl) {
+                        showToast('Vui lòng xem file GOOGLE_APPS_SCRIPT_SETUP.md để biết cách cấu hình', 'info', 'Hướng dẫn');
+                    }
+                    showToast('Đang xuất Excel để bạn có thể import thủ công...', 'warning', 'Cảnh báo');
+                    exportToExcel();
+                    return;
+                }
+
+                // Get or prompt for Spreadsheet ID
+                if (!GOOGLE_SHEETS_CONFIG.spreadsheetId) {
+                    const spreadsheetId = prompt(
+                        'Vui lòng nhập Google Sheets ID:\n\n' +
+                        'Có thể lấy từ URL của sheet:\n' +
+                        'https://docs.google.com/spreadsheets/d/{SPREADSHEET_ID}/edit\n\n' +
+                        'Lưu ý: Sheet phải được share với email Google Apps Script của bạn!'
+                    );
+                    
+                    if (!spreadsheetId || spreadsheetId.trim() === '') {
+                        showToast('Cần Google Sheets ID để đồng bộ', 'error', 'Lỗi cấu hình');
+                        return;
+                    }
+                    
+                    GOOGLE_SHEETS_CONFIG.spreadsheetId = spreadsheetId.trim();
+                    localStorage.setItem('google_sheets_id', GOOGLE_SHEETS_CONFIG.spreadsheetId);
+                    showToast('Đã lưu Spreadsheet ID', 'success');
+                }
+
+                // Show loading
+                const syncBtn = document.getElementById('sync-sheets-btn');
+                const originalText = syncBtn.innerHTML;
+                syncBtn.disabled = true;
+                syncBtn.innerHTML = '<div class="spinner" style="width: 16px; height: 16px; border-width: 2px;"></div> Đang đồng bộ...';
+
+                const voucherData = {
+                    timestamp: new Date().toISOString(),
+                    voucherNumber: document.getElementById('voucher-number').value,
+                    voucherType: document.getElementById('voucher-type').value,
+                    voucherDate: document.getElementById('voucher-date').value,
+                    company: document.getElementById('company').value,
+                    employee: document.getElementById('employee').value,
+                    department: document.getElementById('department').value,
+                    payeeName: document.getElementById('payee-name').value,
+                    currency: document.getElementById('currency').value,
+                    totalAmount: document.getElementById('amount').value,
+                    amountInWords: document.getElementById('amount-in-words').value,
+                    reason: document.getElementById('reason').value,
+                    approver: document.getElementById('approver').value,
+                    status: document.getElementById('approval-status-display').textContent,
+                    expenseItems: expenseItems.map((item, index) => ({
+                        stt: index + 1,
+                        content: item.content,
+                        amount: item.amount,
+                        attachments: item.attachments.length
+                    })),
+                    approvalHistory: approvalHistory
+                };
+
+                // Retry logic
+                let retries = 3;
+                let success = false;
+                
+                while (retries > 0 && !success) {
+                    try {
+                        // Use a timeout to detect if request hangs
+                        const controller = new AbortController();
+                        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
+
+                        await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
+                            method: 'POST',
+                            mode: 'no-cors',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                action: 'syncToSheets',
+                                spreadsheetId: GOOGLE_SHEETS_CONFIG.spreadsheetId,
+                                sheetName: GOOGLE_SHEETS_CONFIG.sheetName,
+                                data: voucherData
+                            }),
+                            signal: controller.signal
+                        });
+
+                        clearTimeout(timeoutId);
+                        success = true;
+                        
+                        showToast('Đã đồng bộ với Google Sheets thành công!', 'success', 'Thành công');
+                        
+                        // Update status in approval history
+                        const now = new Date();
+                        const timestamp = now.toLocaleString('vi-VN');
+                        approvalHistory.push({
+                            timestamp: timestamp,
+                            action: 'Đồng bộ với Google Sheets',
+                            by: document.getElementById('employee').value,
+                            to: 'Google Sheets'
+                        });
+                        renderApprovalHistory();
+                        
+                    } catch (error) {
+                        retries--;
+                        if (retries > 0) {
+                            console.log(`Sync failed, retrying... (${retries} attempts left)`);
+                            await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s before retry
+                } else {
+                            throw error;
+                        }
+                    }
+                }
+
+                if (!success) {
+                    throw new Error('Không thể đồng bộ sau nhiều lần thử');
+                }
+
+            } catch (error) {
+                console.error('Error syncing with Google Sheets:', error);
+                
+                let errorMessage = 'Có lỗi xảy ra khi đồng bộ';
+                if (error.name === 'AbortError') {
+                    errorMessage = 'Request timeout. Vui lòng kiểm tra kết nối mạng và thử lại.';
+                } else if (error.message) {
+                    errorMessage = error.message;
+                }
+                
+                showToast(errorMessage + '\nĐang xuất Excel để bạn có thể import thủ công...', 'error', 'Lỗi');
+                
+                // Fallback: Export Excel
+                setTimeout(() => {
+                    exportToExcel();
+                    showToast('Đã xuất Excel. Bạn có thể import vào Google Sheets thủ công.', 'info', 'Hướng dẫn');
+                }, 1000);
+                
+            } finally {
+                // Restore button
+                const syncBtn = document.getElementById('sync-sheets-btn');
+                syncBtn.disabled = false;
+                syncBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>\n                Đồng bộ với Google Sheets';
+            }
+        }
+
+        // Function to change Spreadsheet ID
+        function changeSpreadsheetId() {
+            const currentId = GOOGLE_SHEETS_CONFIG.spreadsheetId || '(chưa có)';
+            const newId = prompt(
+                'Spreadsheet ID hiện tại: ' + currentId + '\n\n' +
+                'Nhập Spreadsheet ID mới (hoặc để trống để xóa):'
+            );
+            
+            if (newId === null) return; // User cancelled
+            
+            if (newId.trim() === '') {
+                GOOGLE_SHEETS_CONFIG.spreadsheetId = '';
+                localStorage.removeItem('google_sheets_id');
+                showToast('Đã xóa Spreadsheet ID', 'success');
+            } else {
+                GOOGLE_SHEETS_CONFIG.spreadsheetId = newId.trim();
+                localStorage.setItem('google_sheets_id', GOOGLE_SHEETS_CONFIG.spreadsheetId);
+                showToast('Đã cập nhật Spreadsheet ID', 'success');
+            }
+        }
+
+        // Template Functions
+        function saveTemplate() {
+            if (!validateAllFields()) {
+                showToast('Vui lòng điền đầy đủ thông tin trước khi lưu template', 'error', 'Lỗi validation');
+                return;
+            }
+
+            const templateName = prompt('Nhập tên template:');
+            if (!templateName) return;
+
+            const template = {
+                name: templateName,
+                company: document.getElementById('company').value,
+                voucherType: document.getElementById('voucher-type').value,
+                employee: document.getElementById('employee').value,
+                payeeName: document.getElementById('payee-name').value,
+                currency: document.getElementById('currency').value,
+                reason: document.getElementById('reason').value,
+                approver: document.getElementById('approver').value,
+                expenseItems: expenseItems.map(item => ({
+                    content: item.content,
+                    amount: item.amount
+                })),
+                createdAt: new Date().toISOString()
+            };
+
+            const templates = JSON.parse(localStorage.getItem('voucher_templates') || '[]');
+            templates.push(template);
+            localStorage.setItem('voucher_templates', JSON.stringify(templates));
+            
+            showToast(`Đã lưu template "${templateName}" thành công!`, 'success', 'Thành công');
+        }
+
+        function loadTemplate() {
+            const templates = JSON.parse(localStorage.getItem('voucher_templates') || '[]');
+            if (templates.length === 0) {
+                showToast('Chưa có template nào được lưu', 'info', 'Thông báo');
+                return;
+            }
+
+            const templateNames = templates.map((t, i) => `${i + 1}. ${t.name} (${new Date(t.createdAt).toLocaleDateString('vi-VN')})`).join('\n');
+            const choice = prompt(`Chọn template (nhập số):\n${templateNames}`);
+            const index = parseInt(choice) - 1;
+
+            if (isNaN(index) || index < 0 || index >= templates.length) {
+                showToast('Lựa chọn không hợp lệ', 'error', 'Lỗi');
+                return;
+            }
+
+            const template = templates[index];
+            document.getElementById('company').value = template.company || '';
+            document.getElementById('voucher-type').value = template.voucherType || '';
+            document.getElementById('employee').value = template.employee || '';
+            if (template.employee) updateEmployeeDepartment();
+            document.getElementById('payee-name').value = template.payeeName || '';
+            document.getElementById('currency').value = template.currency || '';
+            document.getElementById('reason').value = template.reason || '';
+            document.getElementById('approver').value = template.approver || '';
+            
+            if (template.expenseItems && template.expenseItems.length > 0) {
+                expenseItems = template.expenseItems.map(item => ({
+                    content: item.content,
+                    amount: item.amount,
+                    attachments: []
+                }));
+                renderExpenseTable();
+            }
+
+            updateCompanyDetails();
+            debounceAutoSave();
+            showToast(`Đã load template "${template.name}"`, 'success', 'Thành công');
+        }
+
+        // Searchable Dropdown Functions
+        function initializeSearchableDropdowns() {
+            const searchableSelects = ['company', 'employee', 'approver', 'payee-dropdown'];
+            searchableSelects.forEach(selectId => {
+                const select = document.getElementById(selectId);
+                if (select) {
+                    makeSearchable(select);
+                }
+            });
+        }
+
+        function makeSearchable(selectElement) {
+            const wrapper = document.createElement('div');
+            wrapper.className = 'searchable-select';
+            selectElement.parentNode.insertBefore(wrapper, selectElement);
+            wrapper.appendChild(selectElement);
+
+            const searchInput = document.createElement('input');
+            searchInput.type = 'text';
+            searchInput.className = 'search-input';
+            searchInput.placeholder = 'Tìm kiếm...';
+            wrapper.insertBefore(searchInput, selectElement);
+
+            const optionsContainer = document.createElement('div');
+            optionsContainer.className = 'dropdown-options';
+            wrapper.appendChild(optionsContainer);
+
+            function updateOptions() {
+                const searchTerm = searchInput.value.toLowerCase();
+                const options = Array.from(selectElement.options);
+                
+                optionsContainer.innerHTML = '';
+                let hasVisible = false;
+
+                options.forEach((option, index) => {
+                    if (index === 0) return; // Skip first empty option
+                    
+                    const optionDiv = document.createElement('div');
+                    optionDiv.className = 'dropdown-option';
+                    if (option.text.toLowerCase().includes(searchTerm)) {
+                        optionDiv.textContent = option.text;
+                        optionDiv.onclick = () => {
+                            selectElement.value = option.value;
+                            selectElement.dispatchEvent(new Event('change'));
+                            optionsContainer.classList.remove('show');
+                            searchInput.value = '';
+                        };
+                        optionsContainer.appendChild(optionDiv);
+                        hasVisible = true;
+                    }
+                });
+
+                if (hasVisible && searchInput.value) {
+                    optionsContainer.classList.add('show');
+                } else {
+                    optionsContainer.classList.remove('show');
+                }
+            }
+
+            searchInput.addEventListener('input', updateOptions);
+            searchInput.addEventListener('focus', () => {
+                if (searchInput.value) updateOptions();
+            });
+
+            document.addEventListener('click', (e) => {
+                if (!wrapper.contains(e.target)) {
+                    optionsContainer.classList.remove('show');
+                }
+            });
+        }
+
+        // File Preview Functions
+        function previewFileByIndex(itemIndex, fileIndex) {
+            if (!expenseItems[itemIndex] || !expenseItems[itemIndex].attachments[fileIndex]) {
+                showToast('File không tồn tại', 'error');
+                return;
+            }
+            
+            const file = expenseItems[itemIndex].attachments[fileIndex];
+            const modal = document.createElement('div');
+            modal.className = 'file-preview-modal';
+            modal.innerHTML = `
+                <button class="close-preview" onclick="this.parentElement.remove()">&times;</button>
+            `;
+
+            if (file.type.startsWith('image/')) {
+                const img = document.createElement('img');
+                img.src = URL.createObjectURL(file);
+                modal.appendChild(img);
+            } else if (file.type === 'application/pdf') {
+                const iframe = document.createElement('iframe');
+                iframe.src = URL.createObjectURL(file);
+                iframe.style.width = '90%';
+                iframe.style.height = '90%';
+                modal.appendChild(iframe);
+            } else {
+                modal.innerHTML = `
+                    <div style="color: white; text-align: center; padding: 20px;">
+                        <p style="font-size: 18px; margin-bottom: 10px;">Không thể preview file này</p>
+                        <p style="font-size: 14px; margin-bottom: 20px;">${file.name}</p>
+                        <p style="font-size: 12px; color: #ccc;">Loại file: ${file.type || 'Unknown'}</p>
+                        <p style="font-size: 12px; color: #ccc;">Kích thước: ${(file.size / 1024).toFixed(2)} KB</p>
+                        <button class="close-preview" onclick="this.parentElement.parentElement.remove()" style="margin-top: 20px;">Đóng</button>
+                    </div>
+                `;
+            }
+
+            document.body.appendChild(modal);
+            modal.classList.add('show');
+        }
+
+        function removeFileFromRow(rowIndex, fileIndex) {
+            if (expenseItems[rowIndex] && expenseItems[rowIndex].attachments) {
+                expenseItems[rowIndex].attachments.splice(fileIndex, 1);
+                renderExpenseTable();
+                debounceAutoSave();
+            }
+        }
+
+        // Expose functions globally for onclick handlers
+        window.previewFileByIndex = previewFileByIndex;
+        window.removeFileFromRow = removeFileFromRow;
+        window.changeSpreadsheetId = changeSpreadsheetId;
+        
+        function saveVoucher() {
+            if (!validateAllFields()) {
+                showToast('Vui lòng điền đầy đủ thông tin bắt buộc và kiểm tra lại các trường có lỗi', 'error', 'Lỗi validation');
+                // Scroll to first error
+                const firstError = document.querySelector('.invalid');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+                return;
+            }
+            
+            // Save to localStorage
+            saveToLocalStorage();
+            showToast('Phiếu đã được lưu thành công!', 'success', 'Thành công');
+        }
+        
+        async function sendForApproval() {
+            // Validate approver field specifically
+            const approverField = document.getElementById('approver');
+            if (!approverField.value) {
+                validateField('approver', '', 'Người phê duyệt');
+            }
+            
+            // Validate all fields including approver
+            const requiredFields = ['company', 'voucher-type', 'employee', 'payee-name', 'currency', 'reason', 'approver'];
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                const element = document.getElementById(field);
+                const fieldNames = {
+                    'company': 'Công ty',
+                    'voucher-type': 'Loại phiếu',
+                    'employee': 'Người đề nghị',
+                    'payee-name': 'Người nộp/nhận',
+                    'currency': 'Loại tiền',
+                    'reason': 'Lý do',
+                    'approver': 'Người phê duyệt'
+                };
+                if (!validateField(field, element ? element.value : '', fieldNames[field])) {
+                    isValid = false;
+                }
+            });
+
+            if (expenseItems.length === 0 || expenseItems.some(item => !item.content || item.amount === 0)) {
+                showToast('Vui lòng nhập ít nhất một dòng chi tiết và điền đầy đủ Nội dung, Số tiền', 'error');
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                showToast('Vui lòng điền đầy đủ thông tin bắt buộc và kiểm tra lại các trường có lỗi', 'error', 'Lỗi validation');
+                // Scroll to first error
+                const firstError = document.querySelector('.invalid');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+                return;
+            }
+
+            const loadingIndicator = document.getElementById('loading-indicator');
+            loadingIndicator.classList.add('show');
+            document.getElementById('send-approval-btn').disabled = true;
+
+            const voucherNumber = document.getElementById('voucher-number').value;
+            const voucherType = document.getElementById('voucher-type').value;
+            const companyName = document.getElementById('company').value;
+            const requestorName = document.getElementById('employee').value;
+            const payeeName = document.getElementById('payee-name').value;
+            const totalAmount = document.getElementById('amount').value;
+            const amountInWords = document.getElementById('amount-in-words').value;
+            const reason = document.getElementById('reason').value;
+            const voucherDate = document.getElementById('voucher-date').value;
+            const department = document.getElementById('department').value;
+
+            const selectedApproverName = document.getElementById('approver').value;
+            const selectedCompanyData = data.companies_data.find(c => c["Tên công ty"] === companyName);
+
+            // Debug: Log để kiểm tra
+            console.log('=== DEBUG EMAIL ===');
+            console.log('Selected Approver:', selectedApproverName);
+            console.log('Company Name:', companyName);
+            console.log('Company Data:', selectedCompanyData);
+            console.log('Approver Email Map:', approverEmailMap);
+            console.log('Employee Email Map:', employeeEmailMap);
+
+            // Tìm email người phê duyệt - thử nhiều cách
+            let approverEmail = approverEmailMap[selectedApproverName];
+            if (!approverEmail) {
+                // Thử tìm theo partial match
+                const approverKey = Object.keys(approverEmailMap).find(key => 
+                    key.includes(selectedApproverName) || selectedApproverName.includes(key)
+                );
+                if (approverKey) {
+                    approverEmail = approverEmailMap[approverKey];
+                    console.log('Found approver email by partial match:', approverEmail);
+                }
+            }
+
+            // Lấy email từ company data
+            const directorEmail = selectedCompanyData ? (selectedCompanyData["Email Đại diện pháp luật"] || '') : '';
+            const chiefAccountantEmail = selectedCompanyData ? (selectedCompanyData["Email Kế toán trưởng"] || '') : '';
+            const requestorEmail = employeeEmailMap[requestorName] || '';
+
+            console.log('Approver Email:', approverEmail);
+            console.log('Director Email:', directorEmail);
+            console.log('Chief Accountant Email:', chiefAccountantEmail);
+            console.log('Requestor Email:', requestorEmail);
+
+            // Tạo danh sách recipients - ưu tiên approver, sau đó là director và accountant
+            const recipients = [];
+            if (approverEmail) recipients.push(approverEmail);
+            if (directorEmail && !recipients.includes(directorEmail)) recipients.push(directorEmail);
+            if (chiefAccountantEmail && !recipients.includes(chiefAccountantEmail)) recipients.push(chiefAccountantEmail);
+            
+            const ccRecipients = [];
+            if (requestorEmail && !recipients.includes(requestorEmail)) ccRecipients.push(requestorEmail);
+
+            console.log('Final Recipients:', recipients);
+            console.log('Final CC Recipients:', ccRecipients);
+
+            if (recipients.length === 0) {
+                // Hiển thị thông tin debug chi tiết
+                let errorMsg = 'Không tìm thấy địa chỉ email người nhận.\n\n';
+                errorMsg += 'Thông tin debug:\n';
+                errorMsg += `- Người phê duyệt: ${selectedApproverName || '(chưa chọn)'}\n`;
+                errorMsg += `- Email người phê duyệt: ${approverEmail || 'Không tìm thấy'}\n`;
+                errorMsg += `- Công ty: ${companyName || '(chưa chọn)'}\n`;
+                if (selectedCompanyData) {
+                    errorMsg += `- Email Đại diện pháp luật: ${directorEmail || 'Không có'}\n`;
+                    errorMsg += `- Email Kế toán trưởng: ${chiefAccountantEmail || 'Không có'}\n`;
+                } else {
+                    errorMsg += '- Không tìm thấy dữ liệu công ty\n';
+                }
+                errorMsg += '\nVui lòng kiểm tra lại thông tin công ty và người phê duyệt.';
+                
+                alert(errorMsg);
+                showToast('Không tìm thấy địa chỉ email người nhận. Xem console để biết chi tiết.', 'error', 'Lỗi email');
+                loadingIndicator.classList.remove('show');
+                document.getElementById('send-approval-btn').disabled = false;
+                return;
+            }
+
+            const subject = `[PHIẾU ${voucherType.toUpperCase()}] Yêu cầu phê duyệt - ${voucherNumber}`;
+            
+            // Tạo link - Production URL
+            // TODO: Update URL này sau khi deploy lên web server
+            // Nếu đang test local, comment dòng dưới và uncomment phần auto-detect
+            const baseUrl = 'https://workflow.egg-ventures.com';
+            
+            // Auto-detect URL (uncomment nếu muốn tự động detect)
+            // let baseUrl;
+            // if (window.location.protocol === 'file:') {
+            //     baseUrl = '.';
+            // } else {
+            //     baseUrl = window.location.origin + window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/'));
+            // }
+            
+            // Debug: Log requestorEmail
+            console.log('=== CREATING APPROVAL LINKS ===');
+            console.log('Requestor Name:', requestorName);
+            console.log('Requestor Email:', requestorEmail);
+            console.log('Approver Email:', approverEmail);
+            
+            if (!requestorEmail || requestorEmail.trim() === '') {
+                console.warn('⚠️ WARNING: requestorEmail is empty! Email approval notification may not work.');
+                console.warn('Please check employeeEmailMap for:', requestorName);
+            }
+            
+            // Tạo query string
+            const queryParams = new URLSearchParams({
+                voucherNumber: voucherNumber,
+                voucherType: voucherType,
+                company: companyName,
+                employee: requestorName,
+                amount: totalAmount,
+                requestorEmail: requestorEmail || '',
+                approverEmail: approverEmail || ''
+            });
+            
+            console.log('Query Params:', queryParams.toString());
+            
+            const approvalLink = `${baseUrl}/approve_voucher.html?${queryParams.toString()}`;
+            const rejectionLink = `${baseUrl}/reject_voucher.html?${queryParams.toString()}`;
+            
+            console.log('Approval Link:', approvalLink);
+
+            const emailBodyHtml = `
+                <p>Kính gửi các cấp quản lý,</p>
+                <p>Phiếu <b>${voucherType}</b> số <b>${voucherNumber}</b> đã được tạo và đang chờ phê duyệt.</p>
+                <p><b>Thông tin chi tiết phiếu:</b></p>
+                <ul>
+                    <li><b>Loại phiếu:</b> ${voucherType}</li>
+                    <li><b>Số phiếu:</b> ${voucherNumber}</li>
+                    <li><b>Ngày lập:</b> ${voucherDate}</li>
+                    <li><b>Công ty:</b> ${companyName}</li>
+                    <li><b>Người đề nghị:</b> ${requestorName} (${requestorEmail || 'Không có email'})</li>
+                    <li><b>Bộ phận:</b> ${department}</li>
+                    <li><b>Người nộp/nhận:</b> ${payeeName}</li>
+                    <li><b>Tổng số tiền:</b> ${totalAmount}</li>
+                    <li><b>Số tiền bằng chữ:</b> ${amountInWords}</li>
+                    <li><b>Lý do:</b> ${reason}</li>
+                </ul>
+                <p><b>Chi tiết các khoản mục:</b></p>
+                <table style="width:100%; border-collapse: collapse; border: 1px solid #ddd;">
+                    <thead>
+                        <tr style="background-color: #f2f2f2;">
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">STT</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Nội dung</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Số tiền</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Đính kèm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${expenseItems.map((item, index) => `
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${item.content}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${formatCurrency(item.amount)}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${item.attachments.map(file => file.name).join(', ') || 'Không có'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                <p><b>Vui lòng xem xét và phê duyệt/trả lại phiếu này:</b></p>
+                <div style="margin: 20px 0;">
+                    <a href="${approvalLink}" style="background-color: #34A853; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; margin-right: 10px; display: inline-block; font-weight: bold;">✅ Phê duyệt</a>
+                    <a href="${rejectionLink}" style="background-color: #EA4335; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; display: inline-block; font-weight: bold;">❌ Trả lại / Từ chối</a>
+                </div>
+                <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
+                    <p style="margin: 0; color: #856404;"><b>Lưu ý:</b> Nếu phiếu cần chỉnh sửa, vui lòng click nút "Trả lại / Từ chối" và điền lý do. Email thông báo sẽ tự động được gửi đến người đề nghị.</p>
+                </div>
+                <p>Trân trọng,<br>Hệ thống Kế toán Tự động</p>
+            `;
+
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            const validRecipients = recipients.filter(email => emailRegex.test(email));
+            const validCCRecipients = ccRecipients.filter(email => emailRegex.test(email));
+
+            if (validRecipients.length === 0) {
+                showToast('Không có email hợp lệ để gửi. Vui lòng kiểm tra lại thông tin.', 'error', 'Lỗi email');
+                console.error('No valid email addresses found');
+                loadingIndicator.classList.remove('show');
+                document.getElementById('send-approval-btn').disabled = false;
+                return;
+            }
+
+            const payload = {
+                action: 'sendApprovalEmail',
+                email: {
+                    to: validRecipients.join(','),
+                    cc: validCCRecipients.join(','),
+                    subject: subject,
+                    body: emailBodyHtml
+                }
+            };
+
+            console.log('Valid Recipients:', validRecipients);
+            console.log('Valid CC Recipients:', validCCRecipients);
+
+            // Debug: Log payload trước khi gửi
+            console.log('=== SENDING EMAIL ===');
+            console.log('Payload:', payload);
+            console.log('Recipients:', recipients);
+            console.log('CC Recipients:', ccRecipients);
+            console.log('Google Apps Script URL:', GOOGLE_APPS_SCRIPT_WEB_APP_URL);
+
+            try {
+                const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
+                    method: 'POST',
+                    mode: 'no-cors', // Required for simple POST to Apps Script without preflight
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response received (no-cors mode, cannot read body)');
+
+                // Since mode: 'no-cors' is used, response.ok will always be false.
+                // We rely on the Apps Script to actually send the email and assume success
+                // if no network error occurs. For a more robust solution, the Apps Script
+                // should return a JSON response and the client should handle CORS.
+                // For this example, we'll assume success if the fetch completes without error.
+
+                // Update UI status and history
+                document.getElementById('approval-status-display').textContent = 'Đã gửi phê duyệt';
+                document.getElementById('approval-status-display').classList.remove('status-pending', 'status-rejected');
+                document.getElementById('approval-status-display').classList.add('status-approved');
+
+                const now = new Date();
+                const timestamp = now.toLocaleString('vi-VN');
+                approvalHistory.push({
+                    timestamp: timestamp,
+                    action: 'Gửi yêu cầu phê duyệt',
+                    by: requestorName,
+                    to: [selectedApproverName, selectedCompanyData ? selectedCompanyData["Đại diện pháp luật"] : '', selectedCompanyData ? selectedCompanyData["Kế toán trưởng"] : ''].filter(Boolean).join(', ')
+                });
+                renderApprovalHistory();
+
+                showToast(`Đã gửi yêu cầu phê duyệt cho ${validRecipients.join(', ')}${validCCRecipients.length > 0 ? ' (CC: ' + validCCRecipients.join(', ') + ')' : ''}`, 'success', 'Gửi thành công');
+
+            } catch (error) {
+                console.error('Lỗi khi gửi yêu cầu phê duyệt qua Google Apps Script:', error);
+                showToast('Không thể gửi yêu cầu phê duyệt tự động. Đang chuyển sang gửi qua email client', 'warning', 'Cảnh báo');
+                
+                // Fallback to mailto: if webhook fails
+                const mailtoLink = `mailto:${recipients.join(',')}?cc=${ccRecipients.join(',')}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBodyHtml.replace(/<[^>]*>?/gm, ''))}`; // Remove HTML for mailto body
+                window.open(mailtoLink, '_blank');
+            } finally {
+                loadingIndicator.classList.remove('show');
+                document.getElementById('send-approval-btn').disabled = false;
+            }
+        }
+
+        function renderApprovalHistory() {
+            const historyList = document.getElementById('approval-history-list');
+            historyList.innerHTML = '';
+
+            if (approvalHistory.length === 0) {
+                historyList.innerHTML = '<li>Chưa có yêu cầu phê duyệt nào được gửi.</li>';
+                return;
+            }
+
+            approvalHistory.forEach(entry => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${entry.timestamp}: ${entry.action} bởi ${entry.by} (gửi đến: ${entry.to})`;
+                historyList.appendChild(listItem);
+            });
+        }
+
+        // Expense Table Functions
+        function renderExpenseTable() {
+            const tableBody = document.getElementById('expense-table-body');
+            tableBody.innerHTML = '';
+
+            expenseItems.forEach((item, index) => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><input type="text" value="${item.content || ''}" oninput="updateExpenseItem(${index}, 'content', this.value)"></td>
+                    <td><input type="text" value="${formatCurrency(item.amount || 0)}" oninput="updateExpenseItem(${index}, 'amount', parseCurrency(this.value))" onblur="this.value = formatCurrency(parseCurrency(this.value))"></td>
+                    <td class="attachment-cell">
+                        <button type="button" class="attachment-button" onclick="triggerAttachmentInput(${index})">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                            Đính kèm (${item.attachments.length})
+                        </button>
+                        <input type="file" multiple class="hidden" id="attachment-input-${index}" onchange="handleRowFileSelect(event, ${index})">
+                        <div class="file-preview-container" id="file-preview-${index}">
+                            ${item.attachments.map((file, fileIndex) => {
+                                const fileUrl = URL.createObjectURL(file);
+                                const isImage = file.type.startsWith('image/');
+                                return `
+                                <div class="file-preview-item">
+                                    ${isImage ? `<img src="${fileUrl}" alt="${file.name}" onclick="previewFileByIndex(${index}, ${fileIndex})" style="cursor: pointer; max-width: 100px; max-height: 100px;">` : ''}
+                                    <div class="file-name" title="${file.name}">${file.name.length > 15 ? file.name.substring(0, 15) + '...' : file.name}</div>
+                                    <button class="file-remove" onclick="removeFileFromRow(${index}, ${fileIndex})" title="Xóa file">&times;</button>
+                                    ${!isImage ? `<button style="margin-top: 5px; padding: 4px 8px; font-size: 11px; background: var(--primary-color); color: white; border: none; border-radius: 3px; cursor: pointer;" onclick="previewFileByIndex(${index}, ${fileIndex})">Preview</button>` : ''}
+                                </div>
+                            `;
+                            }).join('')}
+                        </div>
+                    </td>
+                    <td><button type="button" class="remove-row-btn" onclick="removeExpenseRow(${index})">&times;</button></td>
+                `;
+            });
+            updateGrandTotal();
+        }
+
+        function addExpenseRow() {
+            expenseItems.push({ content: '', amount: 0, attachments: [] });
+            renderExpenseTable();
+            debounceAutoSave();
+        }
+
+        async function removeExpenseRow(index) {
+            const confirmed = await showConfirmation(
+                'Bạn có chắc chắn muốn xóa dòng này không?',
+                'Xác nhận xóa'
+            );
+            
+            if (confirmed) {
+            expenseItems.splice(index, 1);
+            renderExpenseTable();
+                debounceAutoSave();
+                showToast('Đã xóa dòng thành công', 'success');
+            }
+        }
+
+        function updateExpenseItem(index, field, value) {
+            expenseItems[index][field] = value;
+            if (field === 'amount') {
+                updateGrandTotal();
+            }
+            debounceAutoSave();
+        }
+
+        function triggerAttachmentInput(index) {
+            document.getElementById(`attachment-input-${index}`).click();
+        }
+
+        function handleRowFileSelect(event, index) {
+            const files = Array.from(event.target.files);
+            const validFiles = [];
+            let hasError = false;
+            
+            files.forEach(file => {
+                if (validateFile(file)) {
+                    validFiles.push(file);
+                } else {
+                    hasError = true;
+                }
+            });
+            
+            if (validFiles.length > 0) {
+                expenseItems[index].attachments = validFiles;
+            renderExpenseTable();
+                debounceAutoSave();
+                if (validFiles.length === files.length) {
+                    showToast(`Đã thêm ${validFiles.length} file thành công`, 'success');
+                } else {
+                    showToast(`Đã thêm ${validFiles.length}/${files.length} file`, 'warning');
+                }
+            } else if (!hasError) {
+                expenseItems[index].attachments = [];
+                renderExpenseTable();
+            }
+        }
+
+        function updateGrandTotal() {
+            const grandTotal = expenseItems.reduce((sum, item) => sum + (item.amount || 0), 0);
+            document.getElementById('grand-total').textContent = formatCurrency(grandTotal);
+            document.getElementById('amount').value = formatCurrency(grandTotal);
+            updateAmountInWords();
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        }
+
+        function parseCurrency(currencyString) {
+            const cleanedString = currencyString.replace(/[^0-9,.]/g, '');
+            const parts = cleanedString.split(',');
+            if (parts.length > 1) {
+                const lastPart = parts[parts.length - 1];
+                if (lastPart.length <= 3 && lastPart.includes('.')) { 
+                    return parseFloat(cleanedString.replace(/\./g, '').replace(',', '.'));
+                } else if (lastPart.length <= 3 && !lastPart.includes('.')) { 
+                    return parseFloat(cleanedString.replace(/,/g, ''));
+                }
+            }
+            return parseFloat(cleanedString.replace(/\./g, '').replace(',', '.')) || 0;
+        }
+
+        async function copyFromExcelToTable() {
+            try {
+                const text = await navigator.clipboard.readText();
+                const lines = text.split('\n').filter(line => line.trim() !== '');
+                
+                if (lines.length === 0) {
+                    alert('Không có dữ liệu để dán từ clipboard.');
+                    return;
+                }
+
+                const newItems = [];
+                lines.forEach(line => {
+                    const parts = line.split('\t');
+                    if (parts.length >= 2) {
+                        const content = parts[0] || '';
+                        const amount = parseCurrency(parts[1]) || 0;
+                        newItems.push({ content, amount, attachments: [] });
+                    }
+                });
+
+                if (newItems.length > 0) {
+                    expenseItems = newItems;
+                    renderExpenseTable();
+                    debounceAutoSave();
+                    showToast('Đã dán dữ liệu từ Excel vào bảng chi tiết thành công!', 'success', 'Thành công');
+                } else {
+                    showToast('Không thể phân tích dữ liệu dán. Vui lòng đảm bảo định dạng là "Nội dung\\tSố tiền"', 'error', 'Lỗi');
+                }
+
+            } catch (err) {
+                console.error('Failed to read clipboard contents: ', err);
+                showToast('Không thể truy cập clipboard. Vui lòng đảm bảo bạn đã cấp quyền cho trình duyệt hoặc thử nhập từ file', 'error', 'Lỗi');
+            }
+        }
+
+        function importExcelToTable() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.xlsx, .xls';
+            
+            input.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                    if (jsonData.length > 1) {
+                        const newItems = [];
+                        for (let i = 1; i < jsonData.length; i++) {
+                            const row = jsonData[i];
+                            if (row.length >= 2) {
+                                const content = row[0] || '';
+                                const amount = parseFloat(row[1]) || 0;
+                                newItems.push({ content, amount, attachments: [] });
+                            }
+                        }
+
+                        if (newItems.length > 0) {
+                            expenseItems = newItems;
+                            renderExpenseTable();
+                            debounceAutoSave();
+                            showToast('Đã nhập dữ liệu từ file Excel vào bảng chi tiết thành công!', 'success', 'Thành công');
+                        } else {
+                            showToast('Không tìm thấy dữ liệu hợp lệ trong file Excel. Vui lòng đảm bảo file có các cột "Nội dung", "Số tiền"', 'error', 'Lỗi');
+                        }
+                    } else {
+                        showToast('File Excel trống hoặc không có dữ liệu', 'error', 'Lỗi');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            });
+            
+            input.click();
+        }
+
+        /*
+         * Google Apps Script (Code.gs) for sending emails:
+         *
+         * Instructions:
+         * 1. Go to script.google.com and create a new project.
+         * 2. Copy the following code into the Code.gs file.
+         * 3. Save the project.
+         * 4. Deploy the script as a Web App:
+         *    - Click "Deploy" -> "New deployment".
+         *    - Select "Web app" as the type.
+         *    - Set "Execute as" to "Me" (your Google account).
+         *    - Set "Who has access" to "Anyone".
+         *    - Click "Deploy".
+         *    - Authorize the script if prompted (it will ask for permission to send emails on your behalf).
+         *    - Copy the "Web app URL" and replace 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE' in the HTML with this URL.
+         * 5. Test the integration by filling out the form and clicking "Gửi phê duyệt".
+         */
+        /*
+        function doPost(e) {
+            try {
+                const requestBody = JSON.parse(e.postData.contents);
+                const action = requestBody.action;
+
+                if (action === 'sendApprovalEmail') {
+                    const emailData = requestBody.email;
+                    const to = emailData.to;
+                    const cc = emailData.cc;
+                    const subject = emailData.subject;
+                    const body = emailData.body;
+
+                    GmailApp.sendEmail(to, subject, '', {
+                        htmlBody: body,
+                        cc: cc
+                    });
+
+                    return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Email sent successfully.' }))
+                        .setMimeType(ContentService.MimeType.JSON);
+                } else {
+                    return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Invalid action.' }))
+                        .setMimeType(ContentService.MimeType.JSON);
+                }
+            } catch (error) {
+                return ContentService.createTextOutput(JSON.stringify({ success: false, message: error.message }))
+                    .setMimeType(ContentService.MimeType.JSON);
+            }
+        }
+        */
+    </script>
+</body>
+</html>

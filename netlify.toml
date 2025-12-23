@@ -1,0 +1,28 @@
+# Netlify configuration file
+
+[build]
+  # No build command needed for static files
+  publish = "."
+
+[[redirects]]
+  # Redirect root to main HTML file
+  from = "/"
+  to = "/phieu_thu_chi_auto_email_working (final).html"
+  status = 200
+
+[[headers]]
+  # Security headers
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+[[headers]]
+  # CORS headers for HTML files
+  for = "/*.html"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
+
+
