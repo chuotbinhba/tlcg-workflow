@@ -1504,27 +1504,80 @@
         <!-- Step 5: Xem lại & Gửi -->
         <div class="form-step" id="step-5">
         <h2>Xem lại thông tin</h2>
-        <div class="review-section" style="background: var(--background); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
-            <div class="review-item" style="margin-bottom: 1rem;">
-                <strong>Công ty:</strong> <span id="review-company">-</span>
+        
+        <!-- Review Section - Full Details -->
+        <div class="review-section" style="background: var(--background); padding: 2rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid var(--border);">
+            <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--border);">Thông tin chung</h3>
+            
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; margin-bottom: 2rem;">
+                <div class="review-item">
+                    <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.375rem;">Công ty</div>
+                    <div style="font-size: 0.9375rem; font-weight: 500; color: var(--text-primary);" id="review-company">-</div>
+                </div>
+                <div class="review-item">
+                    <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.375rem;">Loại phiếu</div>
+                    <div style="font-size: 0.9375rem; font-weight: 500; color: var(--text-primary);" id="review-type">-</div>
+                </div>
+                <div class="review-item">
+                    <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.375rem;">Số phiếu</div>
+                    <div style="font-size: 0.9375rem; font-weight: 500; color: var(--text-primary);" id="review-number">-</div>
+                </div>
+                <div class="review-item">
+                    <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.375rem;">Ngày lập phiếu</div>
+                    <div style="font-size: 0.9375rem; font-weight: 500; color: var(--text-primary);" id="review-date">-</div>
+                </div>
+                <div class="review-item">
+                    <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.375rem;">Người đề nghị</div>
+                    <div style="font-size: 0.9375rem; font-weight: 500; color: var(--text-primary);" id="review-employee">-</div>
+                </div>
+                <div class="review-item">
+                    <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.375rem;">Bộ phận</div>
+                    <div style="font-size: 0.9375rem; font-weight: 500; color: var(--text-primary);" id="review-department">-</div>
+                </div>
+                <div class="review-item">
+                    <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.375rem;">Người nộp/nhận</div>
+                    <div style="font-size: 0.9375rem; font-weight: 500; color: var(--text-primary);" id="review-payee">-</div>
+                </div>
+                <div class="review-item">
+                    <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.375rem;">Người phê duyệt</div>
+                    <div style="font-size: 0.9375rem; font-weight: 500; color: var(--text-primary);" id="review-approver">-</div>
+                </div>
             </div>
-            <div class="review-item" style="margin-bottom: 1rem;">
-                <strong>Loại phiếu:</strong> <span id="review-type">-</span>
+            
+            <div class="review-item" style="margin-bottom: 1.5rem;">
+                <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.375rem;">Lý do</div>
+                <div style="font-size: 0.9375rem; font-weight: 500; color: var(--text-primary); padding: 0.75rem; background: white; border-radius: 6px; border: 1px solid var(--border);" id="review-reason">-</div>
             </div>
-            <div class="review-item" style="margin-bottom: 1rem;">
-                <strong>Số phiếu:</strong> <span id="review-number">-</span>
+            
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; margin-bottom: 2rem;">
+                <div class="review-item">
+                    <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.375rem;">Tổng số tiền</div>
+                    <div style="font-size: 1.125rem; font-weight: 600; color: var(--primary);" id="review-amount">-</div>
+                </div>
+                <div class="review-item">
+                    <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.375rem;">Số tiền bằng chữ</div>
+                    <div style="font-size: 0.9375rem; font-weight: 500; color: var(--text-primary); font-style: italic;" id="review-amount-words">-</div>
+                </div>
             </div>
-            <div class="review-item" style="margin-bottom: 1rem;">
-                <strong>Người đề nghị:</strong> <span id="review-employee">-</span>
-            </div>
-            <div class="review-item" style="margin-bottom: 1rem;">
-                <strong>Người nộp/nhận:</strong> <span id="review-payee">-</span>
-            </div>
-            <div class="review-item" style="margin-bottom: 1rem;">
-                <strong>Tổng số tiền:</strong> <span id="review-amount">-</span>
-            </div>
-            <div class="review-item" style="margin-bottom: 1rem;">
-                <strong>Người phê duyệt:</strong> <span id="review-approver">-</span>
+            
+            <!-- Chi tiết các khoản mục -->
+            <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary); margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--border);">Chi tiết các khoản mục</h3>
+            <div style="overflow-x: auto;">
+                <table style="width: 100%; border-collapse: collapse; background: white; border-radius: 6px; overflow: hidden;">
+                    <thead>
+                        <tr style="background: var(--background);">
+                            <th style="padding: 0.75rem; text-align: left; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; border-bottom: 2px solid var(--border);">STT</th>
+                            <th style="padding: 0.75rem; text-align: left; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; border-bottom: 2px solid var(--border);">Nội dung</th>
+                            <th style="padding: 0.75rem; text-align: right; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; border-bottom: 2px solid var(--border);">Số tiền</th>
+                            <th style="padding: 0.75rem; text-align: left; font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; border-bottom: 2px solid var(--border);">Đính kèm</th>
+                        </tr>
+                    </thead>
+                    <tbody id="review-expense-items">
+                        <tr>
+                            <td colspan="4" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">Chưa có dữ liệu</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
         
@@ -2026,20 +2079,79 @@
         
         function updateReviewSection() {
             // Update review section with current form values
-            document.getElementById('review-company').textContent = 
-                document.getElementById('company').value || '-';
-            document.getElementById('review-type').textContent = 
-                document.getElementById('voucher-type').value || '-';
+            const companySelect = document.getElementById('company');
+            const companyValue = companySelect ? companySelect.value : '';
+            document.getElementById('review-company').textContent = companyValue || '-';
+            
+            const voucherTypeSelect = document.getElementById('voucher-type');
+            const voucherTypeValue = voucherTypeSelect ? voucherTypeSelect.value : '';
+            document.getElementById('review-type').textContent = voucherTypeValue || '-';
+            
             document.getElementById('review-number').textContent = 
                 document.getElementById('voucher-number').value || '-';
+            
+            const voucherDate = document.getElementById('voucher-date').value;
+            if (voucherDate) {
+                const date = new Date(voucherDate);
+                const formattedDate = date.toLocaleDateString('vi-VN', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                document.getElementById('review-date').textContent = formattedDate;
+            } else {
+                document.getElementById('review-date').textContent = '-';
+            }
+            
             document.getElementById('review-employee').textContent = 
                 document.getElementById('employee').value || '-';
+            
+            document.getElementById('review-department').textContent = 
+                document.getElementById('department').value || '-';
+            
             document.getElementById('review-payee').textContent = 
                 document.getElementById('payee-name').value || '-';
+            
+            document.getElementById('review-reason').textContent = 
+                document.getElementById('reason').value || '-';
+            
             document.getElementById('review-amount').textContent = 
                 document.getElementById('amount').value || '-';
+            
+            const amountInWords = document.getElementById('amount-in-words').value || 
+                                  document.getElementById('amount-in-words-display').textContent;
+            document.getElementById('review-amount-words').textContent = amountInWords || '-';
+            
             document.getElementById('review-approver').textContent = 
                 document.getElementById('approver').value || '-';
+            
+            // Update expense items table
+            const reviewTableBody = document.getElementById('review-expense-items');
+            if (reviewTableBody) {
+                if (expenseItems.length === 0) {
+                    reviewTableBody.innerHTML = `
+                        <tr>
+                            <td colspan="4" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">Chưa có dữ liệu</td>
+                        </tr>
+                    `;
+                } else {
+                    reviewTableBody.innerHTML = expenseItems.map((item, index) => {
+                        const attachmentsList = item.attachments && item.attachments.length > 0 
+                            ? item.attachments.map(f => f.name).join(', ') 
+                            : 'Không có';
+                        return `
+                            <tr style="border-bottom: 1px solid var(--border);">
+                                <td style="padding: 0.75rem; font-size: 0.875rem; color: var(--text-primary);">${index + 1}</td>
+                                <td style="padding: 0.75rem; font-size: 0.875rem; color: var(--text-primary);">${item.content || '-'}</td>
+                                <td style="padding: 0.75rem; font-size: 0.875rem; color: var(--text-primary); text-align: right; font-weight: 500;">${formatCurrency(item.amount || 0)}</td>
+                                <td style="padding: 0.75rem; font-size: 0.875rem; color: var(--text-secondary);">${attachmentsList}</td>
+                            </tr>
+                        `;
+                    }).join('');
+                }
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {
