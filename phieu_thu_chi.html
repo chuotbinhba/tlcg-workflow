@@ -1,22 +1,35 @@
-<html>
+<!DOCTYPE html>
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Phiếu Thu/Chi - Hệ Thống Kế Toán</title>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <title>Phiếu Thu/Chi - TLCGroup Intranet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
     <style>
         :root {
-            --primary-color: #4285F4;
-            --secondary-color: #34A853;
-            --accent-color: #FBBC05;
-            --text-color: #202124;
-            --light-gray: #f5f5f5;
-            --border-color: #dadce0;
-            --shadow-color: rgba(0, 0, 0, 0.1);
-            --success-color: #34A853;
-            --error-color: #EA4335;
+            --primary: #3b82f6;      /* Blue-500 */
+            --primary-hover: #2563eb; /* Blue-600 */
+            --success: #10b981;      /* Emerald-500 */
+            --warning: #f59e0b;      /* Amber-500 */
+            --error: #ef4444;        /* Red-500 */
+            --text-primary: #0f172a;  /* Slate-900 */
+            --text-secondary: #64748b; /* Slate-500 */
+            --border: #e2e8f0;       /* Slate-200 */
+            --background: #f8fafc;    /* Slate-50 */
+            --card-bg: #ffffff;      /* White */
+            /* Legacy support */
+            --primary-color: #3b82f6;
+            --secondary-color: #10b981;
+            --accent-color: #f59e0b;
+            --text-color: #0f172a;
+            --light-gray: #f8fafc;
+            --border-color: #e2e8f0;
+            --shadow-color: rgba(0, 0, 0, 0.04);
+            --success-color: #10b981;
+            --error-color: #ef4444;
         }
         
         * {
@@ -25,42 +38,258 @@
             padding: 0;
         }
         
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
         body {
-            font-family: 'Roboto', sans-serif;
+            font-family: 'Inter', sans-serif;
             font-weight: 400;
             line-height: 1.6;
-            color: var(--text-color);
-            background-color: #fff;
-            padding: 20px;
+            color: var(--text-primary);
+            background: var(--background);
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        
+        /* Navigation Bar - Kissflow Style */
+        nav.sticky {
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
         }
         
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px var(--shadow-color);
-            padding: 30px;
-            border: 1px solid var(--border-color);
+            padding: 1.5rem;
         }
         
-        h1, h2 {
-            font-weight: 700;
-            color: var(--primary-color);
-            text-align: center;
-            margin-bottom: 30px;
-            font-size: 28px;
-            letter-spacing: 0.5px;
+        .form-section-container {
+            background: var(--card-bg);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.02);
+            transition: all 0.2s ease;
+            padding: 2rem;
         }
-
-        h2 {
-            font-size: 22px;
-            margin-top: 40px;
-            margin-bottom: 20px;
+        
+        .form-section-container:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 0 0 1px rgba(0, 0, 0, 0.02);
+            transform: translateY(-2px);
+        }
+        
+        h1 {
+            font-weight: 600;
+            color: var(--text-primary);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 1.25rem; /* text-xl - same as "Order to Cash" */
+            letter-spacing: -0.025em;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.2;
+        }
+        
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 1.125rem; /* text-lg on mobile */
+            }
+        }
+        
+        /* Progress Stepper */
+        .progress-stepper {
+            margin-bottom: 2rem;
+            padding: 1.5rem 0;
+        }
+        
+        .stepper-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .stepper-line {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--border);
+            z-index: 0;
+        }
+        
+        .stepper-line-progress {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+            z-index: 1;
+        }
+        
+        .stepper-step {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex: 1;
+            cursor: pointer;
+        }
+        
+        .stepper-step:not(:last-child) {
+            margin-right: 0;
+        }
+        
+        .stepper-circle {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: white;
+            border: 2px solid var(--border);
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            transition: all 0.3s ease;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stepper-step.active .stepper-circle {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: white;
+        }
+        
+        .stepper-step.completed .stepper-circle {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+        
+        .stepper-step.completed .stepper-circle::before {
+            content: '✓';
+            font-size: 1.25rem;
+        }
+        
+        .stepper-label {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 120px;
+            transition: color 0.3s ease;
+        }
+        
+        .stepper-step.active .stepper-label {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .stepper-step.completed .stepper-label {
+            color: var(--success);
+        }
+        
+        @media (max-width: 768px) {
+            .stepper-label {
+                font-size: 0.625rem;
+                max-width: 80px;
+            }
+            
+            .stepper-circle {
+                width: 32px;
+                height: 32px;
+                font-size: 0.75rem;
+            }
+        }
+        
+        /* Form Steps */
+        .form-step {
+            display: none;
+        }
+        
+        .form-step.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .step-navigation {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .step-navigation button {
+            padding: 0.625rem 1.25rem;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            transition: all 0.15s ease;
+            border: 1px solid var(--border);
+            background: white;
+            color: var(--text-primary);
+            cursor: pointer;
+        }
+        
+        .step-navigation button:hover:not(:disabled) {
+            background: var(--background);
+        }
+        
+        .step-navigation button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .step-navigation .btn-next {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .step-navigation .btn-next:hover:not(:disabled) {
+            background: var(--primary-hover);
+        }
+        
+        .step-navigation .btn-submit {
+            background: var(--success);
+            color: white;
+            border-color: var(--success);
+        }
+        
+        .step-navigation .btn-submit:hover:not(:disabled) {
+            background: #059669;
+        }
+        
+        h2 {
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            letter-spacing: -0.01em;
         }
 
         h2 .tooltip-icon {
@@ -109,9 +338,13 @@
         .form-header {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 20px;
+            margin-bottom: 2rem;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 1.5rem;
+            padding: 0;
+            background: transparent;
+            border: none;
+            margin-top: 0;
         }
         
         .company-info, .voucher-info {
@@ -120,10 +353,10 @@
         }
         
         .form-row {
-            margin-bottom: 20px;
+            margin-bottom: 1.25rem;
             display: flex;
             flex-wrap: wrap;
-            gap: 20px;
+            gap: 1.25rem;
         }
         
         .form-group {
@@ -131,27 +364,42 @@
             min-width: 250px;
         }
         
-        label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: 500;
-            color: var(--text-color);
-        }
-        
         input, select, textarea {
             width: 100%;
-            padding: 10px 15px;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            font-family: 'Roboto', sans-serif;
-            font-size: 16px;
-            transition: border-color 0.3s, box-shadow 0.3s;
+            padding: 0.625rem 0.875rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9375rem;
+            transition: all 0.15s ease;
+            background-color: white;
+            color: var(--text-primary);
+        }
+        
+        input::placeholder, textarea::placeholder {
+            color: #94a3b8;
         }
         
         input:focus, select:focus, textarea:focus {
             outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        
+        input:read-only, textarea:read-only {
+            background-color: #f8fafc;
+            color: #64748b;
+            cursor: default;
+        }
+        
+        label {
+            display: block;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 0.375rem;
+            letter-spacing: 0;
+            text-transform: none;
         }
         
         select {
@@ -167,93 +415,113 @@
         
         .button-row {
             display: flex;
-            gap: 15px;
-            margin-top: 30px;
+            gap: 0.5rem;
+            margin-top: 2rem;
             flex-wrap: wrap;
+            padding-top: 1.5rem;
+            border-top: 1px solid var(--border);
+            justify-content: flex-end;
         }
         
         button {
-            padding: 12px 24px;
+            padding: 0.625rem 1.25rem;
             border: none;
-            border-radius: 4px;
-            font-size: 16px;
+            border-radius: 6px;
+            font-size: 0.875rem;
             font-weight: 500;
             cursor: pointer;
-            transition: background-color 0.3s, transform 0.2s;
+            transition: all 0.15s ease;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
+            gap: 0.5rem;
         }
         
-        button:hover {
-            transform: translateY(-2px);
+        button:not(:disabled):hover {
+            transform: translateY(-1px);
+        }
+        
+        button:not(:disabled):active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
         }
         
         .btn-primary {
-            background-color: var(--primary-color);
+            background: var(--primary);
             color: white;
         }
         
-        .btn-primary:hover {
-            background-color: #3367d6;
+        .btn-primary:hover:not(:disabled) {
+            background: var(--primary-hover);
+            box-shadow: 0 1px 2px rgba(59, 130, 246, 0.2);
         }
         
         .btn-secondary {
             background-color: white;
-            color: var(--primary-color);
-            border: 1px solid var(--primary-color);
+            color: #475569;
+            border: 1px solid var(--border);
         }
         
-        .btn-secondary:hover {
-            background-color: #f1f5fe;
+        .btn-secondary:hover:not(:disabled) {
+            background-color: var(--background);
+            border-color: #cbd5e1;
         }
         
         .btn-success {
-            background-color: var(--success-color);
+            background: var(--success);
             color: white;
         }
         
-        .btn-success:hover {
-            background-color: #2d9047;
+        .btn-success:hover:not(:disabled) {
+            background: #059669;
+            box-shadow: 0 1px 2px rgba(16, 185, 129, 0.2);
         }
 
         .btn-danger {
-            background-color: #EA4335;
+            background-color: var(--error);
             color: white;
         }
 
-        .btn-danger:hover {
-            background-color: #d62c1c;
+        .btn-danger:hover:not(:disabled) {
+            background-color: #dc2626;
+            box-shadow: 0 1px 2px rgba(239, 68, 68, 0.2);
         }
         
         .status-indicator {
-            display: flex;
+            display: inline-flex;
             align-items: center;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 14px;
+            gap: 0.375rem;
+            padding: 0.25rem 0.625rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
             font-weight: 500;
-            margin-top: 15px;
+            letter-spacing: 0.025em;
+            margin-top: 0.5rem;
             max-width: fit-content;
+            font-family: 'Inter', sans-serif;
         }
         
         .status-pending {
-            background-color: #fff8e1;
-            color: #ff9800;
-            border: 1px solid #ffe0b2;
+            background: #fef3c7;
+            border: 1px solid #fde68a;
+            color: #92400e;
         }
         
         .status-approved {
-            background-color: #e8f5e9;
-            color: #4caf50;
-            border: 1px solid #c8e6c9;
+            background: #d1fae5;
+            border: 1px solid #a7f3d0;
+            color: #065f46;
         }
 
         .status-rejected {
-            background-color: #ffebee;
-            color: #f44336;
-            border: 1px solid #ffcdd2;
+            background: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
         }
         
         .amounts {
@@ -262,8 +530,9 @@
             gap: 10px;
             margin-top: 20px;
             padding: 15px;
-            background-color: var(--light-gray);
+            background-color: var(--background);
             border-radius: 8px;
+            border: 1px solid var(--border);
         }
         
         .amount-row {
@@ -280,17 +549,18 @@
         }
         
         .upload-container {
-            border: 2px dashed var(--border-color);
+            border: 2px dashed var(--border);
             padding: 20px;
             text-align: center;
             border-radius: 6px;
-            background-color: var(--light-gray);
-            transition: background-color 0.3s;
+            background-color: var(--background);
+            transition: all 0.15s ease;
             cursor: pointer;
         }
         
         .upload-container:hover {
-            background-color: #ebebeb;
+            background-color: #f1f5f9;
+            border-color: var(--primary);
         }
         
         .hidden {
@@ -300,8 +570,9 @@
         .company-details {
             margin-top: 15px;
             padding: 15px;
-            background-color: var(--light-gray);
+            background-color: var(--background);
             border-radius: 8px;
+            border: 1px solid var(--border);
             display: none;
         }
         
@@ -310,23 +581,27 @@
         }
         
         .approval-section {
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid var(--border-color);
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: var(--background);
         }
 
         .approval-history {
-            margin-top: 20px;
-            padding: 15px;
-            background-color: var(--light-gray);
+            margin-top: 1rem;
+            padding: 1.25rem;
+            background-color: #ffffff;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 0.875rem;
+            border: 1px solid #e5e7eb;
         }
 
         .approval-history h3 {
-            font-size: 16px;
-            margin-bottom: 10px;
-            color: var(--primary-color);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: #111827;
         }
 
         .approval-history ul {
@@ -342,11 +617,11 @@
 
         /* Expense section fields - inside Bảng kê section */
         .expense-section-fields {
-            background: #f8f9fa;
-            padding: 20px;
+            background: var(--background);
+            padding: 1.5rem;
             border-radius: 8px;
-            margin: 20px 0;
-            border: 1px solid var(--border-color);
+            margin: 1.5rem 0;
+            border: 1px solid var(--border);
         }
 
         .expense-section-fields .form-group {
@@ -359,39 +634,64 @@
 
         .expense-section-fields label {
             font-weight: 500;
-            color: var(--text-color);
-            margin-bottom: 8px;
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            text-transform: none;
+            margin-bottom: 0.375rem;
         }
 
         .expense-section-fields textarea {
             min-height: 100px;
         }
 
-        /* Table styles */
+        /* Table styles - Modern Kissflow Design */
         .expense-table-container {
-            margin-top: 30px;
-            border: 1px solid var(--border-color);
+            margin-top: 1.5rem;
+            background: white;
             border-radius: 8px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 0 0 1px rgba(0, 0, 0, 0.02);
             overflow-x: auto;
+            border: 1px solid var(--border);
         }
 
         .expense-table {
             width: 100%;
-            border-collapse: collapse;
+            border-collapse: separate;
+            border-spacing: 0;
+            background: white;
+            border-radius: 0;
+            overflow: hidden;
             min-width: 800px;
         }
 
         .expense-table th, .expense-table td {
-            padding: 12px 15px;
-            border: 1px solid var(--border-color);
+            padding: 0.75rem 1rem;
             text-align: left;
             vertical-align: top;
         }
 
         .expense-table th {
-            background-color: var(--light-gray);
-            font-weight: 500;
-            color: var(--primary-color);
+            background: var(--background);
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: #475569;
+            border-bottom: 1px solid var(--border);
+            text-transform: none;
+            letter-spacing: 0;
+        }
+        
+        .expense-table tbody tr {
+            transition: background-color 0.15s ease;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .expense-table tbody tr:hover {
+            background: var(--background);
+        }
+        
+        .expense-table tbody tr:last-child td {
+            border-bottom: none;
         }
 
         .expense-table td input[type="text"],
@@ -427,9 +727,9 @@
             flex-direction: column;
             align-items: flex-end;
             padding: 15px 20px;
-            background-color: var(--light-gray);
-            border-top: 1px solid var(--border-color);
-            border-radius: 0 0 8px 8px;
+            background-color: var(--background);
+            border-top: 1px solid var(--border);
+            border-radius: 0;
             font-weight: 700;
             font-size: 18px;
             gap: 10px;
@@ -443,12 +743,12 @@
 
         .expense-table-footer .footer-row span:first-child {
             margin-right: 10px;
-            color: var(--text-color);
+            color: var(--text-primary);
             font-weight: 600;
         }
 
         .expense-table-footer .footer-row span:last-child {
-            color: var(--primary-color);
+            color: var(--primary);
             font-weight: 700;
         }
 
@@ -566,45 +866,56 @@
             }
         }
 
-        /* Toast Notification Styles */
+        /* Toast Notification Styles - Matching Intranet */
         .toast-container {
             position: fixed;
             top: 20px;
             right: 20px;
-            z-index: 10000;
+            z-index: 9999;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
 
         .toast {
-            background-color: white;
-            border-radius: 8px;
-            padding: 16px 20px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             min-width: 300px;
             max-width: 400px;
+            padding: 16px 20px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
             display: flex;
             align-items: center;
             gap: 12px;
-            animation: slideInRight 0.3s ease;
-            border-left: 4px solid;
+            animation: slideInRight 0.3s ease-out, fadeOut 0.3s ease-in 2.7s forwards;
+            font-size: 14px;
+            font-weight: 500;
         }
 
         .toast.success {
-            border-left-color: var(--success-color);
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
         }
 
         .toast.error {
-            border-left-color: var(--error-color);
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
         }
 
         .toast.info {
-            border-left-color: var(--primary-color);
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+            color: white;
         }
 
         .toast.warning {
-            border-left-color: var(--accent-color);
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+        }
+        
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: translateX(400px);
+            }
         }
 
         .toast-icon {
@@ -932,10 +1243,66 @@
         }
     </style>
 </head>
-<body>
-    <div class="container" id="voucher-form">
+<body class="min-h-screen flex flex-col">
+    <!-- Navigation Bar - Kissflow Style + Sign In -->
+    <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
+        <div class="max-w-7xl mx-auto flex items-center justify-between">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="if(window.opener) window.close(); else window.location.href='tlcgroup-intranet.html'">
+                <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <span class="text-white text-base font-bold" style="font-family: 'Inter', sans-serif;">TLC</span>
+                </div>
+                <span class="font-semibold text-lg text-gray-900 tracking-tight" style="font-family: 'Inter', sans-serif;">TLCGroup</span>
+            </div>
+            <div class="flex items-center" style="gap: 12px;">
+                <button onclick="window.location.href='tlcgroup-intranet.html'" class="text-gray-600 hover:text-gray-900 font-medium transition flex items-center gap-2 px-3 py-2" style="background: transparent; border-radius: 8px;">
+                    <i class="fas fa-arrow-left text-sm"></i>
+                    <span>Quay lại Intranet</span>
+                </button>
+                <button onclick="window.location.href='tlcgroup-intranet.html'" class="btn-primary" style="min-height: 36px;">
+                    <i class="fas fa-sign-in-alt" style="margin-right: 6px;"></i>
+                    <span>Sign In</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <div class="flex-1 py-6">
+        <div class="container form-section-container" id="voucher-form">
         <h1 id="form-title">PHIẾU THU/CHI</h1>
         
+        <!-- Progress Stepper -->
+        <div class="progress-stepper">
+            <div class="stepper-container">
+                <div class="stepper-line"></div>
+                <div class="stepper-line-progress" id="stepper-progress"></div>
+                <div class="stepper-step active" data-step="1" onclick="goToStep(1)">
+                    <div class="stepper-circle">1</div>
+                    <div class="stepper-label">Thông tin cơ bản</div>
+                </div>
+                <div class="stepper-step" data-step="2" onclick="goToStep(2)">
+                    <div class="stepper-circle">2</div>
+                    <div class="stepper-label">Thông tin đối tượng</div>
+                </div>
+                <div class="stepper-step" data-step="3" onclick="goToStep(3)">
+                    <div class="stepper-circle">3</div>
+                    <div class="stepper-label">Chi tiết chi phí</div>
+                </div>
+                <div class="stepper-step" data-step="4" onclick="goToStep(4)">
+                    <div class="stepper-circle">4</div>
+                    <div class="stepper-label">Phê duyệt</div>
+                </div>
+                <div class="stepper-step" data-step="5" onclick="goToStep(5)">
+                    <div class="stepper-circle">5</div>
+                    <div class="stepper-label">Xem lại & Gửi</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Step 1: Thông tin cơ bản -->
+        <div class="form-step active" id="step-1">
         <div class="form-header">
             <div class="company-info">
                 <div class="form-group">
@@ -952,7 +1319,7 @@
             <div class="voucher-info">
                 <div class="form-group">
                     <label for="voucher-type">Loại phiếu:</label>
-                    <select id="voucher-type" name="voucher-type" required>
+                    <select id="voucher-type" name="voucher-type" required onchange="updateVoucherTitle()">
                         <option value="">-- Chọn loại phiếu --</option>
                     </select>
                     <div class="error-message"></div>
@@ -982,6 +1349,14 @@
             </div>
         </div>
         
+        <div class="step-navigation">
+            <button type="button" disabled class="btn-prev">← Quay lại</button>
+            <button type="button" class="btn-next" onclick="goToStep(2)">Tiếp theo →</button>
+        </div>
+        </div>
+        
+        <!-- Step 2: Thông tin đối tượng -->
+        <div class="form-step" id="step-2">
         <h2>Thông tin đối tượng</h2>
         <div class="form-row">
             <div class="form-group">
@@ -1011,7 +1386,15 @@
                 <input type="text" id="amount" name="amount" required readonly>
             </div>
         </div>
-
+        
+        <div class="step-navigation">
+            <button type="button" class="btn-prev" onclick="goToStep(1)">← Quay lại</button>
+            <button type="button" class="btn-next" onclick="goToStep(3)">Tiếp theo →</button>
+        </div>
+        </div>
+        
+        <!-- Step 3: Chi tiết chi phí -->
+        <div class="form-step" id="step-3">
         <h2>
             Bảng kê tài liệu đính kèm
             <span class="tooltip-icon">
@@ -1080,6 +1463,14 @@
             </div>
         </div>
         
+        <div class="step-navigation">
+            <button type="button" class="btn-prev" onclick="goToStep(2)">← Quay lại</button>
+            <button type="button" class="btn-next" onclick="goToStep(4)">Tiếp theo →</button>
+        </div>
+        </div>
+        
+        <!-- Step 4: Phê duyệt -->
+        <div class="form-step" id="step-4">
         <div class="approval-section">
             <div class="form-row">
                 <div class="form-group">
@@ -1092,7 +1483,7 @@
                 <div class="form-group">
                     <label for="approval-status-display">Trạng thái phê duyệt:</label>
                     <div class="status-indicator status-pending" id="approval-status-display">
-                        Chờ phê duyệt
+                        Pending
                     </div>
                 </div>
             </div>
@@ -1101,6 +1492,39 @@
                 <ul id="approval-history-list">
                     <li>Chưa có yêu cầu phê duyệt nào được gửi.</li>
                 </ul>
+            </div>
+        </div>
+        
+        <div class="step-navigation">
+            <button type="button" class="btn-prev" onclick="goToStep(3)">← Quay lại</button>
+            <button type="button" class="btn-next" onclick="goToStep(5)">Tiếp theo →</button>
+        </div>
+        </div>
+        
+        <!-- Step 5: Xem lại & Gửi -->
+        <div class="form-step" id="step-5">
+        <h2>Xem lại thông tin</h2>
+        <div class="review-section" style="background: var(--background); padding: 1.5rem; border-radius: 8px; margin-bottom: 1.5rem;">
+            <div class="review-item" style="margin-bottom: 1rem;">
+                <strong>Công ty:</strong> <span id="review-company">-</span>
+            </div>
+            <div class="review-item" style="margin-bottom: 1rem;">
+                <strong>Loại phiếu:</strong> <span id="review-type">-</span>
+            </div>
+            <div class="review-item" style="margin-bottom: 1rem;">
+                <strong>Số phiếu:</strong> <span id="review-number">-</span>
+            </div>
+            <div class="review-item" style="margin-bottom: 1rem;">
+                <strong>Người đề nghị:</strong> <span id="review-employee">-</span>
+            </div>
+            <div class="review-item" style="margin-bottom: 1rem;">
+                <strong>Người nộp/nhận:</strong> <span id="review-payee">-</span>
+            </div>
+            <div class="review-item" style="margin-bottom: 1rem;">
+                <strong>Tổng số tiền:</strong> <span id="review-amount">-</span>
+            </div>
+            <div class="review-item" style="margin-bottom: 1rem;">
+                <strong>Người phê duyệt:</strong> <span id="review-approver">-</span>
             </div>
         </div>
         
@@ -1146,7 +1570,18 @@
                 Load Template
             </button>
         </div>
+        
+        <div class="step-navigation">
+            <button type="button" class="btn-prev" onclick="goToStep(4)">← Quay lại</button>
+            <button type="button" class="btn-submit" onclick="sendForApproval()">Gửi phê duyệt</button>
+        </div>
+        </div>
     </div>
+    
+    <!-- Footer - Matching Intranet Style -->
+    <footer class="mt-auto border-t border-slate-200 py-6 bg-white text-center text-xs text-slate-400">
+        <p>&copy; 2025 TLCGroup. All rights reserved.</p>
+    </footer>
     
     <!-- Toast Notification Container -->
     <div class="toast-container" id="toast-container"></div>
@@ -1184,7 +1619,7 @@
         // 8. Click "Deploy".
         // 9. Copy the "Web app URL" and paste it here.
         // 10. Ensure your Google account has permissions to send emails via Gmail (usually default).
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyLJ_5Hgfmg-Z-3nxCzlyFlKItOC7ZOuXSTvvj6P_MjeX_8TtG2ZN2otLD2afUqLM_8/exec';
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbygQ9jwYhSAFOqnj3MKGKVMrzTLl1ekVlGtirAjxAGRbl6CayU-jtgBzSV-XOWl51Z6/exec';
 
         // Initialize email mappings based on provided exact emails and company data
         const employeeEmailMap = {
@@ -1236,6 +1671,7 @@
         let autoSaveTimeout = null;
         const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
         const AUTO_SAVE_DELAY = 2000; // 2 seconds
+        let currentStep = 1; // Current step in the stepper
 
         // Toast Notification Functions
         function showToast(message, type = 'info', title = '') {
@@ -1422,7 +1858,10 @@
                     
                     // Restore form fields
                     if (formData.company) document.getElementById('company').value = formData.company;
-                    if (formData.voucherType) document.getElementById('voucher-type').value = formData.voucherType;
+                    if (formData.voucherType) {
+                        document.getElementById('voucher-type').value = formData.voucherType;
+                        updateVoucherTitle(); // Update title when loading saved data
+                    }
                     if (formData.employee) {
                         document.getElementById('employee').value = formData.employee;
                         updateEmployeeDepartment();
@@ -1493,6 +1932,116 @@
             return true;
         }
 
+        // Function to update voucher title based on voucher type
+        function updateVoucherTitle() {
+            const voucherType = document.getElementById('voucher-type').value;
+            const titleElement = document.getElementById('form-title');
+            
+            if (voucherType === 'Thu') {
+                titleElement.textContent = 'PHIẾU THU';
+            } else if (voucherType === 'Chi') {
+                titleElement.textContent = 'PHIẾU CHI';
+            } else {
+                titleElement.textContent = 'PHIẾU THU/CHI';
+            }
+        }
+        
+        // Step Navigation Functions
+        function validateStep(step) {
+            switch(step) {
+                case 1:
+                    const company = document.getElementById('company').value;
+                    const voucherType = document.getElementById('voucher-type').value;
+                    const employee = document.getElementById('employee').value;
+                    return company && voucherType && employee;
+                case 2:
+                    const payeeName = document.getElementById('payee-name').value;
+                    const reason = document.getElementById('reason').value;
+                    return payeeName && reason;
+                case 3:
+                    const currency = document.getElementById('currency').value;
+                    return currency && expenseItems.length > 0 && 
+                           expenseItems.every(item => item.content && item.amount > 0);
+                case 4:
+                    const approver = document.getElementById('approver').value;
+                    return approver;
+                case 5:
+                    return true; // Review step, no validation needed
+                default:
+                    return false;
+            }
+        }
+        
+        function goToStep(step) {
+            // Validate current step before moving
+            if (step > currentStep && !validateStep(currentStep)) {
+                showToast('Vui lòng điền đầy đủ thông tin ở bước hiện tại', 'error', 'Thiếu thông tin');
+                return;
+            }
+            
+            // Hide all steps
+            document.querySelectorAll('.form-step').forEach(stepEl => {
+                stepEl.classList.remove('active');
+            });
+            
+            // Show target step
+            const targetStep = document.getElementById(`step-${step}`);
+            if (targetStep) {
+                targetStep.classList.add('active');
+                currentStep = step;
+                updateStepperProgress();
+                
+                // Update review section if on step 5
+                if (step === 5) {
+                    updateReviewSection();
+                }
+                
+                // Scroll to top of form
+                document.getElementById('voucher-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        }
+        
+        function updateStepperProgress() {
+            // Update stepper visual state
+            const steps = document.querySelectorAll('.stepper-step');
+            const progressLine = document.getElementById('stepper-progress');
+            
+            steps.forEach((stepEl, index) => {
+                const stepNum = index + 1;
+                stepEl.classList.remove('active', 'completed');
+                
+                if (stepNum < currentStep) {
+                    stepEl.classList.add('completed');
+                } else if (stepNum === currentStep) {
+                    stepEl.classList.add('active');
+                }
+            });
+            
+            // Update progress line
+            if (progressLine) {
+                const progress = ((currentStep - 1) / (steps.length - 1)) * 100;
+                progressLine.style.width = `${progress}%`;
+            }
+        }
+        
+        function updateReviewSection() {
+            // Update review section with current form values
+            document.getElementById('review-company').textContent = 
+                document.getElementById('company').value || '-';
+            document.getElementById('review-type').textContent = 
+                document.getElementById('voucher-type').value || '-';
+            document.getElementById('review-number').textContent = 
+                document.getElementById('voucher-number').value || '-';
+            document.getElementById('review-employee').textContent = 
+                document.getElementById('employee').value || '-';
+            document.getElementById('review-payee').textContent = 
+                document.getElementById('payee-name').value || '-';
+            document.getElementById('review-amount').textContent = 
+                document.getElementById('amount').value || '-';
+            document.getElementById('review-approver').textContent = 
+                document.getElementById('approver').value || '-';
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             initializeForm();
             setCurrentDate();
@@ -1501,6 +2050,12 @@
 
             // Load saved data
             loadFromLocalStorage();
+            
+            // Update title based on initial voucher type value
+            updateVoucherTitle();
+            
+            // Initialize stepper
+            updateStepperProgress();
 
             // Add event listeners for buttons
             document.getElementById('export-pdf-btn').addEventListener('click', exportToPDF);
@@ -1878,7 +2433,7 @@
                 }
 
                 // Check Google Apps Script URL
-                if (!GOOGLE_APPS_SCRIPT_WEB_APP_URL || GOOGLE_APPS_SCRIPT_WEB_APP_URL === 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+                if (!GOOGLE_APPS_SCRIPT_WEB_APP_URL || GOOGLE_APPS_SCRIPT_WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbygQ9jwYhSAFOqnj3MKGKVMrzTLl1ekVlGtirAjxAGRbl6CayU-jtgBzSV-XOWl51Z6/exec') {
                     const setupUrl = confirm('Chưa cấu hình Google Apps Script URL.\n\nBạn có muốn xem hướng dẫn setup không?');
                     if (setupUrl) {
                         showToast('Vui lòng xem file GOOGLE_APPS_SCRIPT_SETUP.md để biết cách cấu hình', 'info', 'Hướng dẫn');
@@ -2523,15 +3078,17 @@
                 // For this example, we'll assume success if the fetch completes without error.
 
                 // Update UI status and history
-                document.getElementById('approval-status-display').textContent = 'Đã gửi phê duyệt';
-                document.getElementById('approval-status-display').classList.remove('status-pending', 'status-rejected');
-                document.getElementById('approval-status-display').classList.add('status-approved');
+                // Update status display with proper status text
+                const statusDisplay = document.getElementById('approval-status-display');
+                statusDisplay.textContent = 'Pending'; // Show "Pending" when sent for approval
+                statusDisplay.classList.remove('status-pending', 'status-rejected', 'status-approved');
+                statusDisplay.classList.add('status-pending');
 
                 const now = new Date();
                 const timestamp = now.toLocaleString('vi-VN');
                 approvalHistory.push({
                     timestamp: timestamp,
-                    action: 'Gửi yêu cầu phê duyệt',
+                    action: 'Pending',
                     by: requestorName,
                     to: [selectedApproverName, selectedCompanyData ? selectedCompanyData["Đại diện pháp luật"] : '', selectedCompanyData ? selectedCompanyData["Kế toán trưởng"] : ''].filter(Boolean).join(', ')
                 });
@@ -2584,7 +3141,6 @@
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
                             Đính kèm (${item.attachments.length})
                         </button>
-                        <input type="file" multiple class="hidden" id="attachment-input-${index}" onchange="handleRowFileSelect(event, ${index})">
                         <div class="file-preview-container" id="file-preview-${index}">
                             ${item.attachments.map((file, fileIndex) => {
                                 const fileUrl = URL.createObjectURL(file);
@@ -2635,7 +3191,37 @@
         }
 
         function triggerAttachmentInput(index) {
-            document.getElementById(`attachment-input-${index}`).click();
+            // Use a global hidden file input that's always accessible
+            let globalFileInput = document.getElementById('global-attachment-input');
+            if (!globalFileInput) {
+                // Create global file input if it doesn't exist
+                globalFileInput = document.createElement('input');
+                globalFileInput.type = 'file';
+                globalFileInput.multiple = true;
+                globalFileInput.id = 'global-attachment-input';
+                globalFileInput.style.position = 'fixed';
+                globalFileInput.style.left = '-9999px';
+                globalFileInput.style.opacity = '0';
+                globalFileInput.style.width = '1px';
+                globalFileInput.style.height = '1px';
+                globalFileInput.style.overflow = 'hidden';
+                document.body.appendChild(globalFileInput);
+            }
+            
+            // Store the index for when file is selected
+            globalFileInput.setAttribute('data-row-index', index);
+            
+            // Clear previous value to allow selecting same file again
+            globalFileInput.value = '';
+            
+            // Set up one-time event listener
+            const handleFileSelect = (event) => {
+                handleRowFileSelect(event, index);
+                globalFileInput.removeEventListener('change', handleFileSelect);
+            };
+            
+            globalFileInput.addEventListener('change', handleFileSelect);
+            globalFileInput.click();
         }
 
         function handleRowFileSelect(event, index) {

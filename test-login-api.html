@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Login API</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .test-section { background: #f5f5f5; padding: 20px; margin: 20px 0; border-radius: 8px; }
+        button { background: #4285F4; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #357ae8; }
+        pre { background: #fff; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        input { width: 100%; padding: 8px; margin: 5px 0; border: 1px solid #ddd; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test Login API</h1>
+    
+    <div class="test-section">
+        <h2>1. Test Web App URL</h2>
+        <input type="text" id="web-app-url" placeholder="Paste Web App URL here" style="width: 100%;">
+        <button onclick="testURL()">Test URL</button>
+        <pre id="url-result"></pre>
+    </div>
+    
+    <div class="test-section">
+        <h2>2. Test Login</h2>
+        <input type="email" id="test-email" placeholder="Email" value="chinh.nguyen@mediainsider.vn">
+        <input type="password" id="test-password" placeholder="Password">
+        <button onclick="testLogin()">Test Login</button>
+        <pre id="login-result"></pre>
+    </div>
+    
+    <div class="test-section">
+        <h2>3. Console Logs</h2>
+        <p>Open Browser Console (F12) to see detailed logs</p>
+    </div>
+
+    <script>
+        async function testURL() {
+            const url = document.getElementById('web-app-url').value;
+            const resultEl = document.getElementById('url-result');
+            
+            if (!url) {
+                resultEl.textContent = 'Please enter Web App URL';
+                return;
+            }
+            
+            resultEl.textContent = 'Testing...';
+            
+            try {
+                console.log('Testing URL:', url);
+                const response = await fetch(url, {
+                    method: 'GET'
+                });
+                
+                const text = await response.text();
+                resultEl.textContent = `Status: ${response.status}\nOK: ${response.ok}\nResponse: ${text.substring(0, 200)}`;
+                console.log('URL test result:', { status: response.status, ok: response.ok, text });
+            } catch (error) {
+                resultEl.textContent = `Error: ${error.name}\nMessage: ${error.message}`;
+                console.error('URL test error:', error);
+            }
+        }
+        
+        async function testLogin() {
+            const url = document.getElementById('web-app-url').value;
+            const email = document.getElementById('test-email').value;
+            const password = document.getElementById('test-password').value;
+            const resultEl = document.getElementById('login-result');
+            
+            if (!url || !email || !password) {
+                resultEl.textContent = 'Please fill in all fields';
+                return;
+            }
+            
+            resultEl.textContent = 'Testing login...';
+            
+            try {
+                console.log('=== TEST LOGIN ===');
+                console.log('URL:', url);
+                console.log('Email:', email);
+                console.log('Password:', '***');
+                
+                const requestBody = {
+                    action: 'login',
+                    email: email,
+                    password: password
+                };
+                
+                console.log('Request body:', requestBody);
+                
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(requestBody)
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response ok:', response.ok);
+                console.log('Response headers:', [...response.headers.entries()]);
+                
+                const responseText = await response.text();
+                console.log('Response text:', responseText);
+                console.log('Response text length:', responseText.length);
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                    console.log('Parsed result:', result);
+                } catch (parseError) {
+                    console.error('Parse error:', parseError);
+                    resultEl.textContent = `Status: ${response.status}\nResponse (not JSON):\n${responseText.substring(0, 500)}`;
+                    return;
+                }
+                
+                resultEl.textContent = JSON.stringify(result, null, 2);
+                
+                if (result.success) {
+                    console.log('✅ Login successful!');
+                    console.log('User data:', result.data);
+                } else {
+                    console.error('❌ Login failed:', result.message);
+                }
+                
+            } catch (error) {
+                console.error('=== ERROR ===');
+                console.error('Error name:', error.name);
+                console.error('Error message:', error.message);
+                console.error('Error stack:', error.stack);
+                
+                resultEl.textContent = `Error: ${error.name}\nMessage: ${error.message}\n\nCheck console for details.`;
+            }
+        }
+    </script>
+</body>
+</html>
+

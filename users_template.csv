@@ -1,0 +1,6 @@
+email,password,name,role,isAdmin,employeeId,department,status
+admin@tlcgroup.com,a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3,Super Admin,System Administrator,TRUE,ADM-001,IT,Active
+chinh@tlcgroup.com,5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8,Nguyễn Văn Chinh,Finance Manager,FALSE,EMP-001,Finance,Active
+linh@tlcgroup.com,5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8,Lê Thùy Linh,Operations Manager,FALSE,EMP-002,Operations,Active
+luc@tlcgroup.com,5e884898da28047151d0e56f8dc6292773603d0d6aabbdd62a11ef721d1542d8,Nguyễn Lực,Accountant,FALSE,EMP-003,Accounting,Active
+
