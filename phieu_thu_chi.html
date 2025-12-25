@@ -2216,9 +2216,24 @@
                     `;
                 } else {
                     reviewTableBody.innerHTML = expenseItems.map((item, index) => {
-                        const attachmentsList = item.attachments && item.attachments.length > 0 
-                            ? item.attachments.map(f => f.name).join(', ') 
-                            : 'Không có';
+                        // Handle attachments - can be File objects or plain objects with name property
+                        let attachmentsList = 'Không có';
+                        if (item.attachments && Array.isArray(item.attachments) && item.attachments.length > 0) {
+                            const fileNames = item.attachments.map(f => {
+                                // Handle both File objects and plain objects
+                                if (f instanceof File) {
+                                    return f.name;
+                                } else if (f && typeof f === 'object' && f.name) {
+                                    return f.name;
+                                }
+                                return '';
+                            }).filter(name => name); // Remove empty strings
+                            
+                            if (fileNames.length > 0) {
+                                attachmentsList = fileNames.join(', ');
+                            }
+                        }
+                        
                         return `
                             <tr style="border-bottom: 1px solid var(--border);">
                                 <td style="padding: 0.75rem; font-size: 0.875rem; color: var(--text-primary);">${index + 1}</td>
@@ -3195,14 +3210,34 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${expenseItems.map((item, index) => `
+                        ${expenseItems.map((item, index) => {
+                            // Handle attachments - can be File objects or plain objects with name property
+                            let attachmentsList = 'Không có';
+                            if (item.attachments && Array.isArray(item.attachments) && item.attachments.length > 0) {
+                                const fileNames = item.attachments.map(f => {
+                                    // Handle both File objects and plain objects
+                                    if (f instanceof File) {
+                                        return f.name;
+                                    } else if (f && typeof f === 'object' && f.name) {
+                                        return f.name;
+                                    }
+                                    return '';
+                                }).filter(name => name); // Remove empty strings
+                                
+                                if (fileNames.length > 0) {
+                                    attachmentsList = fileNames.join(', ');
+                                }
+                            }
+                            
+                            return `
                             <tr>
                                 <td style="padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
-                                <td style="padding: 8px; border: 1px solid #ddd;">${item.content}</td>
-                                <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${formatCurrency(item.amount)}</td>
-                                <td style="padding: 8px; border: 1px solid #ddd;">${item.attachments.map(file => file.name).join(', ') || 'Không có'}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${item.content || '-'}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${formatCurrency(item.amount || 0)}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${attachmentsList}</td>
                             </tr>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </tbody>
                 </table>
                 <p><b>Vui lòng xem xét và phê duyệt/trả lại phiếu này:</b></p>
@@ -3245,14 +3280,34 @@
                         </tr>
                     </thead>
                     <tbody>
-                        ${expenseItems.map((item, index) => `
+                        ${expenseItems.map((item, index) => {
+                            // Handle attachments - can be File objects or plain objects with name property
+                            let attachmentsList = 'Không có';
+                            if (item.attachments && Array.isArray(item.attachments) && item.attachments.length > 0) {
+                                const fileNames = item.attachments.map(f => {
+                                    // Handle both File objects and plain objects
+                                    if (f instanceof File) {
+                                        return f.name;
+                                    } else if (f && typeof f === 'object' && f.name) {
+                                        return f.name;
+                                    }
+                                    return '';
+                                }).filter(name => name); // Remove empty strings
+                                
+                                if (fileNames.length > 0) {
+                                    attachmentsList = fileNames.join(', ');
+                                }
+                            }
+                            
+                            return `
                             <tr>
                                 <td style="padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
-                                <td style="padding: 8px; border: 1px solid #ddd;">${item.content}</td>
-                                <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${formatCurrency(item.amount)}</td>
-                                <td style="padding: 8px; border: 1px solid #ddd;">${item.attachments.map(file => file.name).join(', ') || 'Không có'}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${item.content || '-'}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${formatCurrency(item.amount || 0)}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${attachmentsList}</td>
                             </tr>
-                        `).join('')}
+                            `;
+                        }).join('')}
                     </tbody>
                 </table>
                 <p style="color: #666; font-style: italic;">Email thông báo kết quả phê duyệt sẽ được gửi đến bạn sau khi người phê duyệt xử lý.</p>

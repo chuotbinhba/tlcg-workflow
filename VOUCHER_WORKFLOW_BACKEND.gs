@@ -147,17 +147,27 @@ function doPost(e) {
 
     Logger.log('Action: ' + action);
     Logger.log('Request body: ' + JSON.stringify(requestBody));
+    Logger.log('Request body type: ' + typeof requestBody);
+    Logger.log('Request body keys: ' + (requestBody ? Object.keys(requestBody).join(', ') : 'null'));
 
     switch (action) {
       case 'login':
         return handleLogin_(requestBody);
       case 'sendApprovalEmail':
+        Logger.log('=== ROUTING TO handleSendEmail ===');
+        Logger.log('requestBody.email: ' + JSON.stringify(requestBody.email));
+        Logger.log('requestBody.requesterEmail: ' + JSON.stringify(requestBody.requesterEmail));
+        Logger.log('requestBody.voucher: ' + JSON.stringify(requestBody.voucher));
         return handleSendEmail(requestBody);
       case 'syncToSheets':
         return handleSyncToSheets(requestBody);
       case 'approveVoucher':
+        Logger.log('=== ROUTING TO handleApproveVoucher ===');
+        Logger.log('requestBody.voucher: ' + JSON.stringify(requestBody.voucher));
         return handleApproveVoucher(requestBody);
       case 'rejectVoucher':
+        Logger.log('=== ROUTING TO handleRejectVoucher ===');
+        Logger.log('requestBody.voucher: ' + JSON.stringify(requestBody.voucher));
         return handleRejectVoucher(requestBody);
       case 'getVoucherSummary':
         return handleGetVoucherSummary();
@@ -177,6 +187,12 @@ function doGet(e) {
   try {
     Logger.log('=== doGet called ===');
     Logger.log('e.parameter: ' + JSON.stringify(e.parameter));
+    Logger.log('All parameters:');
+    if (e.parameter) {
+      Object.keys(e.parameter).forEach(key => {
+        Logger.log('  ' + key + ': ' + e.parameter[key]);
+      });
+    }
 
     const action = e.parameter ? e.parameter.action : null;
     Logger.log('Action: ' + action);
@@ -195,12 +211,20 @@ function doGet(e) {
         rejectedBy    : e.parameter.rejectedBy    || e.parameter.approverEmail || ''
       };
 
+      Logger.log('=== PARSED VOUCHER FROM GET ===');
+      Logger.log('voucherNumber: ' + voucher.voucherNumber);
+      Logger.log('requestorEmail: ' + voucher.requestorEmail);
+      Logger.log('approverEmail: ' + voucher.approverEmail);
+      Logger.log('Full voucher: ' + JSON.stringify(voucher));
+
       const requestBody = { action, voucher };
       Logger.log('Request from GET: ' + JSON.stringify(requestBody));
 
       if (action === 'approveVoucher') {
+        Logger.log('=== CALLING handleApproveVoucher FROM GET ===');
         return handleApproveVoucher(requestBody);
       } else {
+        Logger.log('=== CALLING handleRejectVoucher FROM GET ===');
         return handleRejectVoucher(requestBody);
       }
     }
@@ -209,6 +233,7 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.TEXT);
   } catch (error) {
     Logger.log('Error in doGet: ' + error.toString());
+    Logger.log('Error stack: ' + (error.stack || 'No stack'));
     return ContentService.createTextOutput('Error: ' + error.message)
       .setMimeType(ContentService.MimeType.TEXT);
   }
@@ -218,20 +243,44 @@ function doGet(e) {
 
 function handleSendEmail(requestBody) {
   try {
+    Logger.log('=== handleSendEmail START ===');
+    Logger.log('Full requestBody: ' + JSON.stringify(requestBody));
+    
     const emailData = requestBody.email;
     const requesterEmailData = requestBody.requesterEmail || null;
     const voucher   = requestBody.voucher || {};
+
+    Logger.log('emailData: ' + JSON.stringify(emailData));
+    Logger.log('requesterEmailData: ' + JSON.stringify(requesterEmailData));
+    Logger.log('voucher: ' + JSON.stringify(voucher));
+
+    if (!emailData) {
+      Logger.log('❌ ERROR: emailData is missing');
+      return createResponse(false, 'Email data is required');
+    }
 
     const to      = emailData.to;
     const cc      = emailData.cc || '';
     const subject = emailData.subject;
     const body    = emailData.body;
 
-    if (!to) return createResponse(false, 'Recipient email is required');
+    Logger.log('Email TO: ' + to);
+    Logger.log('Email CC: ' + cc);
+    Logger.log('Email Subject: ' + subject);
+
+    if (!to) {
+      Logger.log('❌ ERROR: Recipient email (TO) is required');
+      return createResponse(false, 'Recipient email is required');
+    }
 
     // Send email to APPROVERS (with buttons)
-    GmailApp.sendEmail(to, subject, '', { htmlBody: body, cc });
-    Logger.log('✅ Email sent to approvers: ' + to);
+    try {
+      GmailApp.sendEmail(to, subject, '', { htmlBody: body, cc });
+      Logger.log('✅ Email sent to approvers: ' + to);
+    } catch (approverEmailError) {
+      Logger.log('❌ ERROR sending email to approvers: ' + approverEmailError.toString());
+      return createResponse(false, 'Failed to send email to approvers: ' + approverEmailError.message);
+    }
     
     // Send separate email to REQUESTER (info only, no buttons)
     // Try multiple sources for requester email
@@ -239,30 +288,40 @@ function handleSendEmail(requestBody) {
     let requesterSubject = null;
     let requesterBody = null;
     
+    Logger.log('=== CHECKING REQUESTER EMAIL ===');
+    Logger.log('requesterEmailData: ' + JSON.stringify(requesterEmailData));
+    Logger.log('voucher.requestorEmail: ' + (voucher.requestorEmail || 'NOT FOUND'));
+    
     // Priority 1: requesterEmailData.to from frontend
     if (requesterEmailData && requesterEmailData.to && requesterEmailData.to.trim() !== '') {
       requesterTo = requesterEmailData.to;
-      requesterSubject = requesterEmailData.subject || subject;
-      requesterBody = requesterEmailData.body || body;
-      Logger.log('📧 Using requesterEmailData.to: ' + requesterTo);
+      requesterSubject = requesterEmailData.subject || `[THÔNG BÁO] Phiếu ${voucher.voucherType || ''} ${voucher.voucherNumber || ''} đã được gửi phê duyệt`;
+      requesterBody = requesterEmailData.body || body.replace(/<a href="[^"]*">.*?<\/a>/g, ''); // Remove buttons
+      Logger.log('📧 Priority 1: Using requesterEmailData.to: ' + requesterTo);
     }
     // Priority 2: voucher.requestorEmail
     else if (voucher.requestorEmail && voucher.requestorEmail.trim() !== '') {
       requesterTo = voucher.requestorEmail;
       requesterSubject = `[THÔNG BÁO] Phiếu ${voucher.voucherType || ''} ${voucher.voucherNumber || ''} đã được gửi phê duyệt`;
-      requesterBody = requesterEmailData ? requesterEmailData.body : body.replace(/<a href="[^"]*">.*?<\/a>/g, ''); // Remove buttons
-      Logger.log('📧 Using voucher.requestorEmail: ' + requesterTo);
+      requesterBody = requesterEmailData && requesterEmailData.body ? requesterEmailData.body : body.replace(/<a href="[^"]*">.*?<\/a>/g, ''); // Remove buttons
+      Logger.log('📧 Priority 2: Using voucher.requestorEmail: ' + requesterTo);
     }
     
     if (requesterTo) {
+      Logger.log('📧 Sending requester notification email to: ' + requesterTo);
+      Logger.log('📧 Subject: ' + requesterSubject);
       try {
         GmailApp.sendEmail(requesterTo, requesterSubject, '', { htmlBody: requesterBody });
         Logger.log('✅ Info email sent to requester: ' + requesterTo);
       } catch (emailError) {
-        Logger.log('❌ Error sending requester email: ' + emailError.toString());
+        Logger.log('❌ ERROR sending requester email: ' + emailError.toString());
+        Logger.log('Error stack: ' + emailError.stack);
+        // Don't fail the whole request if requester email fails
       }
     } else {
       Logger.log('⚠️ WARNING: No requester email found. Requester will not receive notification.');
+      Logger.log('⚠️ requesterEmailData: ' + JSON.stringify(requesterEmailData));
+      Logger.log('⚠️ voucher.requestorEmail: ' + (voucher.requestorEmail || 'NOT SET'));
     }
 
     // Ghi lịch sử SUBMIT nếu có thông tin voucher
@@ -462,7 +521,9 @@ function handleApproveVoucher(requestBody) {
     }
 
     const lastAction = getLastActionForVoucher_(voucherNumber);
+    Logger.log('Last action for voucher: ' + lastAction);
     if (lastAction === 'Approved' || lastAction === 'Rejected') {
+      Logger.log('⚠️ Voucher already processed: ' + lastAction);
       return createResponse(false, 'Voucher already processed: ' + lastAction);
     }
 
@@ -479,6 +540,7 @@ function handleApproveVoucher(requestBody) {
       requestorEmail,
       approverEmail
     });
+    Logger.log('✅ History appended');
 
     const subject = `[ĐÃ PHÊ DUYỆT] Phiếu ${voucherType.toUpperCase()} - ${voucherNumber}`;
     const emailBodyHtml = [
@@ -488,9 +550,14 @@ function handleApproveVoucher(requestBody) {
       `<p>Trân trọng,<br>Hệ thống Kế toán Tự động</p>`
     ].join('');
 
+    Logger.log('📧 Preparing to send approval notification email');
+    Logger.log('📧 To: ' + requestorEmail);
+    Logger.log('📧 Subject: ' + subject);
+
     const options = { htmlBody: emailBodyHtml };
     if (approverEmail && approverEmail.trim() !== '') {
       options.cc = approverEmail;
+      Logger.log('📧 CC: ' + approverEmail);
     }
     
     try {
@@ -499,7 +566,9 @@ function handleApproveVoucher(requestBody) {
       return createResponse(true, 'Voucher approved and email sent to ' + requestorEmail);
     } catch (emailError) {
       Logger.log('❌ ERROR sending approval email: ' + emailError.toString());
-      Logger.log('Error details: ' + JSON.stringify(emailError));
+      Logger.log('Error name: ' + emailError.name);
+      Logger.log('Error message: ' + emailError.message);
+      Logger.log('Error stack: ' + (emailError.stack || 'No stack'));
       return createResponse(false, 'Voucher approved but failed to send email: ' + emailError.message);
     }
   } catch (error) {
@@ -550,7 +619,9 @@ function handleRejectVoucher(requestBody) {
     }
 
     const lastAction = getLastActionForVoucher_(voucherNumber);
+    Logger.log('Last action for voucher: ' + lastAction);
     if (lastAction === 'Approved' || lastAction === 'Rejected') {
+      Logger.log('⚠️ Voucher already processed: ' + lastAction);
       return createResponse(false, 'Voucher already processed: ' + lastAction);
     }
 
@@ -567,6 +638,7 @@ function handleRejectVoucher(requestBody) {
       requestorEmail,
       approverEmail
     });
+    Logger.log('✅ History appended');
 
     const subject = `[TRẢ LẠI] Phiếu ${voucherType.toUpperCase()} - ${voucherNumber}`;
     const emailBodyHtml = [
@@ -578,11 +650,16 @@ function handleRejectVoucher(requestBody) {
       `<p>Trân trọng,<br>Hệ thống Kế toán Tự động</p>`
     ].join('');
 
+    Logger.log('📧 Preparing to send rejection notification email');
+    Logger.log('📧 To: ' + requestorEmail);
+    Logger.log('📧 Subject: ' + subject);
+
     const options = {
       htmlBody: emailBodyHtml
     };
     if (approverEmail && approverEmail.trim() !== '') {
       options.cc = approverEmail;
+      Logger.log('📧 CC: ' + approverEmail);
     }
     
     try {
@@ -591,7 +668,9 @@ function handleRejectVoucher(requestBody) {
       return createResponse(true, 'Voucher rejected and email sent to ' + requestorEmail);
     } catch (emailError) {
       Logger.log('❌ ERROR sending rejection email: ' + emailError.toString());
-      Logger.log('Error details: ' + JSON.stringify(emailError));
+      Logger.log('Error name: ' + emailError.name);
+      Logger.log('Error message: ' + emailError.message);
+      Logger.log('Error stack: ' + (emailError.stack || 'No stack'));
       return createResponse(false, 'Voucher rejected but failed to send email: ' + emailError.message);
     }
   } catch (error) {
