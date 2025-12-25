@@ -2206,16 +2206,52 @@
             document.getElementById('review-status').textContent = statusText;
             
             // Update expense items table
+            // First, try to get data from DOM (expense table) to ensure we have the latest data
+            const expenseTableBody = document.getElementById('expense-table-body');
+            let currentExpenseItems = expenseItems; // Use global expenseItems as default
+            
+            // If expense table exists, try to extract data from it
+            if (expenseTableBody && expenseTableBody.rows.length > 0) {
+                currentExpenseItems = [];
+                Array.from(expenseTableBody.rows).forEach((row, index) => {
+                    const cells = row.cells;
+                    if (cells.length >= 3) {
+                        const contentInput = cells[1].querySelector('input');
+                        const amountInput = cells[2].querySelector('input');
+                        const content = contentInput ? contentInput.value.trim() : '';
+                        const amount = amountInput ? parseCurrency(amountInput.value) : 0;
+                        
+                        // Get attachments from the row's expenseItems entry if available
+                        const attachments = (expenseItems[index] && expenseItems[index].attachments) 
+                            ? expenseItems[index].attachments 
+                            : [];
+                        
+                        if (content || amount > 0) {
+                            currentExpenseItems.push({
+                                content: content,
+                                amount: amount,
+                                attachments: attachments
+                            });
+                        }
+                    }
+                });
+            }
+            
             const reviewTableBody = document.getElementById('review-expense-items');
             if (reviewTableBody) {
-                if (expenseItems.length === 0) {
+                console.log('=== updateReviewSection: expenseItems ===', currentExpenseItems);
+                console.log('expenseItems length:', currentExpenseItems ? currentExpenseItems.length : 0);
+                
+                if (!currentExpenseItems || currentExpenseItems.length === 0) {
                     reviewTableBody.innerHTML = `
                         <tr>
                             <td colspan="4" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">Chưa có dữ liệu</td>
                         </tr>
                     `;
                 } else {
-                    reviewTableBody.innerHTML = expenseItems.map((item, index) => {
+                    const tableRows = currentExpenseItems.map((item, index) => {
+                        console.log(`Processing item ${index}:`, item);
+                        
                         // Handle attachments - can be File objects or plain objects with name property
                         let attachmentsList = 'Không có';
                         if (item.attachments && Array.isArray(item.attachments) && item.attachments.length > 0) {
@@ -2234,17 +2270,36 @@
                             }
                         }
                         
+                        const content = item.content || '-';
+                        const amount = item.amount || 0;
+                        const formattedAmount = formatCurrency(amount);
+                        
+                        console.log(`Item ${index} - Content: "${content}", Amount: ${amount}, Attachments: ${attachmentsList}`);
+                        
                         return `
                             <tr style="border-bottom: 1px solid var(--border);">
                                 <td style="padding: 0.75rem; font-size: 0.875rem; color: var(--text-primary);">${index + 1}</td>
-                                <td style="padding: 0.75rem; font-size: 0.875rem; color: var(--text-primary);">${item.content || '-'}</td>
-                                <td style="padding: 0.75rem; font-size: 0.875rem; color: var(--text-primary); text-align: right; font-weight: 500;">${formatCurrency(item.amount || 0)}</td>
-                                <td style="padding: 0.75rem; font-size: 0.875rem; color: var(--text-secondary);">${attachmentsList}</td>
+                                <td style="padding: 0.75rem; font-size: 0.875rem; color: var(--text-primary);">${escapeHtml(content)}</td>
+                                <td style="padding: 0.75rem; font-size: 0.875rem; color: var(--text-primary); text-align: right; font-weight: 500;">${formattedAmount}</td>
+                                <td style="padding: 0.75rem; font-size: 0.875rem; color: var(--text-secondary);">${escapeHtml(attachmentsList)}</td>
                             </tr>
                         `;
                     }).join('');
+                    
+                    console.log('Generated table rows:', tableRows);
+                    reviewTableBody.innerHTML = tableRows;
                 }
+            } else {
+                console.error('review-expense-items element not found!');
             }
+        }
+        
+        // Helper function to escape HTML
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
         }
 
         document.addEventListener('DOMContentLoaded', function() {
