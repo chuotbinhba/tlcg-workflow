@@ -2151,59 +2151,73 @@
         
         function updateReviewSection() {
             // Update review section with current form values
+            // Helper function to safely set text content
+            const safeSetText = (id, value) => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.textContent = value || '-';
+                } else {
+                    console.warn(`Element with id "${id}" not found`);
+                }
+            };
+            
             const companySelect = document.getElementById('company');
             const companyValue = companySelect ? companySelect.value : '';
-            document.getElementById('review-company').textContent = companyValue || '-';
+            safeSetText('review-company', companyValue);
             
             const voucherTypeSelect = document.getElementById('voucher-type');
             const voucherTypeValue = voucherTypeSelect ? voucherTypeSelect.value : '';
-            document.getElementById('review-type').textContent = voucherTypeValue || '-';
+            safeSetText('review-type', voucherTypeValue);
             
-            document.getElementById('review-number').textContent = 
-                document.getElementById('voucher-number').value || '-';
+            const voucherNumber = document.getElementById('voucher-number');
+            safeSetText('review-number', voucherNumber ? voucherNumber.value : '');
             
-            const voucherDate = document.getElementById('voucher-date').value;
-            if (voucherDate) {
-                const date = new Date(voucherDate);
-                const formattedDate = date.toLocaleDateString('vi-VN', { 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit'
-                });
-                document.getElementById('review-date').textContent = formattedDate;
-            } else {
-                document.getElementById('review-date').textContent = '-';
-            }
+            // Display current date/time (when submitting), not the form date
+            const now = new Date();
+            const formattedDate = now.toLocaleDateString('vi-VN', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            safeSetText('review-date', `lúc ${formattedDate}`);
             
-            document.getElementById('review-employee').textContent = 
-                document.getElementById('employee').value || '-';
+            const employee = document.getElementById('employee');
+            safeSetText('review-employee', employee ? employee.value : '');
             
-            document.getElementById('review-department').textContent = 
-                document.getElementById('department').value || '-';
+            const department = document.getElementById('department');
+            safeSetText('review-department', department ? department.value : '');
             
-            document.getElementById('review-payee').textContent = 
-                document.getElementById('payee-name').value || '-';
+            const payeeName = document.getElementById('payee-name');
+            safeSetText('review-payee', payeeName ? payeeName.value : '');
             
-            document.getElementById('review-reason').textContent = 
-                document.getElementById('reason').value || '-';
+            const reason = document.getElementById('reason');
+            safeSetText('review-reason', reason ? reason.value : '');
             
-            document.getElementById('review-amount').textContent = 
-                document.getElementById('amount').value || '-';
+            const amount = document.getElementById('amount');
+            safeSetText('review-amount', amount ? amount.value : '');
             
-            const amountInWords = document.getElementById('amount-in-words').value || 
-                                  document.getElementById('amount-in-words-display').textContent;
-            document.getElementById('review-amount-words').textContent = amountInWords || '-';
+            const amountInWordsInput = document.getElementById('amount-in-words');
+            const amountInWordsDisplay = document.getElementById('amount-in-words-display');
+            const amountInWords = (amountInWordsInput && amountInWordsInput.value) || 
+                                  (amountInWordsDisplay ? amountInWordsDisplay.textContent : '');
+            safeSetText('review-amount-words', amountInWords);
             
             const approverValue = document.getElementById('approver').value || '-';
-            document.getElementById('review-approver').textContent = approverValue;
-            document.getElementById('review-approver-display').textContent = approverValue;
+            const reviewApproverDisplay = document.getElementById('review-approver-display');
+            if (reviewApproverDisplay) {
+                reviewApproverDisplay.textContent = approverValue;
+            }
+            // Note: review-approver element doesn't exist, only review-approver-display exists
             
             // Update status
             const statusDisplay = document.getElementById('approval-status-display');
             const statusText = statusDisplay ? statusDisplay.textContent : 'Pending';
-            document.getElementById('review-status').textContent = statusText;
+            const reviewStatus = document.getElementById('review-status');
+            if (reviewStatus) {
+                reviewStatus.textContent = statusText;
+            }
             
             // Update expense items table
             // First, try to get data from DOM (expense table) to ensure we have the latest data
@@ -3237,6 +3251,17 @@
             
             console.log('Approval Link:', approvalLink);
 
+            // Get current date/time for submission (not the form date)
+            const now = new Date();
+            const currentDateTime = now.toLocaleDateString('vi-VN', { 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+            const formattedSubmitDateTime = `lúc ${currentDateTime}`;
+
             // Email body for APPROVERS (with buttons)
             const approverEmailBodyHtml = `
                 <p>Kính gửi các cấp quản lý,</p>
@@ -3245,7 +3270,7 @@
                 <ul>
                     <li><b>Loại phiếu:</b> ${voucherType}</li>
                     <li><b>Số phiếu:</b> ${voucherNumber}</li>
-                    <li><b>Ngày lập:</b> ${voucherDate}</li>
+                    <li><b>Ngày lập phiếu:</b> ${formattedSubmitDateTime}</li>
                     <li><b>Công ty:</b> ${companyName}</li>
                     <li><b>Người đề nghị:</b> ${requestorName} (${requestorEmail || 'Không có email'})</li>
                     <li><b>Bộ phận:</b> ${department}</li>
@@ -3314,7 +3339,7 @@
                 <ul>
                     <li><b>Loại phiếu:</b> ${voucherType}</li>
                     <li><b>Số phiếu:</b> ${voucherNumber}</li>
-                    <li><b>Ngày lập:</b> ${voucherDate}</li>
+                    <li><b>Ngày lập phiếu:</b> ${formattedSubmitDateTime}</li>
                     <li><b>Công ty:</b> ${companyName}</li>
                     <li><b>Người đề nghị:</b> ${requestorName}</li>
                     <li><b>Bộ phận:</b> ${department}</li>
