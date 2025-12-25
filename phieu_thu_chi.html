@@ -3167,7 +3167,8 @@
             
             console.log('Approval Link:', approvalLink);
 
-            const emailBodyHtml = `
+            // Email body for APPROVERS (with buttons)
+            const approverEmailBodyHtml = `
                 <p>Kính gửi các cấp quản lý,</p>
                 <p>Phiếu <b>${voucherType}</b> số <b>${voucherNumber}</b> đã được tạo và đang chờ phê duyệt.</p>
                 <p><b>Thông tin chi tiết phiếu:</b></p>
@@ -3214,6 +3215,49 @@
                 </div>
                 <p>Trân trọng,<br>Hệ thống Kế toán Tự động</p>
             `;
+            
+            // Email body for REQUESTER (info only, NO buttons)
+            const requesterEmailBodyHtml = `
+                <p>Kính gửi ${requestorName},</p>
+                <p>Phiếu <b>${voucherType}</b> số <b>${voucherNumber}</b> đã được gửi để phê duyệt.</p>
+                <p><b>Thông tin chi tiết phiếu:</b></p>
+                <ul>
+                    <li><b>Loại phiếu:</b> ${voucherType}</li>
+                    <li><b>Số phiếu:</b> ${voucherNumber}</li>
+                    <li><b>Ngày lập:</b> ${voucherDate}</li>
+                    <li><b>Công ty:</b> ${companyName}</li>
+                    <li><b>Người đề nghị:</b> ${requestorName}</li>
+                    <li><b>Bộ phận:</b> ${department}</li>
+                    <li><b>Người nộp/nhận:</b> ${payeeName}</li>
+                    <li><b>Tổng số tiền:</b> ${totalAmount}</li>
+                    <li><b>Số tiền bằng chữ:</b> ${amountInWords}</li>
+                    <li><b>Lý do:</b> ${reason}</li>
+                    <li><b>Người phê duyệt:</b> ${selectedApproverName}</li>
+                </ul>
+                <p><b>Chi tiết các khoản mục:</b></p>
+                <table style="width:100%; border-collapse: collapse; border: 1px solid #ddd;">
+                    <thead>
+                        <tr style="background-color: #f2f2f2;">
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">STT</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Nội dung</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Số tiền</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Đính kèm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${expenseItems.map((item, index) => `
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${item.content}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${formatCurrency(item.amount)}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${item.attachments.map(file => file.name).join(', ') || 'Không có'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                <p style="color: #666; font-style: italic;">Email thông báo kết quả phê duyệt sẽ được gửi đến bạn sau khi người phê duyệt xử lý.</p>
+                <p>Trân trọng,<br>Hệ thống Kế toán Tự động</p>
+            `;
 
             // Validate email format
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -3232,9 +3276,27 @@
                 action: 'sendApprovalEmail',
                 email: {
                     to: validRecipients.join(','),
-                    cc: validCCRecipients.join(','),
+                    cc: '', // No CC - requester will get separate email
                     subject: subject,
-                    body: emailBodyHtml
+                    body: approverEmailBodyHtml // Email with buttons for approvers
+                },
+                requesterEmail: {
+                    to: validCCRecipients.join(','), // Requester gets separate email
+                    subject: `[THÔNG BÁO] Phiếu ${voucherType} ${voucherNumber} đã được gửi phê duyệt`,
+                    body: requesterEmailBodyHtml // Email without buttons for requester
+                },
+                voucher: {
+                    voucherNumber: voucherNumber,
+                    voucherType: voucherType,
+                    company: companyName,
+                    employee: requestorName,
+                    amount: totalAmount,
+                    requestorEmail: requestorEmail || '',
+                    approverEmail: approverEmail || '',
+                    voucherDate: voucherDate,
+                    department: department,
+                    payeeName: payeeName,
+                    reason: reason
                 }
             };
 

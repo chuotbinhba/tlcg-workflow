@@ -219,6 +219,7 @@ function doGet(e) {
 function handleSendEmail(requestBody) {
   try {
     const emailData = requestBody.email;
+    const requesterEmailData = requestBody.requesterEmail || null;
     const voucher   = requestBody.voucher || {};
 
     const to      = emailData.to;
@@ -228,8 +229,19 @@ function handleSendEmail(requestBody) {
 
     if (!to) return createResponse(false, 'Recipient email is required');
 
+    // Send email to APPROVERS (with buttons)
     GmailApp.sendEmail(to, subject, '', { htmlBody: body, cc });
-    Logger.log('Email sent successfully to: ' + to);
+    Logger.log('✅ Email sent to approvers: ' + to);
+    
+    // Send separate email to REQUESTER (info only, no buttons)
+    if (requesterEmailData && requesterEmailData.to) {
+      const requesterTo = requesterEmailData.to;
+      const requesterSubject = requesterEmailData.subject || subject;
+      const requesterBody = requesterEmailData.body || body;
+      
+      GmailApp.sendEmail(requesterTo, requesterSubject, '', { htmlBody: requesterBody });
+      Logger.log('✅ Info email sent to requester: ' + requesterTo);
+    }
 
     // Ghi lịch sử SUBMIT nếu có thông tin voucher
     if (voucher.voucherNumber) {
