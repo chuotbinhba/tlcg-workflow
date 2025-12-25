@@ -1386,7 +1386,7 @@
                 <input type="text" id="amount" name="amount" required readonly>
             </div>
         </div>
-        
+
         <div class="step-navigation">
             <button type="button" class="btn-prev" onclick="goToStep(1)">← Quay lại</button>
             <button type="button" class="btn-next" onclick="goToStepAfterEdit(3)">Tiếp theo →</button>
@@ -3270,6 +3270,12 @@
                 loadingIndicator.classList.remove('show');
                 document.getElementById('send-approval-btn').disabled = false;
                 return;
+            }
+            
+            // Ensure requester email is included even if not in CC
+            if (!validCCRecipients.includes(requestorEmail) && requestorEmail && emailRegex.test(requestorEmail)) {
+                validCCRecipients.push(requestorEmail);
+                console.log('Added requestor email to notification list:', requestorEmail);
             }
 
             const payload = {

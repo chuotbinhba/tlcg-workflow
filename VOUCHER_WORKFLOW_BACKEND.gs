@@ -234,13 +234,35 @@ function handleSendEmail(requestBody) {
     Logger.log('✅ Email sent to approvers: ' + to);
     
     // Send separate email to REQUESTER (info only, no buttons)
-    if (requesterEmailData && requesterEmailData.to) {
-      const requesterTo = requesterEmailData.to;
-      const requesterSubject = requesterEmailData.subject || subject;
-      const requesterBody = requesterEmailData.body || body;
-      
-      GmailApp.sendEmail(requesterTo, requesterSubject, '', { htmlBody: requesterBody });
-      Logger.log('✅ Info email sent to requester: ' + requesterTo);
+    // Try multiple sources for requester email
+    let requesterTo = null;
+    let requesterSubject = null;
+    let requesterBody = null;
+    
+    // Priority 1: requesterEmailData.to from frontend
+    if (requesterEmailData && requesterEmailData.to && requesterEmailData.to.trim() !== '') {
+      requesterTo = requesterEmailData.to;
+      requesterSubject = requesterEmailData.subject || subject;
+      requesterBody = requesterEmailData.body || body;
+      Logger.log('📧 Using requesterEmailData.to: ' + requesterTo);
+    }
+    // Priority 2: voucher.requestorEmail
+    else if (voucher.requestorEmail && voucher.requestorEmail.trim() !== '') {
+      requesterTo = voucher.requestorEmail;
+      requesterSubject = `[THÔNG BÁO] Phiếu ${voucher.voucherType || ''} ${voucher.voucherNumber || ''} đã được gửi phê duyệt`;
+      requesterBody = requesterEmailData ? requesterEmailData.body : body.replace(/<a href="[^"]*">.*?<\/a>/g, ''); // Remove buttons
+      Logger.log('📧 Using voucher.requestorEmail: ' + requesterTo);
+    }
+    
+    if (requesterTo) {
+      try {
+        GmailApp.sendEmail(requesterTo, requesterSubject, '', { htmlBody: requesterBody });
+        Logger.log('✅ Info email sent to requester: ' + requesterTo);
+      } catch (emailError) {
+        Logger.log('❌ Error sending requester email: ' + emailError.toString());
+      }
+    } else {
+      Logger.log('⚠️ WARNING: No requester email found. Requester will not receive notification.');
     }
 
     // Ghi lịch sử SUBMIT nếu có thông tin voucher
@@ -408,9 +430,13 @@ function createDetailSheet(spreadsheet, voucherNumber, expenseItems) {
 
 function handleApproveVoucher(requestBody) {
   try {
-    Logger.log('=== APPROVE VOUCHER === ' + JSON.stringify(requestBody));
+    Logger.log('=== APPROVE VOUCHER ===');
+    Logger.log('Request body: ' + JSON.stringify(requestBody));
     const voucher = requestBody.voucher;
-    if (!voucher) return createResponse(false, 'Voucher data is required');
+    if (!voucher) {
+      Logger.log('❌ ERROR: No voucher data in request body');
+      return createResponse(false, 'Voucher data is required');
+    }
 
     const voucherNumber  = voucher.voucherNumber || '';
     const voucherType    = voucher.voucherType   || '';
@@ -419,10 +445,21 @@ function handleApproveVoucher(requestBody) {
     const amount         = voucher.amount        || '';
     const requestorEmail = voucher.requestorEmail|| '';
     const approverEmail  = voucher.approverEmail || '';
-    const approvedBy     = voucher.approvedBy    || approverEmail;
+    const approvedBy     = voucher.approvedBy    || approverEmail || 'Unknown';
 
-    if (!voucherNumber)  return createResponse(false, 'voucherNumber is required');
-    if (!requestorEmail) return createResponse(false, 'Requestor email is required');
+    Logger.log('Voucher Number: ' + voucherNumber);
+    Logger.log('Requestor Email: ' + requestorEmail);
+    Logger.log('Approver Email: ' + approverEmail);
+    Logger.log('Approved By: ' + approvedBy);
+
+    if (!voucherNumber) {
+      Logger.log('❌ ERROR: voucherNumber is required');
+      return createResponse(false, 'voucherNumber is required');
+    }
+    if (!requestorEmail || requestorEmail.trim() === '') {
+      Logger.log('❌ ERROR: Requestor email is required but empty');
+      return createResponse(false, 'Requestor email is required');
+    }
 
     const lastAction = getLastActionForVoucher_(voucherNumber);
     if (lastAction === 'Approved' || lastAction === 'Rejected') {
@@ -452,10 +489,19 @@ function handleApproveVoucher(requestBody) {
     ].join('');
 
     const options = { htmlBody: emailBodyHtml };
-    if (approverEmail) options.cc = approverEmail;
-    GmailApp.sendEmail(requestorEmail, subject, '', options);
-
-    return createResponse(true, 'Voucher approved and email sent to ' + requestorEmail);
+    if (approverEmail && approverEmail.trim() !== '') {
+      options.cc = approverEmail;
+    }
+    
+    try {
+      GmailApp.sendEmail(requestorEmail, subject, '', options);
+      Logger.log('✅ Approval notification email sent successfully to: ' + requestorEmail);
+      return createResponse(true, 'Voucher approved and email sent to ' + requestorEmail);
+    } catch (emailError) {
+      Logger.log('❌ ERROR sending approval email: ' + emailError.toString());
+      Logger.log('Error details: ' + JSON.stringify(emailError));
+      return createResponse(false, 'Voucher approved but failed to send email: ' + emailError.message);
+    }
   } catch (error) {
     Logger.log('Error approving voucher: ' + error.toString());
     return createResponse(false, 'Error approving voucher: ' + error.message);
@@ -466,9 +512,13 @@ function handleApproveVoucher(requestBody) {
 
 function handleRejectVoucher(requestBody) {
   try {
-    Logger.log('=== REJECT VOUCHER === ' + JSON.stringify(requestBody));
+    Logger.log('=== REJECT VOUCHER ===');
+    Logger.log('Request body: ' + JSON.stringify(requestBody));
     const voucher = requestBody.voucher;
-    if (!voucher) return createResponse(false, 'Voucher data is required');
+    if (!voucher) {
+      Logger.log('❌ ERROR: No voucher data in request body');
+      return createResponse(false, 'Voucher data is required');
+    }
 
     const voucherNumber  = voucher.voucherNumber || '';
     const voucherType    = voucher.voucherType   || '';
@@ -478,11 +528,26 @@ function handleRejectVoucher(requestBody) {
     const requestorEmail = voucher.requestorEmail|| '';
     const approverEmail  = voucher.approverEmail || '';
     const rejectReason   = voucher.rejectReason  || '';
-    const rejectedBy     = voucher.rejectedBy    || approverEmail;
+    const rejectedBy     = voucher.rejectedBy    || approverEmail || 'Unknown';
 
-    if (!voucherNumber)  return createResponse(false, 'voucherNumber is required');
-    if (!requestorEmail) return createResponse(false, 'Requestor email is required');
-    if (!rejectReason)   return createResponse(false, 'Reject reason is required');
+    Logger.log('Voucher Number: ' + voucherNumber);
+    Logger.log('Requestor Email: ' + requestorEmail);
+    Logger.log('Approver Email: ' + approverEmail);
+    Logger.log('Reject Reason: ' + rejectReason);
+    Logger.log('Rejected By: ' + rejectedBy);
+
+    if (!voucherNumber) {
+      Logger.log('❌ ERROR: voucherNumber is required');
+      return createResponse(false, 'voucherNumber is required');
+    }
+    if (!requestorEmail || requestorEmail.trim() === '') {
+      Logger.log('❌ ERROR: Requestor email is required but empty');
+      return createResponse(false, 'Requestor email is required');
+    }
+    if (!rejectReason || rejectReason.trim() === '') {
+      Logger.log('❌ ERROR: Reject reason is required but empty');
+      return createResponse(false, 'Reject reason is required');
+    }
 
     const lastAction = getLastActionForVoucher_(voucherNumber);
     if (lastAction === 'Approved' || lastAction === 'Rejected') {
@@ -513,12 +578,22 @@ function handleRejectVoucher(requestBody) {
       `<p>Trân trọng,<br>Hệ thống Kế toán Tự động</p>`
     ].join('');
 
-    GmailApp.sendEmail(requestorEmail, subject, '', {
-      htmlBody: emailBodyHtml,
-      cc: approverEmail || ''
-    });
-
-    return createResponse(true, 'Voucher rejected and email sent');
+    const options = {
+      htmlBody: emailBodyHtml
+    };
+    if (approverEmail && approverEmail.trim() !== '') {
+      options.cc = approverEmail;
+    }
+    
+    try {
+      GmailApp.sendEmail(requestorEmail, subject, '', options);
+      Logger.log('✅ Rejection notification email sent successfully to: ' + requestorEmail);
+      return createResponse(true, 'Voucher rejected and email sent to ' + requestorEmail);
+    } catch (emailError) {
+      Logger.log('❌ ERROR sending rejection email: ' + emailError.toString());
+      Logger.log('Error details: ' + JSON.stringify(emailError));
+      return createResponse(false, 'Voucher rejected but failed to send email: ' + emailError.message);
+    }
   } catch (error) {
     Logger.log('Error rejecting voucher: ' + error.toString());
     return createResponse(false, 'Error rejecting voucher: ' + error.message);
