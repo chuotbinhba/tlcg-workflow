@@ -2484,6 +2484,16 @@
             return `${year}-${month}-${day}`;
         }
         
+        // Helper function to convert File to base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+                reader.readAsDataURL(file);
+            });
+        }
+        
         function setCurrentDate() {
             const formattedDate = getCurrentVoucherDate();
             const voucherDateInput = document.getElementById('voucher-date');
@@ -2790,33 +2800,40 @@
                 syncBtn.disabled = true;
                 syncBtn.innerHTML = '<div class="spinner" style="width: 16px; height: 16px; border-width: 2px;"></div> Đang đồng bộ...';
 
-                // Collect file information (names and sizes only)
-                const filesInfo = [];
+                // Collect files for upload to Drive
+                const filesToUpload = [];
                 for (let i = 0; i < expenseItems.length; i++) {
                     const item = expenseItems[i];
                     if (item.attachments && item.attachments.length > 0) {
                         for (const file of item.attachments) {
                             if (file instanceof File) {
-                                filesInfo.push({
-                                    rowIndex: i,
-                                    fileName: file.name,
-                                    fileSize: file.size,
-                                    fileType: file.type
-                                });
+                                try {
+                                    // Convert file to base64
+                                    const base64Data = await fileToBase64(file);
+                                    filesToUpload.push({
+                                        fileName: file.name,
+                                        fileData: base64Data,
+                                        mimeType: file.type,
+                                        fileSize: file.size,
+                                        rowIndex: i
+                                    });
+                                } catch (err) {
+                                    console.error('Error converting file to base64:', file.name, err);
+                                }
                             }
                         }
                     }
                 }
 
                 // Log file information for verification
-                console.log('=== FILE TRACKING INFO ===');
+                console.log('=== FILE UPLOAD INFO ===');
                 console.log('Total expense items:', expenseItems.length);
-                console.log('Files info collected:', filesInfo.length);
-                if (filesInfo.length > 0) {
+                console.log('Files to upload:', filesToUpload.length);
+                if (filesToUpload.length > 0) {
                     console.log('Files details:');
-                    filesInfo.forEach((f, idx) => {
+                    filesToUpload.forEach((f, idx) => {
                         const sizeMB = (f.fileSize / (1024 * 1024)).toFixed(2);
-                        console.log(`  ${idx + 1}. Row ${f.rowIndex}: ${f.fileName} (${sizeMB} MB, ${f.fileType})`);
+                        console.log(`  ${idx + 1}. Row ${f.rowIndex}: ${f.fileName} (${sizeMB} MB, ${f.mimeType})`);
                     });
                 } else {
                     console.log('No files attached');
@@ -2845,7 +2862,7 @@
                         attachmentNames: item.attachments.map(f => f instanceof File ? f.name : f.name || 'Unknown').join(', ')
                     })),
                     approvalHistory: approvalHistory,
-                    filesInfo: filesInfo
+                    files: filesToUpload  // Send files for Drive upload
                 };
 
                 console.log('=== VOUCHER DATA TO SYNC ===');
@@ -2878,6 +2895,12 @@
 
                         clearTimeout(timeoutId);
                         success = true;
+                        
+                        // Store files info for later use in approval email
+                        window.lastSyncedVoucherFiles = {
+                            voucherNumber: voucherData.voucherNumber,
+                            files: filesToUpload
+                        };
                         
                         showToast('Đã đồng bộ với Google Sheets thành công!', 'success', 'Thành công');
                         
@@ -3596,7 +3619,10 @@
                     voucherDate: voucherDate || '',
                     department: department || '',
                     payeeName: payeeName || '',
-                    reason: reason || ''
+                    reason: reason || '',
+                    attachments: window.lastSyncedVoucherFiles && window.lastSyncedVoucherFiles.voucherNumber === voucherNumber 
+                        ? window.lastSyncedVoucherFiles.files.map(f => `${f.fileName} (${(f.fileSize / (1024 * 1024)).toFixed(2)} MB)`).join(', ')
+                        : ''
                 }
             };
 

@@ -70,6 +70,7 @@ function setupVoucherHistorySheet_(sheet) {
       'Action',       // Submit / Approved / Rejected
       'By',
       'Note',
+      'Attachments',  // Column J - Google Drive links
       'RequestorEmail',
       'ApproverEmail',
       'Timestamp',
@@ -96,10 +97,11 @@ function setupVoucherHistorySheet_(sheet) {
     sheet.setColumnWidth(7, 100);  // Action
     sheet.setColumnWidth(8, 180);  // By
     sheet.setColumnWidth(9, 200);  // Note
-    sheet.setColumnWidth(10, 220); // RequestorEmail
-    sheet.setColumnWidth(11, 220); // ApproverEmail
-    sheet.setColumnWidth(12, 180); // Timestamp
-    sheet.setColumnWidth(13, 300); // MetaJSON
+    sheet.setColumnWidth(10, 400); // Attachments
+    sheet.setColumnWidth(11, 220); // RequestorEmail
+    sheet.setColumnWidth(12, 220); // ApproverEmail
+    sheet.setColumnWidth(13, 180); // Timestamp
+    sheet.setColumnWidth(14, 300); // MetaJSON
     
     // Freeze header row
     sheet.setFrozenRows(1);
@@ -300,6 +302,7 @@ function appendHistory_(entry) {
       entry.action || '',
       entry.by || '',
       entry.note || '',
+      entry.attachments || '', // Column J - Google Drive links
       entry.requestorEmail || '',
       entry.approverEmail || '',
       now,
@@ -763,6 +766,18 @@ function handleSendEmail(requestBody) {
     
     Logger.log('✅ Attempting to append history with voucher number: ' + voucherNumberForHistory);
     try {
+      // Format attachments data if available
+      let attachmentsText = '';
+      if (voucher.attachments && voucher.attachments.length > 0) {
+        attachmentsText = voucher.attachments;
+      } else if (voucher.driveFiles && voucher.driveFiles.length > 0) {
+        attachmentsText = voucher.driveFiles.map(f => {
+          if (f.error) return `${f.fileName} (Upload failed)`;
+          const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '?';
+          return `${f.fileName} (${sizeMB} MB)\\n${f.fileUrl}`;
+        }).join('\\n\\n');
+      }
+      
       appendHistory_({
         voucherNumber : voucherNumberForHistory,
         voucherType   : voucher.voucherType || '',
@@ -775,6 +790,7 @@ function handleSendEmail(requestBody) {
         note          : voucher.reason || voucher.note || '',
         requestorEmail: voucher.requestorEmail || '',
         approverEmail : voucher.approverEmail  || '',
+        attachments   : attachmentsText,
         meta: {
           voucherDate: voucher.voucherDate || '',
           department : voucher.department || '',
@@ -822,6 +838,21 @@ function handleSyncToSheets(requestBody) {
       createHeaderRow(sheet);
     }
 
+    // Upload files to Drive if present
+    if (data.files && data.files.length > 0) {
+      Logger.log('Uploading ' + data.files.length + ' files to Drive...');
+      try {
+        const uploadedFiles = uploadFilesToDrive_(data.files, data.voucherNumber);
+        // Store Drive links in data for writing to sheet
+        data.driveFiles = uploadedFiles;
+        Logger.log('Files uploaded successfully');
+      } catch (uploadError) {
+        Logger.log('⚠️ Warning: File upload failed: ' + uploadError.toString());
+        // Continue with sync even if upload fails
+        data.driveFiles = [];
+      }
+    }
+
     writeVoucherData(sheet, data, spreadsheet);
     Logger.log('Data synced successfully to sheet: ' + sheetName);
     return createResponse(true, 'Data synced successfully');
@@ -850,9 +881,19 @@ function createHeaderRow(sheet) {
 }
 
 function writeVoucherData(sheet, data, spreadsheet) {
-  // Format file information for display
+  // Format file information for display - prefer Drive links if available
   let filesText = '';
-  if (data.filesInfo && data.filesInfo.length > 0) {
+  if (data.driveFiles && data.driveFiles.length > 0) {
+    // Use Drive links if files were uploaded
+    filesText = data.driveFiles.map(f => {
+      if (f.error) {
+        return `${f.fileName} (Upload failed)`;
+      }
+      const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '?';
+      return `${f.fileName} (${sizeMB} MB)\n${f.fileUrl}`;
+    }).join('\n\n');
+  } else if (data.filesInfo && data.filesInfo.length > 0) {
+    // Fallback to metadata only if no Drive upload
     filesText = data.filesInfo.map(f => {
       const sizeMB = (f.fileSize / (1024 * 1024)).toFixed(2);
       return `${f.fileName} (${sizeMB} MB)`;
@@ -1617,6 +1658,86 @@ function handleLogin_(requestBody) {
     Logger.log('Login handler error: ' + error.toString());
     Logger.log('Error stack: ' + error.stack);
     return createResponse(false, 'Login error: ' + error.message);
+  }
+}
+
+/**
+ * Upload files to Google Drive folder
+ * @param {Array} files - Array of file objects with {fileName, fileData (base64), mimeType}
+ * @param {string} voucherNumber - Voucher number for subfolder organization
+ * @returns {Array} Array of objects with {fileName, fileUrl, fileId}
+ */
+function uploadFilesToDrive_(files, voucherNumber) {
+  try {
+    Logger.log('=== UPLOAD FILES TO DRIVE ===');
+    Logger.log('Voucher Number: ' + voucherNumber);
+    Logger.log('Files to upload: ' + files.length);
+    
+    // Target folder ID for 01.Phieu_Thu_Chi
+    const DRIVE_FOLDER_ID = '1RBBUUAQIrYTWeBONIgkMtELL0hxZhtqG';
+    
+    const parentFolder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+    
+    // Create subfolder for this voucher (or use existing)
+    let voucherFolder;
+    const folders = parentFolder.getFoldersByName(voucherNumber);
+    if (folders.hasNext()) {
+      voucherFolder = folders.next();
+      Logger.log('Using existing voucher folder: ' + voucherNumber);
+    } else {
+      voucherFolder = parentFolder.createFolder(voucherNumber);
+      Logger.log('Created new voucher folder: ' + voucherNumber);
+    }
+    
+    const uploadedFiles = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      const fileData = files[i];
+      Logger.log('Processing file ' + (i + 1) + ': ' + fileData.fileName);
+      
+      try {
+        // Decode base64 data
+        const base64Data = fileData.fileData.split(',')[1] || fileData.fileData;
+        const bytes = Utilities.base64Decode(base64Data);
+        const blob = Utilities.newBlob(bytes, fileData.mimeType, fileData.fileName);
+        
+        // Upload to Drive
+        const file = voucherFolder.createFile(blob);
+        
+        // Make file accessible to anyone with the link
+        file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+        
+        const fileUrl = file.getUrl();
+        const fileId = file.getId();
+        
+        Logger.log('✅ Uploaded: ' + fileData.fileName + ' -> ' + fileUrl);
+        
+        uploadedFiles.push({
+          fileName: fileData.fileName,
+          fileUrl: fileUrl,
+          fileId: fileId,
+          fileSize: fileData.fileSize || blob.getBytes().length
+        });
+        
+      } catch (fileError) {
+        Logger.log('❌ Error uploading file ' + fileData.fileName + ': ' + fileError.toString());
+        // Continue with next file even if one fails
+        uploadedFiles.push({
+          fileName: fileData.fileName,
+          fileUrl: 'ERROR: ' + fileError.message,
+          fileId: null,
+          error: true
+        });
+      }
+    }
+    
+    Logger.log('Upload complete. Successful: ' + uploadedFiles.filter(f => !f.error).length + '/' + files.length);
+    return uploadedFiles;
+    
+  } catch (error) {
+    Logger.log('❌ ERROR in uploadFilesToDrive_: ' + error.toString());
+    Logger.log('Stack: ' + error.stack);
+    throw error;
   }
 }
 
