@@ -302,7 +302,7 @@ function appendHistory_(entry) {
       entry.action || '',
       entry.by || '',
       entry.note || '',
-      entry.attachments || '', // Column J - Google Drive links
+      '', // Column J - Will be set with hyperlinks after append
       entry.requestorEmail || '',
       entry.approverEmail || '',
       now,
@@ -318,6 +318,55 @@ function appendHistory_(entry) {
     // Verify the row was added
     const lastRow = sheet.getLastRow();
     Logger.log('✅ Last row in sheet: ' + lastRow);
+    
+    // Set clickable hyperlinks in Column J (Attachments) if present
+    if (entry.attachments && entry.attachments.trim() !== '') {
+      try {
+        const attachmentsCell = sheet.getRange(lastRow, 10); // Column J
+        
+        // Parse attachments and create rich text with hyperlinks
+        const lines = entry.attachments.split('\n\n');
+        let richTextBuilder = SpreadsheetApp.newRichTextValue();
+        let fullText = '';
+        let linkRanges = [];
+        
+        lines.forEach((block, index) => {
+          const parts = block.split('\n');
+          if (parts.length >= 2) {
+            const fileName = parts[0]; // e.g., "hinh22.png (0.35 MB)"
+            const url = parts[1];      // e.g., "https://drive.google.com/..."
+            
+            // Add to full text
+            if (index > 0) fullText += '\n\n';
+            const startPos = fullText.length;
+            fullText += fileName;
+            const endPos = fullText.length;
+            
+            // Save link range
+            if (url && url.startsWith('http')) {
+              linkRanges.push({ start: startPos, end: endPos, url: url });
+            }
+          } else {
+            // Single line (error or no URL)
+            if (index > 0) fullText += '\n\n';
+            fullText += block;
+          }
+        });
+        
+        // Build rich text with links
+        richTextBuilder = SpreadsheetApp.newRichTextValue().setText(fullText);
+        linkRanges.forEach(range => {
+          richTextBuilder.setLinkUrl(range.start, range.end, range.url);
+        });
+        
+        attachmentsCell.setRichTextValue(richTextBuilder.build());
+        Logger.log('✅ Set clickable hyperlinks in Column J');
+      } catch (linkError) {
+        Logger.log('⚠️ Could not set hyperlinks, falling back to plain text: ' + linkError.toString());
+        // Fallback to plain text
+        sheet.getRange(lastRow, 10).setValue(entry.attachments);
+      }
+    }
     
     Logger.log('✅ History appended successfully for voucher: ' + (entry.voucherNumber || 'N/A') + ', action: ' + (entry.action || 'N/A') + ', status: ' + (entry.status || 'N/A'));
     Logger.log('=== appendHistory_ END ===');
