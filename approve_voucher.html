@@ -265,22 +265,36 @@
                 }
 
                 const response = await fetch(url, {
-                    method: 'GET',
-                    mode: 'no-cors'
+                    method: 'GET'
                 });
 
-                console.log('Response received (no-cors mode)');
-
-                // Since we use no-cors, we can't read the response
-                // Wait a bit to ensure email is sent
-                await new Promise(resolve => setTimeout(resolve, 2000));
+                console.log('Response status:', response.status);
                 
-                showMessage('Đã phê duyệt phiếu thành công! Email thông báo đã được gửi đến ' + requestorEmail + '.', 'success');
+                // Parse the response
+                const result = await response.json();
+                console.log('Response data:', result);
                 
-                // Close window after 3 seconds
-                setTimeout(() => {
-                    window.close();
-                }, 3000);
+                if (result.success) {
+                    showMessage('Đã phê duyệt phiếu thành công! Email thông báo đã được gửi đến ' + requestorEmail + '.', 'success');
+                    
+                    // Close window after 3 seconds
+                    setTimeout(() => {
+                        window.close();
+                    }, 3000);
+                } else {
+                    // Show error message from backend
+                    const errorMsg = result.message || 'Có lỗi xảy ra khi phê duyệt';
+                    
+                    // Check for already processed error
+                    if (errorMsg.includes('already processed')) {
+                        showMessage('⚠️ Phiếu này đã được xử lý trước đó. Không thể phê duyệt lại.', 'error');
+                    } else {
+                        showMessage('Lỗi: ' + errorMsg, 'error');
+                    }
+                    
+                    document.getElementById('loading').classList.remove('show');
+                    document.querySelector('.button-group').style.display = 'flex';
+                }
 
             } catch (error) {
                 console.error('Error approving voucher:', error);

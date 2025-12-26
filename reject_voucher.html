@@ -305,18 +305,36 @@
                 }
 
                 const response = await fetch(url, {
-                    method: 'GET',
-                    mode: 'no-cors'
+                    method: 'GET'
                 });
 
-                // Since we use no-cors, we can't read the response
-                // Assume success if no error
-                showMessage('Đã trả lại phiếu thành công! Email thông báo đã được gửi đến người đề nghị.', 'success');
+                console.log('Response status:', response.status);
                 
-                // Close window after 3 seconds
-                setTimeout(() => {
-                    window.close();
-                }, 3000);
+                // Parse the response
+                const result = await response.json();
+                console.log('Response data:', result);
+                
+                if (result.success) {
+                    showMessage('Đã trả lại phiếu thành công! Email thông báo đã được gửi đến người đề nghị.', 'success');
+                    
+                    // Close window after 3 seconds
+                    setTimeout(() => {
+                        window.close();
+                    }, 3000);
+                } else {
+                    // Show error message from backend
+                    const errorMsg = result.message || 'Có lỗi xảy ra khi từ chối';
+                    
+                    // Check for already processed error
+                    if (errorMsg.includes('already processed')) {
+                        showMessage('⚠️ Phiếu này đã được xử lý trước đó. Không thể từ chối lại.', 'error');
+                    } else {
+                        showMessage('Lỗi: ' + errorMsg, 'error');
+                    }
+                    
+                    document.getElementById('loading').classList.remove('show');
+                    document.getElementById('reject-form').style.display = 'block';
+                }
 
             } catch (error) {
                 console.error('Error rejecting voucher:', error);
@@ -337,4 +355,3 @@
     </script>
 </body>
 </html>
-
