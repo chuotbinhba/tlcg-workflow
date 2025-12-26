@@ -805,11 +805,11 @@
                 </div>
                 <div class="form-section-container">
                     <div class="flex bg-slate-50 border-b overflow-x-auto">
-                        <button onclick="toggleSubTab('o2c-comp', 'o2ct', 'o2cp', event)" class="o2ct sub-tab px-6 py-4 text-xs uppercase font-bold tracking-wider active">1. Company</button>
-                        <button onclick="toggleSubTab('o2c-cust', 'o2ct', 'o2cp', event)" class="o2ct sub-tab px-6 py-4 text-xs uppercase font-bold tracking-wider">2. Customer</button>
-                        <button onclick="toggleSubTab('o2c-quot', 'o2ct', 'o2cp', event)" class="o2ct sub-tab px-6 py-4 text-xs uppercase font-bold tracking-wider">3. Quotation</button>
-                        <button onclick="toggleSubTab('o2c-cont', 'o2ct', 'o2cp', event)" class="o2ct sub-tab px-6 py-4 text-xs uppercase font-bold tracking-wider">4. Contract</button>
-                        <button onclick="toggleSubTab('o2c-inv', 'o2ct', 'o2cp', event)" class="o2ct sub-tab px-6 py-4 text-xs uppercase font-bold tracking-wider">5. Invoice</button>
+                        <button onclick="toggleSubTab('o2c-comp', 'o2ct', 'o2cp')" class="o2ct sub-tab px-6 py-4 text-xs uppercase font-bold tracking-wider active">1. Company</button>
+                        <button onclick="toggleSubTab('o2c-cust', 'o2ct', 'o2cp')" class="o2ct sub-tab px-6 py-4 text-xs uppercase font-bold tracking-wider">2. Customer</button>
+                        <button onclick="toggleSubTab('o2c-quot', 'o2ct', 'o2cp')" class="o2ct sub-tab px-6 py-4 text-xs uppercase font-bold tracking-wider">3. Quotation</button>
+                        <button onclick="toggleSubTab('o2c-cont', 'o2ct', 'o2cp')" class="o2ct sub-tab px-6 py-4 text-xs uppercase font-bold tracking-wider">4. Contract</button>
+                        <button onclick="toggleSubTab('o2c-inv', 'o2ct', 'o2cp')" class="o2ct sub-tab px-6 py-4 text-xs uppercase font-bold tracking-wider">5. Invoice</button>
                     </div>
                     <div class="p-8">
                         <!-- Step 1: Company -->
@@ -1034,9 +1034,9 @@
                 </div>
                 <div class="form-section-container">
                     <div class="flex bg-slate-50 border-b">
-                        <button onclick="toggleSubTab('p2p-pr', 'p2pt', 'p2pp', event)" class="p2pt sub-tab px-6 py-4 text-xs uppercase font-bold active">1. Purchase Request</button>
-                        <button onclick="toggleSubTab('p2p-acc', 'p2pt', 'p2pp', event)" class="p2pt sub-tab px-6 py-4 text-xs uppercase font-bold">2. Acceptance Minutes</button>
-                        <button onclick="toggleSubTab('p2p-pay', 'p2pt', 'p2pp', event)" class="p2pt sub-tab px-6 py-4 text-xs uppercase font-bold">3. Payment Request</button>
+                        <button onclick="toggleSubTab('p2p-pr', 'p2pt', 'p2pp')" class="p2pt sub-tab px-6 py-4 text-xs uppercase font-bold active">1. Purchase Request</button>
+                        <button onclick="toggleSubTab('p2p-acc', 'p2pt', 'p2pp')" class="p2pt sub-tab px-6 py-4 text-xs uppercase font-bold">2. Acceptance Minutes</button>
+                        <button onclick="toggleSubTab('p2p-pay', 'p2pt', 'p2pp')" class="p2pt sub-tab px-6 py-4 text-xs uppercase font-bold">3. Payment Request</button>
                     </div>
                     <div class="p-8">
                         <div id="p2p-pr" class="p2pp space-y-6">
@@ -1540,12 +1540,12 @@
             console.log('User logged out');
         }
 
-        function toggleSubTab(paneId, tabClass, paneClass, evt) {
+        function toggleSubTab(paneId, tabClass, paneClass) {
             document.querySelectorAll('.' + paneClass).forEach(p => p.classList.add('hidden'));
             const target = document.getElementById(paneId);
-            if (target) target.classList.remove('hidden');
+            if(target) target.classList.remove('hidden');
             document.querySelectorAll('.' + tabClass).forEach(t => t.classList.remove('active'));
-            if (evt && evt.target) evt.target.classList.add('active');
+            if(event && event.target) event.target.classList.add('active');
         }
 
         function lookupCompany(prefix) {
@@ -1940,20 +1940,12 @@
         }
 
         async function callGemini(p, s) {
-            if (!apiKey || apiKey.trim() === '') {
-                console.warn('callGemini skipped: apiKey not configured.');
-                return "AI service unavailable (API key not set).";
-            }
-
             const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
             try {
                 const r = await fetch(url, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ contents: [{ parts: [{ text: p }] }], systemInstruction: { parts: [{ text: s }] } }) });
                 const d = await r.json();
                 return d.candidates?.[0]?.content?.parts?.[0]?.text || "Error.";
-            } catch (e) {
-                console.error('callGemini error:', e);
-                return "Service unavailable.";
-            }
+            } catch (e) { return "Service unavailable."; }
         }
 
         function handleAddEmployee(event) {
@@ -2247,15 +2239,14 @@
         function sortTable(tableBodyId, columnIndex) {
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
-
+            
             const rows = Array.from(tbody.querySelectorAll('tr'));
             const currentDir = sortDirection[tableBodyId + columnIndex] || 'asc';
             const newDir = currentDir === 'asc' ? 'desc' : 'asc';
             sortDirection[tableBodyId + columnIndex] = newDir;
-
-            // Update header classes (use element.closest safely)
-            const table = document.getElementById(tableBodyId)?.closest('table');
-            const headers = table?.querySelectorAll('th');
+            
+            // Update header classes
+            const headers = document.querySelectorAll(`#${tableBodyId}`).closest('table')?.querySelectorAll('th');
             if (headers) {
                 headers.forEach((h, i) => {
                     h.classList.remove('sort-asc', 'sort-desc');
