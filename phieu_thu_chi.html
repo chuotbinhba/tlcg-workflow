@@ -628,6 +628,60 @@
             margin-bottom: 15px;
         }
 
+        /* Signature Upload Styles */
+        .signature-container {
+            border: 2px dashed var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            background: #fafbfc;
+        }
+
+        .signature-preview-area {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            margin-bottom: 0.75rem;
+        }
+
+        .signature-preview-area img {
+            max-width: 200px;
+            max-height: 80px;
+            object-fit: contain;
+        }
+
+        #signature-placeholder {
+            color: #94a3b8;
+            font-size: 0.875rem;
+        }
+
+        .signature-actions {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .signature-upload-btn {
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .signature-note {
+            color: #64748b;
+            font-size: 0.75rem;
+        }
+
+        .signature-note small {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
         .expense-section-fields .form-group:last-child {
             margin-bottom: 0;
         }
@@ -1388,6 +1442,34 @@
             </div>
         </div>
 
+        <!-- Signature Upload Section -->
+        <div class="form-row">
+            <div class="form-group" style="width: 100%;">
+                <label for="signature-upload">Chữ ký người đề nghị: <span class="required">*</span></label>
+                <div class="signature-container">
+                    <div class="signature-preview-area" id="signature-preview-area">
+                        <img id="signature-preview" src="" alt="Chữ ký" style="display: none; max-height: 80px;">
+                        <span id="signature-placeholder">Chưa có chữ ký</span>
+                    </div>
+                    <div class="signature-actions">
+                        <label for="signature-upload" class="btn-secondary signature-upload-btn">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                            Tải chữ ký lên
+                        </label>
+                        <input type="file" id="signature-upload" accept="image/*" style="display: none;" onchange="handleSignatureUpload(event)">
+                        <button type="button" class="btn-secondary" onclick="clearSignature()" id="clear-signature-btn" style="display: none;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                            Xóa
+                        </button>
+                    </div>
+                    <div class="signature-note">
+                        <small>💡 Chữ ký sẽ được lưu để sử dụng cho các phiếu sau. Hỗ trợ: PNG, JPG, GIF (nền trong suốt khuyến nghị)</small>
+                    </div>
+                </div>
+                <div class="error-message" id="signature-error"></div>
+            </div>
+        </div>
+
         <div class="step-navigation">
             <button type="button" class="btn-prev" onclick="goToStep(1)">← Quay lại</button>
             <button type="button" class="btn-next" onclick="goToStepAfterEdit(3)">Tiếp theo →</button>
@@ -1544,6 +1626,13 @@
                 <div class="review-item">
                     <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.375rem;">Người nộp/nhận</div>
                     <div style="font-size: 0.9375rem; font-weight: 500; color: var(--text-primary);" id="review-payee">-</div>
+                </div>
+                <div class="review-item">
+                    <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.375rem;">Chữ ký người đề nghị</div>
+                    <div style="padding: 0.5rem; background: white; border-radius: 6px; border: 1px solid var(--border); display: inline-block;">
+                        <img id="review-signature" src="" alt="Chữ ký" style="max-height: 60px; max-width: 150px; display: none;">
+                        <span id="review-signature-placeholder" style="color: #94a3b8; font-size: 0.875rem;">Chưa có</span>
+                    </div>
                 </div>
             </div>
             
@@ -2109,10 +2198,22 @@
                     return;
                 }
                 
+                // Validate signature if leaving step 2
+                if (currentStep === 2 && !validateSignature()) {
+                    showToast('Vui lòng tải lên chữ ký', 'error', 'Thiếu chữ ký');
+                    return;
+                }
+                
                 // Go back to review step
                 editingFromReview = false;
                 goToStep(5);
             } else {
+                // Validate signature if leaving step 2
+                if (currentStep === 2 && nextStep > 2 && !validateSignature()) {
+                    showToast('Vui lòng tải lên chữ ký', 'error', 'Thiếu chữ ký');
+                    return;
+                }
+                
                 // Normal flow - go to next step
                 goToStep(nextStep);
             }
@@ -2195,6 +2296,18 @@
             
             const payeeName = document.getElementById('payee-name');
             safeSetText('review-payee', payeeName ? payeeName.value : '');
+            
+            // Update signature in review
+            const reviewSignature = document.getElementById('review-signature');
+            const reviewSignaturePlaceholder = document.getElementById('review-signature-placeholder');
+            if (currentSignatureData) {
+                reviewSignature.src = currentSignatureData;
+                reviewSignature.style.display = 'block';
+                reviewSignaturePlaceholder.style.display = 'none';
+            } else {
+                reviewSignature.style.display = 'none';
+                reviewSignaturePlaceholder.style.display = 'block';
+            }
             
             const reason = document.getElementById('reason');
             safeSetText('review-reason', reason ? reason.value : '');
@@ -2327,6 +2440,9 @@
 
             // Load saved data (but voucherDate will not be restored - always use current date)
             loadFromLocalStorage();
+            
+            // Load saved signature from localStorage
+            loadSavedSignature();
             
             // Always set current date after loading saved data (to prevent back date)
             setCurrentDate();
@@ -2485,6 +2601,103 @@
                 reader.readAsDataURL(file);
             });
         }
+        
+        // ============ SIGNATURE FUNCTIONS ============
+        let currentSignatureData = null;
+        const SIGNATURE_STORAGE_KEY = 'tlcg_user_signature';
+        
+        // Load saved signature on page load
+        function loadSavedSignature() {
+            const savedSignature = localStorage.getItem(SIGNATURE_STORAGE_KEY);
+            if (savedSignature) {
+                currentSignatureData = savedSignature;
+                displaySignature(savedSignature);
+                console.log('✅ Loaded saved signature from localStorage');
+            }
+        }
+        
+        // Handle signature file upload
+        async function handleSignatureUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                showToast('Vui lòng chọn file hình ảnh (PNG, JPG, GIF)', 'error');
+                return;
+            }
+            
+            // Validate file size (max 500KB)
+            if (file.size > 500 * 1024) {
+                showToast('Kích thước chữ ký tối đa 500KB', 'error');
+                return;
+            }
+            
+            try {
+                const base64Data = await fileToBase64(file);
+                currentSignatureData = base64Data;
+                
+                // Save to localStorage for future use
+                localStorage.setItem(SIGNATURE_STORAGE_KEY, base64Data);
+                
+                // Display the signature
+                displaySignature(base64Data);
+                
+                showToast('Đã tải chữ ký lên thành công! Chữ ký sẽ được lưu cho các phiếu sau.', 'success');
+                console.log('✅ Signature uploaded and saved to localStorage');
+            } catch (error) {
+                console.error('Error uploading signature:', error);
+                showToast('Lỗi khi tải chữ ký. Vui lòng thử lại.', 'error');
+            }
+        }
+        
+        // Display signature in preview area
+        function displaySignature(base64Data) {
+            const preview = document.getElementById('signature-preview');
+            const placeholder = document.getElementById('signature-placeholder');
+            const clearBtn = document.getElementById('clear-signature-btn');
+            const errorDiv = document.getElementById('signature-error');
+            
+            if (base64Data) {
+                preview.src = base64Data;
+                preview.style.display = 'block';
+                placeholder.style.display = 'none';
+                clearBtn.style.display = 'inline-flex';
+                errorDiv.textContent = '';
+            } else {
+                preview.src = '';
+                preview.style.display = 'none';
+                placeholder.style.display = 'block';
+                clearBtn.style.display = 'none';
+            }
+        }
+        
+        // Clear signature
+        function clearSignature() {
+            if (confirm('Bạn có chắc muốn xóa chữ ký? Chữ ký đã lưu cũng sẽ bị xóa.')) {
+                currentSignatureData = null;
+                localStorage.removeItem(SIGNATURE_STORAGE_KEY);
+                displaySignature(null);
+                document.getElementById('signature-upload').value = '';
+                showToast('Đã xóa chữ ký', 'info');
+            }
+        }
+        
+        // Validate signature before proceeding
+        function validateSignature() {
+            if (!currentSignatureData) {
+                const errorDiv = document.getElementById('signature-error');
+                errorDiv.textContent = 'Vui lòng tải lên chữ ký';
+                return false;
+            }
+            return true;
+        }
+        
+        // Get signature data for submission
+        function getSignatureData() {
+            return currentSignatureData;
+        }
+        // ============ END SIGNATURE FUNCTIONS ============
         
         function setCurrentDate() {
             const formattedDate = getCurrentVoucherDate();
@@ -3482,6 +3695,12 @@
                 <div style="background-color: #fff3cd; border-left: 4px solid #ffc107; padding: 15px; margin: 20px 0;">
                     <p style="margin: 0; color: #856404;"><b>Lưu ý:</b> Nếu phiếu cần chỉnh sửa, vui lòng click nút "Trả lại / Từ chối" và điền lý do. Email thông báo sẽ tự động được gửi đến người đề nghị.</p>
                 </div>
+                ${currentSignatureData ? `
+                <div style="margin: 20px 0; padding: 15px; border-top: 1px solid #ddd;">
+                    <p style="margin: 0 0 10px 0; font-weight: bold;">Chữ ký người đề nghị:</p>
+                    <img src="${currentSignatureData}" alt="Chữ ký" style="max-height: 80px; max-width: 200px;">
+                </div>
+                ` : ''}
                 <p>Trân trọng,<br>Hệ thống Kế toán Tự động</p>
             `;
             
@@ -3545,6 +3764,12 @@
                     </tbody>
                 </table>
                 <p style="color: #666; font-style: italic;">Email thông báo kết quả phê duyệt sẽ được gửi đến bạn sau khi người phê duyệt xử lý.</p>
+                ${currentSignatureData ? `
+                <div style="margin: 20px 0; padding: 15px; border-top: 1px solid #ddd;">
+                    <p style="margin: 0 0 10px 0; font-weight: bold;">Chữ ký của bạn:</p>
+                    <img src="${currentSignatureData}" alt="Chữ ký" style="max-height: 80px; max-width: 200px;">
+                </div>
+                ` : ''}
                 <p>Trân trọng,<br>Hệ thống Kế toán Tự động</p>
             `;
 
