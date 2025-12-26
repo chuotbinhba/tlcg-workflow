@@ -32,22 +32,15 @@ function getVoucherHistorySheet_() {
     if (!sheet) {
       Logger.log('Sheet "' + VH_SHEET_NAME + '" not found, creating new sheet...');
       sheet = ss.insertSheet(VH_SHEET_NAME);
-      sheet.appendRow([
-        'VoucherNumber',
-        'VoucherType',
-        'Company',
-        'Employee',
-        'Amount',
-        'Status',       // Pending / Approved / Rejected
-        'Action',       // Submit / Approved / Rejected
-        'By',
-        'Note',
-        'RequestorEmail',
-        'ApproverEmail',
-        'Timestamp',
-        'MetaJSON'
-      ]);
+      setupVoucherHistorySheet_(sheet);
       Logger.log('✅ Created new sheet: ' + VH_SHEET_NAME);
+    } else {
+      // Check if headers exist, if not, setup
+      const headers = sheet.getRange(1, 1, 1, 13).getValues()[0];
+      if (!headers[0] || headers[0] !== 'VoucherNumber') {
+        Logger.log('Headers not found or incorrect, setting up...');
+        setupVoucherHistorySheet_(sheet);
+      }
     }
     return sheet;
   } catch (error) {
@@ -57,25 +50,164 @@ function getVoucherHistorySheet_() {
   }
 }
 
-function appendHistory_(entry) {
-  const sheet = getVoucherHistorySheet_();
-  const now = new Date();
+/**
+ * Setup Voucher_History sheet with headers and formatting
+ * This function can be called manually to setup/refresh the sheet
+ */
+function setupVoucherHistorySheet_(sheet) {
+  try {
+    // Clear existing data if any
+    sheet.clear();
+    
+    // Headers
+    const headers = [
+      'VoucherNumber',
+      'VoucherType',
+      'Company',
+      'Employee',
+      'Amount',
+      'Status',       // Pending / Approved / Rejected
+      'Action',       // Submit / Approved / Rejected
+      'By',
+      'Note',
+      'RequestorEmail',
+      'ApproverEmail',
+      'Timestamp',
+      'MetaJSON'
+    ];
+    
+    // Set headers in row 1
+    const headerRange = sheet.getRange(1, 1, 1, headers.length);
+    headerRange.setValues([headers]);
+    
+    // Format headers
+    headerRange.setFontWeight('bold');
+    headerRange.setBackground('#4285F4'); // Google Blue
+    headerRange.setFontColor('#FFFFFF');   // White
+    headerRange.setHorizontalAlignment('center');
+    
+    // Set column widths
+    sheet.setColumnWidth(1, 150);  // VoucherNumber
+    sheet.setColumnWidth(2, 100);  // VoucherType
+    sheet.setColumnWidth(3, 250);  // Company
+    sheet.setColumnWidth(4, 180);  // Employee
+    sheet.setColumnWidth(5, 120);  // Amount
+    sheet.setColumnWidth(6, 100);  // Status
+    sheet.setColumnWidth(7, 100);  // Action
+    sheet.setColumnWidth(8, 180);  // By
+    sheet.setColumnWidth(9, 200);  // Note
+    sheet.setColumnWidth(10, 220); // RequestorEmail
+    sheet.setColumnWidth(11, 220); // ApproverEmail
+    sheet.setColumnWidth(12, 180); // Timestamp
+    sheet.setColumnWidth(13, 300); // MetaJSON
+    
+    // Freeze header row
+    sheet.setFrozenRows(1);
+    
+    // Set number format for Amount column (E)
+    sheet.getRange('E:E').setNumberFormat('#,##0');
+    
+    // Set date format for Timestamp column (L)
+    sheet.getRange('L:L').setNumberFormat('dd/mm/yyyy HH:mm');
+    
+    // Add conditional formatting for Status column (F)
+    const statusRange = sheet.getRange('F:F');
+    
+    // Pending - Yellow
+    const pendingRule = SpreadsheetApp.newConditionalFormatRule()
+      .setRanges([statusRange])
+      .whenTextEqualTo('Pending')
+      .setBackground('#FFF8E1') // Light Yellow
+      .setFontColor('#F57C00')   // Dark Orange
+      .build();
+    
+    // Approved - Green
+    const approvedRule = SpreadsheetApp.newConditionalFormatRule()
+      .setRanges([statusRange])
+      .whenTextEqualTo('Approved')
+      .setBackground('#E8F5E9') // Light Green
+      .setFontColor('#2E7D32')  // Dark Green
+      .build();
+    
+    // Rejected - Red
+    const rejectedRule = SpreadsheetApp.newConditionalFormatRule()
+      .setRanges([statusRange])
+      .whenTextEqualTo('Rejected')
+      .setBackground('#FFEBEE') // Light Red
+      .setFontColor('#C62828')   // Dark Red
+      .build();
+    
+    const rules = sheet.getConditionalFormatRules();
+    rules.push(pendingRule, approvedRule, rejectedRule);
+    sheet.setConditionalFormatRules(rules);
+    
+    Logger.log('✅ Voucher_History sheet setup completed');
+  } catch (error) {
+    Logger.log('❌ ERROR setting up Voucher_History sheet: ' + error.toString());
+    throw error;
+  }
+}
 
-  sheet.appendRow([
-    entry.voucherNumber || '',
-    entry.voucherType || '',
-    entry.company || '',
-    entry.employee || '',
-    entry.amount || '',
-    entry.status || '',
-    entry.action || '',
-    entry.by || '',
-    entry.note || '',
-    entry.requestorEmail || '',
-    entry.approverEmail || '',
-    now,
-    entry.meta ? JSON.stringify(entry.meta) : ''
-  ]);
+/**
+ * Manual function to setup/refresh Voucher_History sheet
+ * Run this function from Apps Script editor to setup the sheet
+ */
+function setupVoucherHistorySheet() {
+  try {
+    const ss = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID);
+    let sheet = ss.getSheetByName(VH_SHEET_NAME);
+    
+    if (!sheet) {
+      sheet = ss.insertSheet(VH_SHEET_NAME);
+      Logger.log('Created new sheet: ' + VH_SHEET_NAME);
+    }
+    
+    setupVoucherHistorySheet_(sheet);
+    Logger.log('✅ Voucher_History sheet setup completed successfully!');
+    return 'Setup completed!';
+  } catch (error) {
+    Logger.log('❌ ERROR: ' + error.toString());
+    return 'Error: ' + error.message;
+  }
+}
+
+function appendHistory_(entry) {
+  try {
+    const sheet = getVoucherHistorySheet_();
+    const now = new Date();
+
+    // Enhanced metadata with more details for better tracking
+    const enhancedMeta = {
+      ...(entry.meta || {}),
+      timestamp: now.toISOString(),
+      actionType: entry.action || '',
+      status: entry.status || '',
+      ipAddress: entry.ipAddress || '', // Can be added from frontend if needed
+      userAgent: entry.userAgent || ''  // Can be added from frontend if needed
+    };
+
+    sheet.appendRow([
+      entry.voucherNumber || '',
+      entry.voucherType || '',
+      entry.company || '',
+      entry.employee || '',
+      entry.amount || '',
+      entry.status || '',
+      entry.action || '',
+      entry.by || '',
+      entry.note || '',
+      entry.requestorEmail || '',
+      entry.approverEmail || '',
+      now,
+      JSON.stringify(enhancedMeta)
+    ]);
+    
+    Logger.log('✅ History appended for voucher: ' + (entry.voucherNumber || 'N/A') + ', action: ' + (entry.action || 'N/A') + ', status: ' + (entry.status || 'N/A'));
+  } catch (error) {
+    Logger.log('❌ ERROR appending history: ' + error.toString());
+    Logger.log('Stack: ' + error.stack);
+    throw error;
+  }
 }
 
 function getLastActionForVoucher_(voucherNumber) {
@@ -93,6 +225,148 @@ function getLastActionForVoucher_(voucherNumber) {
     }
   }
   return lastAction;
+}
+
+/**
+ * Get full history for a specific voucher
+ * Returns array of all actions/events for the voucher
+ */
+function getVoucherHistory_(voucherNumber) {
+  try {
+    const sheet = getVoucherHistorySheet_();
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) return [];
+    
+    const header = data[0];
+    const idxVoucherNumber = header.indexOf('VoucherNumber');
+    const idxVoucherType = header.indexOf('VoucherType');
+    const idxCompany = header.indexOf('Company');
+    const idxEmployee = header.indexOf('Employee');
+    const idxAmount = header.indexOf('Amount');
+    const idxStatus = header.indexOf('Status');
+    const idxAction = header.indexOf('Action');
+    const idxBy = header.indexOf('By');
+    const idxNote = header.indexOf('Note');
+    const idxRequestorEmail = header.indexOf('RequestorEmail');
+    const idxApproverEmail = header.indexOf('ApproverEmail');
+    const idxTimestamp = header.indexOf('Timestamp');
+    const idxMetaJSON = header.indexOf('MetaJSON');
+    
+    const history = [];
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][idxVoucherNumber] === voucherNumber) {
+        let meta = {};
+        try {
+          if (data[i][idxMetaJSON]) {
+            meta = JSON.parse(data[i][idxMetaJSON]);
+          }
+        } catch (e) {
+          Logger.log('Error parsing meta JSON: ' + e);
+        }
+        
+        history.push({
+          voucherNumber: data[i][idxVoucherNumber] || '',
+          voucherType: data[i][idxVoucherType] || '',
+          company: data[i][idxCompany] || '',
+          employee: data[i][idxEmployee] || '',
+          amount: data[i][idxAmount] || '',
+          status: data[i][idxStatus] || '',
+          action: data[i][idxAction] || '',
+          by: data[i][idxBy] || '',
+          note: data[i][idxNote] || '',
+          requestorEmail: data[i][idxRequestorEmail] || '',
+          approverEmail: data[i][idxApproverEmail] || '',
+          timestamp: data[i][idxTimestamp] || '',
+          meta: meta
+        });
+      }
+    }
+    
+    // Sort by timestamp (newest first)
+    history.sort((a, b) => {
+      const dateA = new Date(a.timestamp || 0);
+      const dateB = new Date(b.timestamp || 0);
+      return dateB - dateA;
+    });
+    
+    return history;
+  } catch (error) {
+    Logger.log('Error getting voucher history: ' + error.toString());
+    return [];
+  }
+}
+
+/**
+ * Get all vouchers for a specific user (by email or employee name)
+ * Returns array of unique vouchers with latest status
+ */
+function getUserVouchers_(userEmail, employeeName) {
+  try {
+    const sheet = getVoucherHistorySheet_();
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) return [];
+    
+    const header = data[0];
+    const idxVoucherNumber = header.indexOf('VoucherNumber');
+    const idxVoucherType = header.indexOf('VoucherType');
+    const idxCompany = header.indexOf('Company');
+    const idxEmployee = header.indexOf('Employee');
+    const idxAmount = header.indexOf('Amount');
+    const idxStatus = header.indexOf('Status');
+    const idxAction = header.indexOf('Action');
+    const idxBy = header.indexOf('By');
+    const idxRequestorEmail = header.indexOf('RequestorEmail');
+    const idxTimestamp = header.indexOf('Timestamp');
+    
+    // Get all rows matching user
+    const matchingRows = [];
+    for (let i = 1; i < data.length; i++) {
+      const rowEmail = data[i][idxRequestorEmail] || '';
+      const rowEmployee = data[i][idxEmployee] || '';
+      
+      const matchesEmail = !userEmail || rowEmail.toLowerCase().includes(userEmail.toLowerCase());
+      const matchesEmployee = !employeeName || rowEmployee.toLowerCase().includes(employeeName.toLowerCase());
+      
+      if (matchesEmail || matchesEmployee) {
+        matchingRows.push(data[i]);
+      }
+    }
+    
+    // Group by voucher number and get latest status
+    const voucherMap = new Map();
+    matchingRows.forEach(row => {
+      const voucherNumber = row[idxVoucherNumber];
+      if (!voucherNumber) return;
+      
+      if (!voucherMap.has(voucherNumber) || 
+          new Date(row[idxTimestamp] || 0) > new Date(voucherMap.get(voucherNumber).timestamp || 0)) {
+        voucherMap.set(voucherNumber, {
+          voucherNumber: voucherNumber,
+          voucherType: row[idxVoucherType] || '',
+          company: row[idxCompany] || '',
+          employee: row[idxEmployee] || '',
+          amount: row[idxAmount] || '',
+          status: row[idxStatus] || '',
+          action: row[idxAction] || '',
+          by: row[idxBy] || '',
+          timestamp: row[idxTimestamp] || ''
+        });
+      }
+    });
+    
+    // Convert to array and sort by timestamp
+    const vouchers = Array.from(voucherMap.values());
+    vouchers.sort((a, b) => {
+      const dateA = new Date(a.timestamp || 0);
+      const dateB = new Date(b.timestamp || 0);
+      return dateB - dateA;
+    });
+    
+    return vouchers;
+  } catch (error) {
+    Logger.log('Error getting user vouchers: ' + error.toString());
+    return [];
+  }
 }
 
 /** ===================== HÀM CHUNG ===================== */
@@ -193,6 +467,10 @@ function doPost(e) {
         return handleRejectVoucher(requestBody);
       case 'getVoucherSummary':
         return handleGetVoucherSummary(requestBody);
+      case 'getVoucherHistory':
+        return handleGetVoucherHistory(requestBody);
+      case 'getUserVouchers':
+        return handleGetUserVouchers(requestBody);
       default:
         return createResponse(false, 'Invalid action: ' + action);
     }
@@ -841,6 +1119,79 @@ function formatTimestamp(dateValue) {
     return Utilities.formatDate(date, Session.getScriptTimeZone(), 'dd/MM/yyyy HH:mm');
   } catch (e) {
     return String(dateValue);
+  }
+}
+
+/** ===================== GET VOUCHER HISTORY ===================== */
+
+function handleGetVoucherHistory(requestBody) {
+  try {
+    Logger.log('=== GET VOUCHER HISTORY ===');
+    Logger.log('Request body: ' + JSON.stringify(requestBody));
+    
+    const voucherNumber = requestBody ? (requestBody.voucherNumber || '') : '';
+    
+    if (!voucherNumber) {
+      return createResponse(false, 'Voucher number is required');
+    }
+    
+    const history = getVoucherHistory_(voucherNumber);
+    
+    // Format timestamps for display
+    const formattedHistory = history.map(item => ({
+      ...item,
+      timestampFormatted: formatTimestamp(item.timestamp)
+    }));
+    
+    Logger.log('Found ' + formattedHistory.length + ' history entries for voucher: ' + voucherNumber);
+    
+    return createResponse(true, 'History retrieved successfully', {
+      voucherNumber: voucherNumber,
+      history: formattedHistory,
+      totalEntries: formattedHistory.length
+    });
+  } catch (error) {
+    Logger.log('Error getting voucher history: ' + error.toString());
+    Logger.log('Stack: ' + error.stack);
+    return createResponse(false, 'Error getting history: ' + error.message);
+  }
+}
+
+/** ===================== GET USER VOUCHERS ===================== */
+
+function handleGetUserVouchers(requestBody) {
+  try {
+    Logger.log('=== GET USER VOUCHERS ===');
+    Logger.log('Request body: ' + JSON.stringify(requestBody));
+    
+    const userEmail = requestBody ? (requestBody.userEmail || requestBody.email || '') : '';
+    const employeeName = requestBody ? (requestBody.employee || requestBody.employeeName || '') : '';
+    
+    if (!userEmail && !employeeName) {
+      return createResponse(false, 'User email or employee name is required');
+    }
+    
+    const vouchers = getUserVouchers_(userEmail, employeeName);
+    
+    // Format timestamps and add status text
+    const formattedVouchers = vouchers.map(voucher => ({
+      ...voucher,
+      timestampFormatted: formatTimestamp(voucher.timestamp),
+      statusText: voucher.status === 'Pending' && voucher.action === 'Submit' ? 'Đã gửi thông tin' : voucher.status
+    }));
+    
+    Logger.log('Found ' + formattedVouchers.length + ' vouchers for user: ' + (userEmail || employeeName));
+    
+    return createResponse(true, 'User vouchers retrieved successfully', {
+      userEmail: userEmail,
+      employeeName: employeeName,
+      vouchers: formattedVouchers,
+      total: formattedVouchers.length
+    });
+  } catch (error) {
+    Logger.log('Error getting user vouchers: ' + error.toString());
+    Logger.log('Stack: ' + error.stack);
+    return createResponse(false, 'Error getting user vouchers: ' + error.message);
   }
 }
 
