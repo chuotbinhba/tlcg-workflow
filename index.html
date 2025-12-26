@@ -621,7 +621,7 @@
                                     <p id="user-display-role" class="text-xs text-slate-500 uppercase"></p>
                                 </div>
                                 <div class="relative group">
-                                    <img id="user-avatar" src="" class="w-10 h-10 rounded-full border-2 border-white shadow-sm cursor-pointer hover:ring-2 hover:ring-blue-500 transition" onclick="showPage('profile')">
+                                    <img id="user-avatar" src="" alt="User avatar" class="w-10 h-10 rounded-full border-2 border-white shadow-sm cursor-pointer hover:ring-2 hover:ring-blue-500 transition" onclick="showPage('profile')">
                                     <div class="absolute right-0 mt-2 w-40 bg-white rounded-lg shadow-xl border border-slate-200 hidden group-hover:block z-50 overflow-hidden">
                                         <button onclick="showPage('profile')" class="w-full text-left px-4 py-2 text-sm text-slate-700 hover:bg-slate-100 transition border-b border-slate-100">
                                             <i class="fas fa-user mr-2"></i> Profile
@@ -652,9 +652,9 @@
                         <div class="search-bar w-80 hidden lg:block">
                             <div class="flex items-center gap-3">
                                 <i class="fas fa-search text-slate-400"></i>
-                                <input type="text" placeholder="Search workflows, processes..." 
-                                       class="border-none outline-none flex-1 text-slate-700 placeholder-slate-400"
-                                       id="global-search">
+                                    <input type="text" placeholder="Search workflows, processes..." 
+                                        class="border-none outline-none flex-1 text-slate-700 placeholder-slate-400"
+                                        id="global-search" aria-label="Global search workflows">
                             </div>
                         </div>
                     </div>
@@ -1358,7 +1358,7 @@
             <main id="page-profile" class="hidden max-w-7xl mx-auto p-6 space-y-8 animate-in slide-in-from-right-4">
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-sm">
                     <div class="flex items-center space-x-6">
-                        <img id="profile-avatar" src="" class="w-20 h-20 rounded-2xl shadow-md border-4 border-white">
+                        <img id="profile-avatar" src="" alt="Profile avatar" class="w-20 h-20 rounded-2xl shadow-md border-4 border-white">
                         <div>
                             <div class="flex items-center gap-3"><h2 id="profile-name" class="text-2xl font-bold"></h2><span id="admin-verified-badge" class="hidden bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest shadow-sm">Administrator</span></div>
                             <p id="profile-role" class="text-slate-500"></p>
@@ -1423,7 +1423,26 @@
         </footer>
     </div>
 
-    <script>
+        <!-- Minimal AI Chat Widget (hidden by default) -->
+        <div id="ai-chat-window" class="hidden fixed right-6 bottom-6 w-80 h-96 bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden z-50">
+            <div class="p-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white flex items-center justify-between">
+                <div class="font-bold">TLC AI</div>
+                <button onclick="toggleAIChat()" class="text-sm opacity-90">Close</button>
+            </div>
+            <div id="ai-messages" class="p-3 h-64 overflow-y-auto text-sm bg-slate-50"></div>
+            <div class="p-3 border-t bg-white">
+                <div class="flex gap-2">
+                    <input id="ai-input" type="text" placeholder="Ask TLC AI..." class="flex-1 p-2 border rounded-lg text-sm" />
+                    <button onclick="sendAIMessage()" class="bg-blue-600 text-white px-3 py-2 rounded-lg">Send</button>
+                </div>
+            </div>
+        </div>
+
+        <button id="ai-toggle-btn" onclick="toggleAIChat()" aria-label="Toggle AI chat" title="Ask TLC AI" class="fixed right-6 bottom-6 w-14 h-14 rounded-full bg-gradient-to-br from-purple-600 to-blue-600 text-white shadow-xl flex items-center justify-center z-40">
+            <i class="fas fa-robot"></i>
+        </button>
+
+        <script>
         const apiKey = "";
         // ⚠️ IMPORTANT: Replace with your Google Apps Script Web App URL
         const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwcLJ-bjU9RNoh1FHhv6mOK4AQ0FXeIEmD0oLtQPduBNVjvnWASYT9ovytxvCP6QdU2/exec';
@@ -2294,11 +2313,11 @@
         function filterTable(tableBodyId, filterType) {
             const tbody = document.getElementById(tableBodyId);
             if (!tbody) return;
-            
+
             const rows = tbody.querySelectorAll('tr');
             rows.forEach(row => {
                 let show = true;
-                
+
                 if (filterType === 'debit') {
                     const debit = row.cells[3]?.textContent.trim();
                     show = debit && debit !== '-';
@@ -2306,15 +2325,9 @@
                     const credit = row.cells[4]?.textContent.trim();
                     show = credit && credit !== '-';
                 }
-                
+
                 row.style.display = show ? '' : 'none';
             });
-            
-            // Update active filter button
-            document.querySelectorAll('.filter-btn').forEach(btn => {
-                btn.classList.remove('active');
-            });
-            event?.target?.closest('.filter-btn')?.classList.add('active');
         }
         
         // Search Table Function
@@ -2509,15 +2522,43 @@
                     }
                 });
             });
+
+            // Migrate inline handlers (onclick/onsubmit/etc.) to event listeners to avoid implicit globals
+            document.querySelectorAll('[onclick], [onsubmit]').forEach(el => {
+                try {
+                    // Preserve existing handler function if present
+                    const propHandler = el.onclick || el.onsubmit;
+                    if (typeof propHandler === 'function') {
+                        // Determine event type
+                        if (el.getAttribute('onsubmit') !== null) {
+                            el.addEventListener('submit', function(e) { propHandler.call(this, e); });
+                        } else {
+                            el.addEventListener('click', function(e) { propHandler.call(this, e); });
+                        }
+                        // Remove the HTML attribute to keep DOM clean
+                        if (el.hasAttribute('onclick')) el.removeAttribute('onclick');
+                        if (el.hasAttribute('onsubmit')) el.removeAttribute('onsubmit');
+                    }
+                } catch (ex) {
+                    console.warn('Could not migrate inline handler for element', el, ex);
+                }
+            });
             
             // Initialize filter buttons
             document.querySelectorAll('.filter-btn').forEach(btn => {
                 btn.addEventListener('click', function(e) {
-                    const filterType = e.target.textContent.trim().toLowerCase();
-                    const tableBodyId = e.target.closest('.table-container')?.querySelector('tbody')?.id;
-                    if (tableBodyId && filterType !== 'all') {
+                    const target = e.currentTarget;
+                    const filterType = (target.textContent || '').trim().toLowerCase();
+                    const tableBodyId = target.closest('.table-container')?.querySelector('tbody')?.id;
+                    if (!tableBodyId) return;
+
+                    // Update active filter button visuals
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    target.classList.add('active');
+
+                    if (filterType !== 'all') {
                         filterTable(tableBodyId, filterType);
-                    } else if (tableBodyId) {
+                    } else {
                         // Show all
                         const rows = document.getElementById(tableBodyId)?.querySelectorAll('tr');
                         rows?.forEach(row => row.style.display = '');
