@@ -836,7 +836,7 @@ function createHeaderRow(sheet) {
     'Thời gian','Số phiếu','Loại phiếu','Ngày lập','Công ty','Người đề nghị',
     'Bộ phận','Người nộp/nhận','Loại tiền','Tổng số tiền','Số tiền bằng chữ',
     'Lý do','Người phê duyệt','Trạng thái','Số dòng chi tiết',
-    'Chi tiết (JSON)','Lịch sử phê duyệt (JSON)'
+    'Chi tiết (JSON)','Lịch sử phê duyệt (JSON)','Files đính kèm'
   ];
 
   const headerRange = sheet.getRange(1, 1, 1, headers.length);
@@ -850,6 +850,15 @@ function createHeaderRow(sheet) {
 }
 
 function writeVoucherData(sheet, data, spreadsheet) {
+  // Format file information for display
+  let filesText = '';
+  if (data.filesInfo && data.filesInfo.length > 0) {
+    filesText = data.filesInfo.map(f => {
+      const sizeMB = (f.fileSize / (1024 * 1024)).toFixed(2);
+      return `${f.fileName} (${sizeMB} MB)`;
+    }).join('\n');
+  }
+
   const row = [
     data.timestamp     || new Date().toISOString(),
     data.voucherNumber || '',
@@ -867,7 +876,8 @@ function writeVoucherData(sheet, data, spreadsheet) {
     data.status        || '',
     data.expenseItems ? data.expenseItems.length : 0,
     JSON.stringify(data.expenseItems || []),
-    JSON.stringify(data.approvalHistory || [])
+    JSON.stringify(data.approvalHistory || []),
+    filesText
   ];
 
   const newRow = sheet.getLastRow() + 1;
@@ -905,7 +915,7 @@ function createDetailSheet(spreadsheet, voucherNumber, expenseItems) {
   if (existing) spreadsheet.deleteSheet(existing);
 
   const detailSheet = spreadsheet.insertSheet(detailSheetName);
-  const headers = ['STT','Nội dung','Số tiền','Số file đính kèm'];
+  const headers = ['STT','Nội dung','Số tiền','Số file đính kèm','Tên files'];
   detailSheet.getRange(1, 1, 1, headers.length).setValues([headers])
     .setFontWeight('bold').setBackground('#4285F4').setFontColor('#FFFFFF');
 
@@ -913,7 +923,8 @@ function createDetailSheet(spreadsheet, voucherNumber, expenseItems) {
     i + 1,
     item.content || '',
     item.amount  || 0,
-    item.attachments || 0
+    item.attachments || 0,
+    item.attachmentNames || ''
   ]);
 
   if (rows.length) {

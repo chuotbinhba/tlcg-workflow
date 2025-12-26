@@ -2790,6 +2790,38 @@
                 syncBtn.disabled = true;
                 syncBtn.innerHTML = '<div class="spinner" style="width: 16px; height: 16px; border-width: 2px;"></div> Đang đồng bộ...';
 
+                // Collect file information (names and sizes only)
+                const filesInfo = [];
+                for (let i = 0; i < expenseItems.length; i++) {
+                    const item = expenseItems[i];
+                    if (item.attachments && item.attachments.length > 0) {
+                        for (const file of item.attachments) {
+                            if (file instanceof File) {
+                                filesInfo.push({
+                                    rowIndex: i,
+                                    fileName: file.name,
+                                    fileSize: file.size,
+                                    fileType: file.type
+                                });
+                            }
+                        }
+                    }
+                }
+
+                // Log file information for verification
+                console.log('=== FILE TRACKING INFO ===');
+                console.log('Total expense items:', expenseItems.length);
+                console.log('Files info collected:', filesInfo.length);
+                if (filesInfo.length > 0) {
+                    console.log('Files details:');
+                    filesInfo.forEach((f, idx) => {
+                        const sizeMB = (f.fileSize / (1024 * 1024)).toFixed(2);
+                        console.log(`  ${idx + 1}. Row ${f.rowIndex}: ${f.fileName} (${sizeMB} MB, ${f.fileType})`);
+                    });
+                } else {
+                    console.log('No files attached');
+                }
+
                 const voucherData = {
                     timestamp: new Date().toISOString(),
                     voucherNumber: document.getElementById('voucher-number').value,
@@ -2809,10 +2841,17 @@
                         stt: index + 1,
                         content: item.content,
                         amount: item.amount,
-                        attachments: item.attachments.length
+                        attachments: item.attachments.length,
+                        attachmentNames: item.attachments.map(f => f instanceof File ? f.name : f.name || 'Unknown').join(', ')
                     })),
-                    approvalHistory: approvalHistory
+                    approvalHistory: approvalHistory,
+                    filesInfo: filesInfo
                 };
+
+                console.log('=== VOUCHER DATA TO SYNC ===');
+                console.log('Voucher Number:', voucherData.voucherNumber);
+                console.log('Expense Items:', voucherData.expenseItems);
+                console.log('Files Info:', voucherData.filesInfo);
 
                 // Retry logic
                 let retries = 3;
