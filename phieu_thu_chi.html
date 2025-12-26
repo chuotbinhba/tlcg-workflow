@@ -1247,18 +1247,18 @@
     <!-- Navigation Bar - Kissflow Style + Sign In -->
     <nav class="sticky top-0 z-50 bg-white border-b border-gray-200 px-6 py-4 shadow-sm">
         <div class="max-w-7xl mx-auto flex items-center justify-between">
-            <div class="flex items-center space-x-3 cursor-pointer" onclick="if(window.opener) window.close(); else window.location.href='tlcgroup-intranet.html'">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="if(window.opener) window.close(); else window.location.href='index.html'">
                 <div class="w-9 h-9 bg-blue-600 rounded-lg flex items-center justify-center">
                     <span class="text-white text-base font-bold" style="font-family: 'Inter', sans-serif;">TLC</span>
                 </div>
                 <span class="font-semibold text-lg text-gray-900 tracking-tight" style="font-family: 'Inter', sans-serif;">TLCGroup</span>
             </div>
             <div class="flex items-center" style="gap: 12px;">
-                <button onclick="window.location.href='tlcgroup-intranet.html'" class="text-gray-600 hover:text-gray-900 font-medium transition flex items-center gap-2 px-3 py-2" style="background: transparent; border-radius: 8px;">
+                <button onclick="window.location.href='index.html'" class="text-gray-600 hover:text-gray-900 font-medium transition flex items-center gap-2 px-3 py-2" style="background: transparent; border-radius: 8px;">
                     <i class="fas fa-arrow-left text-sm"></i>
                     <span>Quay lại Intranet</span>
                 </button>
-                <button onclick="window.location.href='tlcgroup-intranet.html'" class="btn-primary" style="min-height: 36px;">
+                <button onclick="window.location.href='index.html'" class="btn-primary" style="min-height: 36px;">
                     <i class="fas fa-sign-in-alt" style="margin-right: 6px;"></i>
                     <span>Sign In</span>
                 </button>
@@ -1307,7 +1307,7 @@
             <div class="company-info">
                 <div class="form-group">
                     <label for="company">Công ty:</label>
-                    <select id="company" name="company" required onchange="updateCompanyDetails()">
+                    <select id="company" name="company" required onchange="updateCompanyDetails()" aria-label="Chọn công ty">
                         <option value="">-- Chọn công ty --</option>
                     </select>
                     <div class="error-message"></div>
@@ -1319,7 +1319,7 @@
             <div class="voucher-info">
                 <div class="form-group">
                     <label for="voucher-type">Loại phiếu:</label>
-                    <select id="voucher-type" name="voucher-type" required onchange="updateVoucherTitle()">
+                    <select id="voucher-type" name="voucher-type" required onchange="updateVoucherTitle()" aria-label="Chọn loại phiếu">
                         <option value="">-- Chọn loại phiếu --</option>
                     </select>
                     <div class="error-message"></div>
@@ -1339,7 +1339,7 @@
         <div class="form-row">
             <div class="form-group">
                 <label for="employee">Người đề nghị:</label>
-                <select id="employee" name="employee" required onchange="updateEmployeeDepartment()">
+                <select id="employee" name="employee" required onchange="updateEmployeeDepartment()" aria-label="Chọn người đề nghị">
                     <option value="">-- Chọn nhân viên --</option>
                 </select>
                 <div class="error-message"></div>
@@ -3114,6 +3114,169 @@
         window.previewFileByIndex = previewFileByIndex;
         window.removeFileFromRow = removeFileFromRow;
         window.changeSpreadsheetId = changeSpreadsheetId;
+        
+        // Initialize Google Sheets config
+        const GOOGLE_SHEETS_CONFIG = {
+            spreadsheetId: localStorage.getItem('google_sheets_id') || '',
+            sheetName: 'Vouchers'
+        };
+        
+        // Missing helper functions
+        function getCurrentVoucherDate() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+        
+        function setCurrentDate() {
+            const voucherDateInput = document.getElementById('voucher-date');
+            if (voucherDateInput) {
+                voucherDateInput.value = getCurrentVoucherDate();
+                // Set min date to today to prevent backdating
+                voucherDateInput.min = getCurrentVoucherDate();
+            }
+        }
+        
+        function generateVoucherNumber() {
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            const voucherNumber = `TL-${year}${month}-${random}`;
+            const voucherNumberInput = document.getElementById('voucher-number');
+            if (voucherNumberInput) {
+                voucherNumberInput.value = voucherNumber;
+            }
+            return voucherNumber;
+        }
+        
+        function updateEmployeeDepartment() {
+            const employeeSelect = document.getElementById('employee');
+            const departmentInput = document.getElementById('department');
+            if (employeeSelect && departmentInput) {
+                const employeeName = employeeSelect.value;
+                departmentInput.value = data.employee_departments[employeeName] || '';
+            }
+        }
+        
+        function updateAmountInWords() {
+            const amount = parseCurrency(document.getElementById('amount').value);
+            const amountInWords = convertNumberToVietnameseWords(amount);
+            const amountInWordsInput = document.getElementById('amount-in-words');
+            const amountInWordsDisplay = document.getElementById('amount-in-words-display');
+            if (amountInWordsInput) amountInWordsInput.value = amountInWords;
+            if (amountInWordsDisplay) amountInWordsDisplay.textContent = amountInWords;
+        }
+        
+        function convertNumberToVietnameseWords(num) {
+            if (num === 0) return 'Không đồng';
+            if (!num || isNaN(num)) return '';
+            
+            const units = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+            const levels = ['', 'nghìn', 'triệu', 'tỷ'];
+            
+            const readBlock = (n) => {
+                if (n === 0) return '';
+                let str = '';
+                const hundred = Math.floor(n / 100);
+                const ten = Math.floor((n % 100) / 10);
+                const unit = n % 10;
+                
+                if (hundred > 0) str += units[hundred] + ' trăm ';
+                if (ten > 1) {
+                    str += units[ten] + ' mươi ';
+                    if (unit === 1) str += 'mốt ';
+                    else if (unit > 0) str += units[unit] + ' ';
+                } else if (ten === 1) {
+                    str += 'mười ';
+                    if (unit > 0) str += units[unit] + ' ';
+                } else if (unit > 0) {
+                    if (hundred > 0) str += 'lẻ ';
+                    str += units[unit] + ' ';
+                }
+                return str;
+            };
+            
+            let result = '';
+            let blockIndex = 0;
+            
+            while (num > 0) {
+                const block = num % 1000;
+                if (block > 0) {
+                    result = readBlock(block) + levels[blockIndex] + ' ' + result;
+                }
+                num = Math.floor(num / 1000);
+                blockIndex++;
+            }
+            
+            return (result.trim() + ' đồng').charAt(0).toUpperCase() + (result.trim() + ' đồng').slice(1);
+        }
+        
+        function initializeForm() {
+            // Populate dropdowns
+            const companySelect = document.getElementById('company');
+            const employeeSelect = document.getElementById('employee');
+            const approverSelect = document.getElementById('approver');
+            const voucherTypeSelect = document.getElementById('voucher-type');
+            const currencySelect = document.getElementById('currency');
+            const payeeDropdown = document.getElementById('payee-dropdown');
+            
+            if (companySelect && data.company_names) {
+                data.company_names.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    companySelect.appendChild(option);
+                });
+            }
+            
+            if (employeeSelect && data.employee_names) {
+                data.employee_names.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    employeeSelect.appendChild(option);
+                });
+            }
+            
+            if (approverSelect && data.approver_names) {
+                data.approver_names.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    approverSelect.appendChild(option);
+                });
+            }
+            
+            if (voucherTypeSelect && data.voucher_types) {
+                data.voucher_types.forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.textContent = type;
+                    voucherTypeSelect.appendChild(option);
+                });
+            }
+            
+            if (currencySelect && data.currency_options) {
+                data.currency_options.forEach(currency => {
+                    const option = document.createElement('option');
+                    option.value = currency;
+                    option.textContent = currency;
+                    currencySelect.appendChild(option);
+                });
+            }
+            
+            if (payeeDropdown && data.employee_names) {
+                data.employee_names.forEach(name => {
+                    const option = document.createElement('option');
+                    option.value = name;
+                    option.textContent = name;
+                    payeeDropdown.appendChild(option);
+                });
+            }
+        }
         
         function saveVoucher() {
             if (!validateAllFields()) {
