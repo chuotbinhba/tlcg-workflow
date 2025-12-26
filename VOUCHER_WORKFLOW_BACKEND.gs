@@ -112,6 +112,12 @@ function doPost(e) {
         requestBody = JSON.parse(e.postData.contents);
         action = requestBody.action;
         Logger.log('Parsed from e.postData.contents');
+        Logger.log('Parsed requestBody keys: ' + Object.keys(requestBody).join(', '));
+        if (requestBody.requesterEmail) {
+          Logger.log('requesterEmail found in requestBody: ' + JSON.stringify(requestBody.requesterEmail));
+        } else {
+          Logger.log('⚠️ requesterEmail NOT found in requestBody');
+        }
       } catch (err) {
         Logger.log('Error parsing e.postData.contents: ' + err);
       }

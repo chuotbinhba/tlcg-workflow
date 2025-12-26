@@ -15,7 +15,7 @@
         // 8. Click "Deploy".
         // 9. Copy the "Web app URL" and paste it here.
         // 10. Ensure your Google account has permissions to send emails via Gmail (usually default).
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyLJ_5Hgfmg-Z-3nxCzlyFlKItOC7ZOuXSTvvj6P_MjeX_8TtG2ZN2otLD2afUqLM_8/exec';
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwTbvtCOS5GVNCHDeRguD8CKnvIh0XeubKpke4_gdIizOvh_V24h3F2nwpyKnFos_Om/exec';
 
         // Initialize email mappings based on provided exact emails and company data
         const employeeEmailMap = {

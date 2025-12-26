@@ -1707,7 +1707,7 @@
         // 8. Click "Deploy".
         // 9. Copy the "Web app URL" and paste it here.
         // 10. Ensure your Google account has permissions to send emails via Gmail (usually default).
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbygQ9jwYhSAFOqnj3MKGKVMrzTLl1ekVlGtirAjxAGRbl6CayU-jtgBzSV-XOWl51Z6/exec';
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwTbvtCOS5GVNCHDeRguD8CKnvIh0XeubKpke4_gdIizOvh_V24h3F2nwpyKnFos_Om/exec';
 
         // Initialize email mappings based on provided exact emails and company data
         const employeeEmailMap = {
@@ -2724,7 +2724,7 @@
                 }
 
                 // Check Google Apps Script URL
-                if (!GOOGLE_APPS_SCRIPT_WEB_APP_URL || GOOGLE_APPS_SCRIPT_WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbygQ9jwYhSAFOqnj3MKGKVMrzTLl1ekVlGtirAjxAGRbl6CayU-jtgBzSV-XOWl51Z6/exec') {
+                if (!GOOGLE_APPS_SCRIPT_WEB_APP_URL || GOOGLE_APPS_SCRIPT_WEB_APP_URL === 'https://script.google.com/macros/s/AKfycbwTbvtCOS5GVNCHDeRguD8CKnvIh0XeubKpke4_gdIizOvh_V24h3F2nwpyKnFos_Om/exec') {
                     const setupUrl = confirm('Chưa cấu hình Google Apps Script URL.\n\nBạn có muốn xem hướng dẫn setup không?');
                     if (setupUrl) {
                         showToast('Vui lòng xem file GOOGLE_APPS_SCRIPT_SETUP.md để biết cách cấu hình', 'info', 'Hướng dẫn');
@@ -3186,6 +3186,17 @@
             const directorEmail = selectedCompanyData ? (selectedCompanyData["Email Đại diện pháp luật"] || '') : '';
             const chiefAccountantEmail = selectedCompanyData ? (selectedCompanyData["Email Kế toán trưởng"] || '') : '';
             const requestorEmail = employeeEmailMap[requestorName] || '';
+            
+            // Email regex for validation (declare early so it can be used in debug logs)
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            
+            // Debug: Check if requestorEmail was found
+            console.log('=== REQUESTOR EMAIL DEBUG ===');
+            console.log('Requestor Name:', requestorName);
+            console.log('Employee Email Map Keys:', Object.keys(employeeEmailMap));
+            console.log('Requestor Email Found:', requestorEmail);
+            console.log('Requestor Email Valid:', requestorEmail && emailRegex.test(requestorEmail));
+            console.log('=== END REQUESTOR EMAIL DEBUG ===');
 
             console.log('Approver Email:', approverEmail);
             console.log('Director Email:', directorEmail);
@@ -3413,8 +3424,7 @@
                 <p>Trân trọng,<br>Hệ thống Kế toán Tự động</p>
             `;
 
-            // Validate email format
-            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            // Validate email format (emailRegex already declared earlier)
             const validRecipients = recipients.filter(email => emailRegex.test(email));
             const validCCRecipients = ccRecipients.filter(email => emailRegex.test(email));
 
@@ -3433,15 +3443,25 @@
             }
             
             // CRITICAL FIX: Ensure requesterEmail.to is always set if requestorEmail is valid
-            // Even if validCCRecipients is empty, we should still send email to requester
-            let requesterEmailTo = validCCRecipients.join(',');
+            // Priority: 1) validCCRecipients (if has requestorEmail), 2) requestorEmail directly
+            let requesterEmailTo = '';
+            if (validCCRecipients.length > 0) {
+                requesterEmailTo = validCCRecipients.join(',');
+            }
+            // If requesterEmailTo is still empty but requestorEmail is valid, use it directly
             if (!requesterEmailTo && requestorEmail && emailRegex.test(requestorEmail)) {
                 requesterEmailTo = requestorEmail;
                 console.log('⚠️ validCCRecipients was empty, using requestorEmail directly:', requestorEmail);
             }
+            // Final fallback: if still empty but requestorEmail exists (even if not in map), use it
+            if (!requesterEmailTo && requestorEmail && requestorEmail.trim() !== '') {
+                requesterEmailTo = requestorEmail.trim();
+                console.log('⚠️ Using requestorEmail as final fallback:', requestorEmail);
+            }
             
             console.log('Final requesterEmail.to:', requesterEmailTo);
             console.log('requestorEmail value:', requestorEmail);
+            console.log('validCCRecipients:', validCCRecipients);
 
             const payload = {
                 action: 'sendApprovalEmail',
