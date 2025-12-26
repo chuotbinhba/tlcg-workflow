@@ -3528,15 +3528,21 @@
                 // Update UI status and history
                 // Update status display with proper status text
                 const statusDisplay = document.getElementById('approval-status-display');
-                statusDisplay.textContent = 'Pending'; // Show "Pending" when sent for approval
+                statusDisplay.textContent = 'Đã gửi thông tin'; // Show "Đã gửi thông tin" when sent for approval
                 statusDisplay.classList.remove('status-pending', 'status-rejected', 'status-approved');
-                statusDisplay.classList.add('status-pending');
+                statusDisplay.classList.add('status-pending'); // Keep pending style for visual consistency
+
+                // Update review status as well
+                const reviewStatus = document.getElementById('review-status');
+                if (reviewStatus) {
+                    reviewStatus.textContent = 'Đã gửi thông tin';
+                }
 
                 const now = new Date();
                 const timestamp = now.toLocaleString('vi-VN');
                 approvalHistory.push({
                     timestamp: timestamp,
-                    action: 'Pending',
+                    action: 'Đã gửi thông tin',
                     by: requestorName,
                     to: [selectedApproverName, selectedCompanyData ? selectedCompanyData["Đại diện pháp luật"] : '', selectedCompanyData ? selectedCompanyData["Kế toán trưởng"] : ''].filter(Boolean).join(', ')
                 });

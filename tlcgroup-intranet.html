@@ -2338,9 +2338,19 @@
             `;
             
             try {
+                // Get current user email for filtering
+                const userEmail = currentUser ? (currentUser.email || '') : '';
+                const employeeName = currentUser ? (currentUser.name || '') : '';
+                
                 // Fetch summary data from Google Apps Script
                 const formData = new FormData();
                 formData.append('action', 'getVoucherSummary');
+                if (userEmail) {
+                    formData.append('userEmail', userEmail);
+                }
+                if (employeeName) {
+                    formData.append('employee', employeeName);
+                }
                 
                 const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
                     method: 'POST',
@@ -2380,11 +2390,19 @@
                     // Update recent vouchers list
                     if (data.recent && data.recent.length > 0) {
                         recentList.innerHTML = data.recent.map(voucher => {
+                            // Map status to display text
+                            let statusText = voucher.status;
+                            if (voucher.status === 'Pending' && voucher.action === 'Submit') {
+                                statusText = 'Đã gửi thông tin';
+                            }
+                            
                             const statusClass = voucher.status === 'Approved' ? 'bg-emerald-100 text-emerald-700' :
                                                 voucher.status === 'Rejected' ? 'bg-red-100 text-red-700' :
-                                                'bg-amber-100 text-amber-700';
+                                                voucher.status === 'Pending' ? 'bg-amber-100 text-amber-700' :
+                                                'bg-blue-100 text-blue-700';
                             const statusIcon = voucher.status === 'Approved' ? 'fa-check-circle' :
                                              voucher.status === 'Rejected' ? 'fa-times-circle' :
+                                             voucher.status === 'Pending' ? 'fa-paper-plane' :
                                              'fa-clock';
                             
                             return `
@@ -2398,7 +2416,7 @@
                                                 <h4 class="font-bold text-slate-800">${voucher.voucherNumber || 'N/A'}</h4>
                                                 <span class="status-badge ${statusClass}">
                                                     <i class="fas ${statusIcon} mr-1"></i>
-                                                    ${voucher.status || 'Pending'}
+                                                    ${statusText || voucher.status || 'Pending'}
                                                 </span>
                                             </div>
                                             <div class="flex items-center gap-4 text-sm text-slate-600">

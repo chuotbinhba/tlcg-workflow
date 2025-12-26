@@ -15,30 +15,46 @@
 const USERS_SHEET_ID = '1-1Q75iKeoRAGO4p7U-1IAOp9jqx77HrxF6WUxuUuT_c'; // TLCG Master Data
 const USERS_SHEET_NAME = 'Nhân viên'; // Sheet name: Nhân viên
 
+// ⚠️ IMPORTANT: Google Sheet ID for Voucher History (same as USERS_SHEET_ID or separate)
+const VOUCHER_HISTORY_SHEET_ID = '1-1Q75iKeoRAGO4p7U-1IAOp9jqx77HrxF6WUxuUuT_c'; // Use same spreadsheet as users
 const VH_SHEET_NAME = 'Voucher_History';
 
 function getVoucherHistorySheet_() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet = ss.getSheetByName(VH_SHEET_NAME);
-  if (!sheet) {
-    sheet = ss.insertSheet(VH_SHEET_NAME);
-    sheet.appendRow([
-      'VoucherNumber',
-      'VoucherType',
-      'Company',
-      'Employee',
-      'Amount',
-      'Status',       // Pending / Approved / Rejected
-      'Action',       // Submit / Approved / Rejected
-      'By',
-      'Note',
-      'RequestorEmail',
-      'ApproverEmail',
-      'Timestamp',
-      'MetaJSON'
-    ]);
+  try {
+    // Use SpreadsheetApp.openById instead of getActiveSpreadsheet for Web App
+    const ss = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID);
+    if (!ss) {
+      Logger.log('❌ ERROR: Cannot open spreadsheet with ID: ' + VOUCHER_HISTORY_SHEET_ID);
+      throw new Error('Cannot open spreadsheet. Please check VOUCHER_HISTORY_SHEET_ID.');
+    }
+    
+    let sheet = ss.getSheetByName(VH_SHEET_NAME);
+    if (!sheet) {
+      Logger.log('Sheet "' + VH_SHEET_NAME + '" not found, creating new sheet...');
+      sheet = ss.insertSheet(VH_SHEET_NAME);
+      sheet.appendRow([
+        'VoucherNumber',
+        'VoucherType',
+        'Company',
+        'Employee',
+        'Amount',
+        'Status',       // Pending / Approved / Rejected
+        'Action',       // Submit / Approved / Rejected
+        'By',
+        'Note',
+        'RequestorEmail',
+        'ApproverEmail',
+        'Timestamp',
+        'MetaJSON'
+      ]);
+      Logger.log('✅ Created new sheet: ' + VH_SHEET_NAME);
+    }
+    return sheet;
+  } catch (error) {
+    Logger.log('❌ ERROR in getVoucherHistorySheet_: ' + error.toString());
+    Logger.log('Stack: ' + error.stack);
+    throw error;
   }
-  return sheet;
 }
 
 function appendHistory_(entry) {
@@ -176,7 +192,7 @@ function doPost(e) {
         Logger.log('requestBody.voucher: ' + JSON.stringify(requestBody.voucher));
         return handleRejectVoucher(requestBody);
       case 'getVoucherSummary':
-        return handleGetVoucherSummary();
+        return handleGetVoucherSummary(requestBody);
       default:
         return createResponse(false, 'Invalid action: ' + action);
     }
@@ -687,9 +703,17 @@ function handleRejectVoucher(requestBody) {
 
 /** ===================== GET VOUCHER SUMMARY ===================== */
 
-function handleGetVoucherSummary() {
+function handleGetVoucherSummary(requestBody) {
   try {
     Logger.log('=== GET VOUCHER SUMMARY ===');
+    Logger.log('Request body: ' + JSON.stringify(requestBody));
+    
+    // Get optional filter parameters
+    const userEmail = requestBody ? (requestBody.userEmail || requestBody.email || '') : '';
+    const employeeName = requestBody ? (requestBody.employee || requestBody.employeeName || '') : '';
+    
+    Logger.log('Filter by userEmail: ' + userEmail);
+    Logger.log('Filter by employeeName: ' + employeeName);
     
     const sheet = getVoucherHistorySheet_();
     const data = sheet.getDataRange().getValues();
@@ -723,11 +747,26 @@ function handleGetVoucherSummary() {
     const idxTimestamp = 11;
     
     // Get unique vouchers (by voucher number)
+    // Filter by user if provided
     const voucherMap = new Map();
     
     rows.forEach(row => {
       const voucherNumber = row[idxVoucherNumber];
       if (!voucherNumber) return;
+      
+      // Filter by user if provided
+      if (userEmail || employeeName) {
+        const rowEmail = row[idxRequestorEmail] || '';
+        const rowEmployee = row[idxEmployee] || '';
+        
+        // Check if this row matches the filter
+        const matchesEmail = !userEmail || rowEmail.toLowerCase().includes(userEmail.toLowerCase());
+        const matchesEmployee = !employeeName || rowEmployee.toLowerCase().includes(employeeName.toLowerCase());
+        
+        if (!matchesEmail && !matchesEmployee) {
+          return; // Skip this row if it doesn't match the filter
+        }
+      }
       
       // Keep the latest entry for each voucher
       if (!voucherMap.has(voucherNumber) || 
