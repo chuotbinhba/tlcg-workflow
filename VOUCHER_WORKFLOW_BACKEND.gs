@@ -818,50 +818,70 @@ function handleSendEmail(requestBody) {
 
 function handleSyncToSheets(requestBody) {
   try {
-    const spreadsheetId = requestBody.spreadsheetId;
-    const sheetName     = requestBody.sheetName || 'Phiếu Thu Chi';
-    const data          = requestBody.data;
+    const data = requestBody.data;
 
-    if (!spreadsheetId) return createResponse(false, 'Spreadsheet ID is required');
-    if (!data)          return createResponse(false, 'Data is required');
-
-    let spreadsheet;
-    try {
-      spreadsheet = SpreadsheetApp.openById(spreadsheetId);
-    } catch (error) {
-      return createResponse(false, 'Cannot access spreadsheet. Check ID & sharing.');
-    }
-
-    let sheet = spreadsheet.getSheetByName(sheetName);
-    if (!sheet) {
-      sheet = spreadsheet.insertSheet(sheetName);
-      createHeaderRow(sheet);
-    }
+    if (!data) return createResponse(false, 'Data is required');
 
     // Upload files to Drive if present
+    let attachmentsText = '';
     if (data.files && data.files.length > 0) {
       Logger.log('Uploading ' + data.files.length + ' files to Drive...');
       try {
         const uploadedFiles = uploadFilesToDrive_(data.files, data.voucherNumber);
-        // Store Drive links in data for writing to sheet
-        data.driveFiles = uploadedFiles;
+        // Format attachments with Drive links for Column J
+        attachmentsText = uploadedFiles.map(f => {
+          if (f.error) return `${f.fileName} (Upload failed)`;
+          const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '?';
+          return `${f.fileName} (${sizeMB} MB)\n${f.fileUrl}`;
+        }).join('\n\n');
         Logger.log('Files uploaded successfully');
       } catch (uploadError) {
         Logger.log('⚠️ Warning: File upload failed: ' + uploadError.toString());
-        // Continue with sync even if upload fails
-        data.driveFiles = [];
+        attachmentsText = ''; // No attachments if upload fails
       }
     }
 
-    writeVoucherData(sheet, data, spreadsheet);
-    Logger.log('Data synced successfully to sheet: ' + sheetName);
-    return createResponse(true, 'Data synced successfully');
+    // Write to Voucher_History sheet with action "Created"
+    try {
+      appendHistory_({
+        voucherNumber: data.voucherNumber || '',
+        voucherType: data.voucherType || '',
+        company: data.company || '',
+        employee: data.employee || '',
+        amount: data.totalAmount || '',
+        status: 'Created',
+        action: 'Created',
+        by: data.employee || '',
+        note: data.reason || '',
+        attachments: attachmentsText, // Column J - Drive links
+        requestorEmail: '',
+        approverEmail: data.approver || '',
+        meta: {
+          voucherDate: data.voucherDate || '',
+          department: data.department || '',
+          payeeName: data.payeeName || '',
+          currency: data.currency || '',
+          amountInWords: data.amountInWords || '',
+          expenseItems: data.expenseItems || [],
+          approvalHistory: data.approvalHistory || []
+        }
+      });
+      Logger.log('Data synced successfully to Voucher_History');
+      return createResponse(true, 'Data synced successfully to Voucher_History');
+    } catch (historyError) {
+      Logger.log('Error writing to Voucher_History: ' + historyError.toString());
+      return createResponse(false, 'Error syncing to Voucher_History: ' + historyError.message);
+    }
   } catch (error) {
     Logger.log('Error syncing to sheets: ' + error.toString());
     return createResponse(false, 'Error syncing to sheets: ' + error.message);
   }
 }
 
+/**
+ * DEPRECATED - No longer used. Data now goes directly to Voucher_History
+ * Previously used for separate "Phiếu Thu Chi" sheet
+ */
 function createHeaderRow(sheet) {
   const headers = [
     'Thời gian','Số phiếu','Loại phiếu','Ngày lập','Công ty','Người đề nghị',
@@ -880,6 +900,10 @@ function createHeaderRow(sheet) {
   sheet.autoResizeColumns(1, headers.length);
 }
 
+/**
+ * DEPRECATED - No longer used. Data now goes directly to Voucher_History via appendHistory_
+ * Previously used for separate "Phiếu Thu Chi" sheet
+ */
 function writeVoucherData(sheet, data, spreadsheet) {
   // Format file information for display - prefer Drive links if available
   let filesText = '';
@@ -932,6 +956,10 @@ function writeVoucherData(sheet, data, spreadsheet) {
   formatStatusColumn(sheet, newRow);
 
   if (data.expenseItems && data.expenseItems.length > 0 && spreadsheet) {
+/**
+ * DEPRECATED - No longer used
+ * Previously used for separate "Phiếu Thu Chi" sheet
+ */
     createDetailSheet(spreadsheet, data.voucherNumber, data.expenseItems);
   }
 }
@@ -946,6 +974,10 @@ function formatStatusColumn(sheet, row) {
     statusCell.setBackground('#ffebee').setFontColor('#f44336');
   } else {
     statusCell.setBackground('#fff8e1').setFontColor('#ff9800');
+/**
+ * DEPRECATED - No longer used
+ * Previously created detail sheets for vouchers
+ */
   }
   statusCell.setFontWeight('bold').setHorizontalAlignment('center');
 }
