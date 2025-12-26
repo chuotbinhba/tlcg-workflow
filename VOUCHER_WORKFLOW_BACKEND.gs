@@ -766,16 +766,29 @@ function handleSendEmail(requestBody) {
     
     Logger.log('✅ Attempting to append history with voucher number: ' + voucherNumberForHistory);
     try {
-      // Format attachments data if available
+      // Upload files to Drive if present
       let attachmentsText = '';
-      if (voucher.attachments && voucher.attachments.length > 0) {
+      if (voucher.files && voucher.files.length > 0) {
+        Logger.log('Uploading ' + voucher.files.length + ' files to Drive...');
+        try {
+          const uploadedFiles = uploadFilesToDrive_(voucher.files, voucherNumberForHistory);
+          // Format attachments with Drive links for Column J
+          attachmentsText = uploadedFiles.map(f => {
+            if (f.error) return `${f.fileName} (Upload failed)`;
+            const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '?';
+            return `${f.fileName} (${sizeMB} MB)\n${f.fileUrl}`;
+          }).join('\n\n');
+          Logger.log('Files uploaded successfully. Attachments text: ' + attachmentsText);
+        } catch (uploadError) {
+          Logger.log('⚠️ Warning: File upload failed: ' + uploadError.toString());
+          // Fallback to just file names if upload fails
+          attachmentsText = voucher.files.map(f => {
+            const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '?';
+            return `${f.fileName} (${sizeMB} MB) - Upload failed`;
+          }).join('\n');
+        }
+      } else if (voucher.attachments && voucher.attachments.length > 0) {
         attachmentsText = voucher.attachments;
-      } else if (voucher.driveFiles && voucher.driveFiles.length > 0) {
-        attachmentsText = voucher.driveFiles.map(f => {
-          if (f.error) return `${f.fileName} (Upload failed)`;
-          const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '?';
-          return `${f.fileName} (${sizeMB} MB)\\n${f.fileUrl}`;
-        }).join('\\n\\n');
       }
       
       appendHistory_({
@@ -1259,6 +1272,9 @@ function handleGetVoucherSummary(requestBody) {
     const rows = data.slice(1);
     
     // Column indices (based on appendHistory_ function)
+    // A:VoucherNumber, B:VoucherType, C:Company, D:Employee, E:Amount, 
+    // F:Status, G:Action, H:By, I:Note, J:Attachments,
+    // K:RequestorEmail, L:ApproverEmail, M:Timestamp, N:MetaJSON
     const idxVoucherNumber = 0;
     const idxVoucherType = 1;
     const idxCompany = 2;
@@ -1268,9 +1284,10 @@ function handleGetVoucherSummary(requestBody) {
     const idxAction = 6;
     const idxBy = 7;
     const idxNote = 8;
-    const idxRequestorEmail = 9;
-    const idxApproverEmail = 10;
-    const idxTimestamp = 11;
+    const idxAttachments = 9;  // Column J
+    const idxRequestorEmail = 10;
+    const idxApproverEmail = 11;
+    const idxTimestamp = 12;
     
     // Get unique vouchers (by voucher number)
     // Filter by user if provided

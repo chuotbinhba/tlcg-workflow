@@ -1697,7 +1697,7 @@
         // 8. Click "Deploy".
         // 9. Copy the "Web app URL" and paste it here.
         // 10. Ensure your Google account has permissions to send emails via Gmail (usually default).
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbx10T_q_WuhvgF7mRdKyqM_rioBfsiNjVg9kGqf8KE-KU4n0LGPn4fHK1qpqmdj4MYk/exec';
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwE3mIeMqFAPef8azM3Xq03wFnRD72wgevYN3hviAJEnDKo5axJrrjXThJbkpTnE8_r/exec';
 
         // Initialize email mappings based on provided exact emails and company data
         const employeeEmailMap = {
@@ -2341,7 +2341,7 @@
             document.getElementById('export-pdf-btn').addEventListener('click', exportToPDF);
             document.getElementById('export-excel-btn').addEventListener('click', exportToExcel);
             document.getElementById('import-excel-btn').addEventListener('click', importFromExcelForm);
-            document.getElementById('sync-sheets-btn').addEventListener('click', syncWithGoogleSheets);
+            // sync-sheets-btn removed - files now upload during sendForApproval
             document.getElementById('save-template-btn').addEventListener('click', saveTemplate);
             document.getElementById('load-template-btn').addEventListener('click', loadTemplate);
             document.getElementById('save-btn').addEventListener('click', saveVoucher);
@@ -3587,6 +3587,45 @@
             console.log('requestorEmail value:', requestorEmail);
             console.log('validCCRecipients:', validCCRecipients);
 
+            // Collect files for upload to Drive
+            const filesToUpload = [];
+            for (let i = 0; i < expenseItems.length; i++) {
+                const item = expenseItems[i];
+                if (item.attachments && item.attachments.length > 0) {
+                    for (const file of item.attachments) {
+                        if (file instanceof File) {
+                            try {
+                                // Convert file to base64
+                                const base64Data = await fileToBase64(file);
+                                filesToUpload.push({
+                                    fileName: file.name,
+                                    fileData: base64Data,
+                                    mimeType: file.type,
+                                    fileSize: file.size,
+                                    rowIndex: i
+                                });
+                            } catch (err) {
+                                console.error('Error converting file to base64:', file.name, err);
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Log file information for verification
+            console.log('=== FILE UPLOAD INFO ===');
+            console.log('Total expense items:', expenseItems.length);
+            console.log('Files to upload:', filesToUpload.length);
+            if (filesToUpload.length > 0) {
+                console.log('Files details:');
+                filesToUpload.forEach((f, idx) => {
+                    const sizeMB = (f.fileSize / (1024 * 1024)).toFixed(2);
+                    console.log(`  ${idx + 1}. Row ${f.rowIndex}: ${f.fileName} (${sizeMB} MB, ${f.mimeType})`);
+                });
+            } else {
+                console.log('No files attached');
+            }
+
             const payload = {
                 action: 'sendApprovalEmail',
                 email: {
@@ -3612,9 +3651,7 @@
                     department: department || '',
                     payeeName: payeeName || '',
                     reason: reason || '',
-                    attachments: window.lastSyncedVoucherFiles && window.lastSyncedVoucherFiles.voucherNumber === voucherNumber 
-                        ? window.lastSyncedVoucherFiles.files.map(f => `${f.fileName} (${(f.fileSize / (1024 * 1024)).toFixed(2)} MB)`).join(', ')
-                        : ''
+                    files: filesToUpload  // Files for Drive upload
                 }
             };
 
