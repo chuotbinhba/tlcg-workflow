@@ -3145,7 +3145,24 @@
             loadingIndicator.classList.add('show');
             document.getElementById('send-approval-btn').disabled = true;
 
-            const voucherNumber = document.getElementById('voucher-number').value;
+            // Ensure voucher number is generated if not already set
+            let voucherNumber = document.getElementById('voucher-number').value;
+            if (!voucherNumber || voucherNumber.trim() === '' || voucherNumber === 'TL-2023-') {
+                console.log('⚠️ Voucher number missing or invalid, generating new one...');
+                generateVoucherNumber();
+                voucherNumber = document.getElementById('voucher-number').value;
+            }
+            
+            // Validate voucher number format
+            if (!voucherNumber || !voucherNumber.match(/^TL-\d{4}\d{2}-\d{4}$/)) {
+                console.error('❌ Invalid voucher number format:', voucherNumber);
+                showToast('Lỗi: Số phiếu không hợp lệ. Vui lòng thử lại.', 'error');
+                loadingIndicator.classList.remove('show');
+                document.getElementById('send-approval-btn').disabled = false;
+                return;
+            }
+            
+            console.log('✅ Voucher number validated:', voucherNumber);
             const voucherType = document.getElementById('voucher-type').value;
             const companyName = document.getElementById('company').value;
             const requestorName = document.getElementById('employee').value;
@@ -3477,20 +3494,30 @@
                     body: requesterEmailBodyHtml // Email without buttons for requester
                 },
                 voucher: {
-                    voucherNumber: voucherNumber,
-                    voucherType: voucherType,
-                    company: companyName,
-                    employee: requestorName,
-                    amount: totalAmount,
+                    voucherNumber: voucherNumber || '',
+                    voucherType: voucherType || '',
+                    company: companyName || '',
+                    employee: requestorName || '',
+                    amount: totalAmount || '0',
                     requestorEmail: requestorEmail || '',
                     approverEmail: approverEmail || '',
-                    voucherDate: voucherDate,
-                    department: department,
-                    payeeName: payeeName,
-                    reason: reason
+                    voucherDate: voucherDate || '',
+                    department: department || '',
+                    payeeName: payeeName || '',
+                    reason: reason || ''
                 }
             };
 
+            console.log('=== VOUCHER DATA FOR HISTORY ===');
+            console.log('Voucher Number:', payload.voucher.voucherNumber);
+            console.log('Voucher Type:', payload.voucher.voucherType);
+            console.log('Company:', payload.voucher.company);
+            console.log('Employee:', payload.voucher.employee);
+            console.log('Amount:', payload.voucher.amount);
+            console.log('Requestor Email:', payload.voucher.requestorEmail);
+            console.log('Full Voucher Object:', payload.voucher);
+            console.log('=== END VOUCHER DATA ===');
+            
             console.log('=== EMAIL PAYLOAD DEBUG ===');
             console.log('Valid Recipients:', validRecipients);
             console.log('Valid CC Recipients:', validCCRecipients);

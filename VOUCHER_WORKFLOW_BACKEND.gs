@@ -173,8 +173,14 @@ function setupVoucherHistorySheet() {
 
 function appendHistory_(entry) {
   try {
+    Logger.log('=== appendHistory_ START ===');
+    Logger.log('Entry data: ' + JSON.stringify(entry));
+    
     const sheet = getVoucherHistorySheet_();
+    Logger.log('✅ Sheet accessed successfully');
+    
     const now = new Date();
+    Logger.log('Timestamp: ' + now.toISOString());
 
     // Enhanced metadata with more details for better tracking
     const enhancedMeta = {
@@ -186,7 +192,7 @@ function appendHistory_(entry) {
       userAgent: entry.userAgent || ''  // Can be added from frontend if needed
     };
 
-    sheet.appendRow([
+    const rowData = [
       entry.voucherNumber || '',
       entry.voucherType || '',
       entry.company || '',
@@ -200,12 +206,27 @@ function appendHistory_(entry) {
       entry.approverEmail || '',
       now,
       JSON.stringify(enhancedMeta)
-    ]);
+    ];
     
-    Logger.log('✅ History appended for voucher: ' + (entry.voucherNumber || 'N/A') + ', action: ' + (entry.action || 'N/A') + ', status: ' + (entry.status || 'N/A'));
+    Logger.log('Row data to append: ' + JSON.stringify(rowData));
+    Logger.log('Row data length: ' + rowData.length);
+    
+    sheet.appendRow(rowData);
+    Logger.log('✅ Row appended to sheet');
+    
+    // Verify the row was added
+    const lastRow = sheet.getLastRow();
+    Logger.log('✅ Last row in sheet: ' + lastRow);
+    
+    Logger.log('✅ History appended successfully for voucher: ' + (entry.voucherNumber || 'N/A') + ', action: ' + (entry.action || 'N/A') + ', status: ' + (entry.status || 'N/A'));
+    Logger.log('=== appendHistory_ END ===');
   } catch (error) {
     Logger.log('❌ ERROR appending history: ' + error.toString());
-    Logger.log('Stack: ' + error.stack);
+    Logger.log('Error name: ' + error.name);
+    Logger.log('Error message: ' + error.message);
+    Logger.log('Stack: ' + (error.stack || 'No stack'));
+    Logger.log('=== appendHistory_ ERROR END ===');
+    // Don't throw - let the calling function handle it
     throw error;
   }
 }
@@ -625,25 +646,51 @@ function handleSendEmail(requestBody) {
     }
 
     // Ghi lịch sử SUBMIT nếu có thông tin voucher
-    if (voucher.voucherNumber) {
+    Logger.log('=== CHECKING VOUCHER DATA FOR HISTORY ===');
+    Logger.log('voucher object: ' + JSON.stringify(voucher));
+    Logger.log('voucher.voucherNumber: ' + (voucher.voucherNumber || 'NOT FOUND'));
+    Logger.log('voucher.voucherType: ' + (voucher.voucherType || 'NOT FOUND'));
+    Logger.log('voucher.employee: ' + (voucher.employee || 'NOT FOUND'));
+    Logger.log('voucher.requestorEmail: ' + (voucher.requestorEmail || 'NOT FOUND'));
+    
+    // Always try to append history, even if voucherNumber is missing (use fallback)
+    const voucherNumberForHistory = voucher.voucherNumber || 'AUTO-' + new Date().getTime();
+    
+    if (!voucher.voucherNumber) {
+      Logger.log('⚠️ WARNING: voucher.voucherNumber is missing! Using fallback: ' + voucherNumberForHistory);
+      Logger.log('⚠️ Full voucher object: ' + JSON.stringify(voucher));
+    } else {
+      Logger.log('✅ Voucher number found: ' + voucher.voucherNumber);
+    }
+    
+    Logger.log('✅ Attempting to append history with voucher number: ' + voucherNumberForHistory);
+    try {
       appendHistory_({
-        voucherNumber : voucher.voucherNumber,
-        voucherType   : voucher.voucherType,
-        company       : voucher.company,
-        employee      : voucher.employee,
-        amount        : voucher.amount,
+        voucherNumber : voucherNumberForHistory,
+        voucherType   : voucher.voucherType || '',
+        company       : voucher.company || '',
+        employee      : voucher.employee || '',
+        amount        : voucher.amount || '',
         status        : 'Pending',
         action        : 'Submit',
-        by            : voucher.employee,
-        note          : voucher.reason || '',
+        by            : voucher.employee || voucher.requestorEmail || 'Unknown',
+        note          : voucher.reason || voucher.note || '',
         requestorEmail: voucher.requestorEmail || '',
         approverEmail : voucher.approverEmail  || '',
         meta: {
-          voucherDate: voucher.voucherDate,
-          department : voucher.department,
-          payeeName  : voucher.payeeName
+          voucherDate: voucher.voucherDate || '',
+          department : voucher.department || '',
+          payeeName  : voucher.payeeName || '',
+          originalVoucherNumber: voucher.voucherNumber || null // Track original if missing
         }
       });
+      Logger.log('✅ History append completed successfully');
+    } catch (historyError) {
+      Logger.log('❌ ERROR appending history: ' + historyError.toString());
+      Logger.log('History error name: ' + historyError.name);
+      Logger.log('History error message: ' + historyError.message);
+      Logger.log('History error stack: ' + (historyError.stack || 'No stack'));
+      // Don't fail the whole request if history fails, but log it
     }
 
     return createResponse(true, 'Email sent successfully');
