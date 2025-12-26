@@ -276,12 +276,26 @@ function appendHistory_(entry) {
       userAgent: entry.userAgent || ''  // Can be added from frontend if needed
     };
 
+    // Parse amount to number (remove currency symbols if string)
+    let amountValue = entry.amount || 0;
+    if (typeof amountValue === 'string') {
+      // Remove currency symbols and spaces
+      let cleanAmount = amountValue.replace(/[₫\s]/g, '');
+      // Handle Vietnamese number format: "10.050" = 10050 (dot is thousand separator)
+      cleanAmount = cleanAmount.replace(/\./g, '').replace(/,/g, '');
+      amountValue = parseFloat(cleanAmount) || 0;
+    } else if (typeof amountValue === 'number') {
+      amountValue = amountValue;
+    } else {
+      amountValue = 0;
+    }
+    
     const rowData = [
       entry.voucherNumber || '',
       entry.voucherType || '',
       entry.company || '',
       entry.employee || '',
-      entry.amount || '',
+      amountValue, // Store as number, not string
       entry.status || '',
       entry.action || '',
       entry.by || '',
@@ -1230,12 +1244,27 @@ function handleGetVoucherSummary(requestBody) {
         const voucherNumber = row[idxVoucherNumber];
         const latestRow = voucherMap.get(voucherNumber);
         
+        // Parse amount to number (handle string with currency symbols)
+        let amountValue = latestRow[idxAmount] || 0;
+        if (typeof amountValue === 'string') {
+          // Remove currency symbols and spaces
+          let cleanAmount = amountValue.replace(/[₫\s]/g, '');
+          // Handle Vietnamese number format: "10.050" = 10050 (dot is thousand separator)
+          // Remove dots (thousand separators) and commas (if any)
+          cleanAmount = cleanAmount.replace(/\./g, '').replace(/,/g, '');
+          amountValue = parseFloat(cleanAmount) || 0;
+        } else if (typeof amountValue === 'number') {
+          amountValue = amountValue;
+        } else {
+          amountValue = 0;
+        }
+        
         return {
           voucherNumber: voucherNumber || '',
           voucherType: latestRow[idxVoucherType] || '',
           company: latestRow[idxCompany] || '',
           employee: latestRow[idxEmployee] || '',
-          amount: latestRow[idxAmount] || 0,
+          amount: amountValue,
           status: latestRow[idxStatus] || 'Pending',
           action: row[idxAction] || '',
           by: row[idxBy] || '',
