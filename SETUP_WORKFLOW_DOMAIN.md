@@ -16,7 +16,7 @@ Hướng dẫn này giúp bạn setup hệ thống workflow trên domain `https:
 
 **URL hiện tại:**
 ```
-https://script.google.com/macros/s/AKfycbwTbvtCOS5GVNCHDeRguD8CKnvIh0XeubKpke4_gdIizOvh_V24h3F2nwpyKnFos_Om/exec
+https://script.google.com/macros/s/AKfycbwcLJ-bjU9RNoh1FHhv6mOK4AQ0FXeIEmD0oLtQPduBNVjvnWASYT9ovytxvCP6QdU2/exec
 ```
 
 ### 2. Relative Paths
@@ -150,7 +150,7 @@ const rejectionLink = `https://workflow.egg-ventures.com/reject_voucher.html?${p
 - **Voucher Form:** `https://workflow.egg-ventures.com/phieu_thu_chi.html`
 - **Approve Page:** `https://workflow.egg-ventures.com/approve_voucher.html`
 - **Reject Page:** `https://workflow.egg-ventures.com/reject_voucher.html`
-- **Google Apps Script:** `https://script.google.com/macros/s/AKfycbwTbvtCOS5GVNCHDeRguD8CKnvIh0XeubKpke4_gdIizOvh_V24h3F2nwpyKnFos_Om/exec`
+- **Google Apps Script:** `https://script.google.com/macros/s/AKfycbwcLJ-bjU9RNoh1FHhv6mOK4AQ0FXeIEmD0oLtQPduBNVjvnWASYT9ovytxvCP6QdU2/exec`
 
 ## 📞 Support
 

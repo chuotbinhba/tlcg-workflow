@@ -171,6 +171,90 @@ function setupVoucherHistorySheet() {
   }
 }
 
+/**
+ * Test function to verify appendHistory_ works
+ * Run this from Apps Script editor to test
+ */
+function testAppendHistory() {
+  try {
+    Logger.log('=== TEST APPEND HISTORY START ===');
+    
+    const testEntry = {
+      voucherNumber: 'TEST-' + new Date().getTime(),
+      voucherType: 'Chi',
+      company: 'TEST COMPANY',
+      employee: 'Test Employee',
+      amount: '1000000',
+      status: 'Pending',
+      action: 'Submit',
+      by: 'Test Employee',
+      note: 'Test note from testAppendHistory function',
+      requestorEmail: 'test@example.com',
+      approverEmail: 'approver@example.com',
+      meta: {
+        voucherDate: new Date().toISOString().split('T')[0],
+        department: 'Test Department',
+        payeeName: 'Test Payee'
+      }
+    };
+    
+    Logger.log('Test entry: ' + JSON.stringify(testEntry));
+    
+    appendHistory_(testEntry);
+    
+    Logger.log('✅ TEST APPEND HISTORY SUCCESS');
+    return 'Test completed successfully! Check logs and sheet.';
+  } catch (error) {
+    Logger.log('❌ TEST APPEND HISTORY FAILED: ' + error.toString());
+    Logger.log('Error stack: ' + (error.stack || 'No stack'));
+    return 'Test failed: ' + error.message;
+  }
+}
+
+/**
+ * Test function to check if sheet exists and is accessible
+ * Run this from Apps Script editor to test
+ */
+function testVoucherHistorySheet() {
+  try {
+    Logger.log('=== TEST VOUCHER HISTORY SHEET START ===');
+    Logger.log('VOUCHER_HISTORY_SHEET_ID: ' + VOUCHER_HISTORY_SHEET_ID);
+    Logger.log('VH_SHEET_NAME: ' + VH_SHEET_NAME);
+    
+    const ss = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID);
+    Logger.log('✅ Spreadsheet opened successfully');
+    Logger.log('Spreadsheet name: ' + ss.getName());
+    
+    let sheet = ss.getSheetByName(VH_SHEET_NAME);
+    if (!sheet) {
+      Logger.log('⚠️ Sheet "' + VH_SHEET_NAME + '" not found');
+      Logger.log('Available sheets: ' + ss.getSheets().map(s => s.getName()).join(', '));
+      return 'Sheet not found. Run setupVoucherHistorySheet() first.';
+    }
+    
+    Logger.log('✅ Sheet found: ' + sheet.getName());
+    Logger.log('Sheet last row: ' + sheet.getLastRow());
+    Logger.log('Sheet last column: ' + sheet.getLastColumn());
+    
+    if (sheet.getLastRow() > 0) {
+      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
+      Logger.log('Headers: ' + headers.join(', '));
+      
+      if (sheet.getLastRow() > 1) {
+        const lastRow = sheet.getRange(sheet.getLastRow(), 1, 1, sheet.getLastColumn()).getValues()[0];
+        Logger.log('Last row data: ' + lastRow.join(' | '));
+      }
+    }
+    
+    Logger.log('✅ TEST VOUCHER HISTORY SHEET SUCCESS');
+    return 'Sheet is accessible. Last row: ' + sheet.getLastRow();
+  } catch (error) {
+    Logger.log('❌ TEST VOUCHER HISTORY SHEET FAILED: ' + error.toString());
+    Logger.log('Error stack: ' + (error.stack || 'No stack'));
+    return 'Test failed: ' + error.message;
+  }
+}
+
 function appendHistory_(entry) {
   try {
     Logger.log('=== appendHistory_ START ===');
