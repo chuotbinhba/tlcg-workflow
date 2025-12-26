@@ -1426,7 +1426,7 @@
     <script>
         const apiKey = "";
         // ⚠️ IMPORTANT: Replace with your Google Apps Script Web App URL
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwE3mIeMqFAPef8azM3Xq03wFnRD72wgevYN3hviAJEnDKo5axJrrjXThJbkpTnE8_r/exec';
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzcvYyQgbMjZkQRRB9CiCzJh14bS--CAvP5mpk13LB0IuOBRl7DKrfZ3WmJ8BvfyTQE/exec';
 
         // Master data cache
         let masterData = {
@@ -2456,20 +2456,36 @@
                     // Update recent vouchers list
                     if (data.recent && data.recent.length > 0) {
                         recentList.innerHTML = data.recent.map(voucher => {
-                            // Map status to display text
+                            // Map status to display text based on action
                             let statusText = voucher.status;
-                            if (voucher.status === 'Pending' && voucher.action === 'Submit') {
-                                statusText = 'Đã gửi thông tin';
-                            }
+                            let statusClass = 'bg-slate-100 text-slate-700';
+                            let statusIcon = 'fa-circle';
                             
-                            const statusClass = voucher.status === 'Approved' ? 'bg-emerald-100 text-emerald-700' :
-                                                voucher.status === 'Rejected' ? 'bg-red-100 text-red-700' :
-                                                voucher.status === 'Pending' ? 'bg-amber-100 text-amber-700' :
-                                                'bg-blue-100 text-blue-700';
-                            const statusIcon = voucher.status === 'Approved' ? 'fa-check-circle' :
-                                             voucher.status === 'Rejected' ? 'fa-times-circle' :
-                                             voucher.status === 'Pending' ? 'fa-paper-plane' :
-                                             'fa-clock';
+                            // Determine display based on action type
+                            const action = (voucher.action || '').toLowerCase();
+                            const status = (voucher.status || '').toLowerCase();
+                            
+                            if (action === 'submit' || status === 'pending') {
+                                statusText = 'Chờ duyệt';
+                                statusClass = 'bg-amber-100 text-amber-700';
+                                statusIcon = 'fa-paper-plane';
+                            } else if (action === 'approved' || status === 'approved') {
+                                statusText = 'Đã duyệt';
+                                statusClass = 'bg-emerald-100 text-emerald-700';
+                                statusIcon = 'fa-check-circle';
+                            } else if (action === 'rejected' || status === 'rejected') {
+                                statusText = 'Từ chối';
+                                statusClass = 'bg-red-100 text-red-700';
+                                statusIcon = 'fa-times-circle';
+                            } else if (action === 'resubmit') {
+                                statusText = 'Gửi lại';
+                                statusClass = 'bg-blue-100 text-blue-700';
+                                statusIcon = 'fa-redo';
+                            } else if (action === 'cancelled' || status === 'cancelled') {
+                                statusText = 'Đã hủy';
+                                statusClass = 'bg-slate-100 text-slate-700';
+                                statusIcon = 'fa-ban';
+                            }
                             
                             return `
                                 <div class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-lg hover:shadow-md transition">
@@ -2482,7 +2498,7 @@
                                                 <h4 class="font-bold text-slate-800">${voucher.voucherNumber || 'N/A'}</h4>
                                                 <span class="status-badge ${statusClass}">
                                                     <i class="fas ${statusIcon} mr-1"></i>
-                                                    ${statusText || voucher.status || 'Pending'}
+                                                    ${statusText}
                                                 </span>
                                             </div>
                                             <div class="flex items-center gap-4 text-sm text-slate-600">
@@ -2490,11 +2506,11 @@
                                                 <span><i class="fas fa-user mr-1"></i> ${voucher.employee || 'N/A'}</span>
                                                 <span><i class="fas fa-money-bill-wave mr-1"></i> ${formatCurrency(voucher.amount || 0)}</span>
                                             </div>
+                                            ${voucher.by ? `<p class="text-xs text-slate-500 mt-1">Bởi: ${voucher.by}</p>` : ''}
                                         </div>
                                     </div>
                                     <div class="text-right">
                                         <p class="text-xs text-slate-500">${voucher.timestamp || ''}</p>
-                                        <p class="text-xs text-slate-400 mt-1">${voucher.action || ''}</p>
                                     </div>
                                 </div>
                             `;

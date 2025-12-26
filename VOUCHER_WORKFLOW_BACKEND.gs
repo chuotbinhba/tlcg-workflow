@@ -1294,6 +1294,12 @@ function handleGetVoucherSummary(requestBody) {
     const voucherMap = new Map();
     
     rows.forEach(row => {
+      // Safety check - skip rows with insufficient columns
+      if (!row || row.length < 6) {
+        Logger.log('⚠️ Skipping row with insufficient columns');
+        return;
+      }
+      
       const voucherNumber = row[idxVoucherNumber];
       if (!voucherNumber) return;
       
@@ -1331,48 +1337,49 @@ function handleGetVoucherSummary(requestBody) {
       else if (status === 'Rejected') rejected++;
     });
     
-    // Get recent vouchers (last 10 entries, sorted by timestamp)
+    // Get recent vouchers (last 10 entries, sorted by timestamp - showing ALL actions)
     const recentRows = rows
-      .filter(row => row[idxTimestamp])
+      .filter(row => row && row.length >= 6 && row[idxTimestamp])
       .sort((a, b) => {
         const dateA = new Date(a[idxTimestamp] || 0);
         const dateB = new Date(b[idxTimestamp] || 0);
         return dateB - dateA; // Descending order (newest first)
       })
-      .slice(0, 10)
+      .slice(0, 15) // Show last 15 entries
       .map(row => {
-        // Get the latest status for this voucher
         const voucherNumber = row[idxVoucherNumber];
-        const latestRow = voucherMap.get(voucherNumber);
+        
+        // Safety check - ensure row has enough columns
+        if (!row || row.length < 6) {
+          Logger.log('⚠️ Warning: Row has insufficient columns: ' + JSON.stringify(row));
+          return null;
+        }
         
         // Parse amount to number (handle string with currency symbols)
-        let amountValue = latestRow[idxAmount] || 0;
+        let amountValue = row[idxAmount] || 0;
         if (typeof amountValue === 'string') {
-          // Remove currency symbols and spaces
           let cleanAmount = amountValue.replace(/[₫\s]/g, '');
-          // Handle Vietnamese number format: "10.050" = 10050 (dot is thousand separator)
-          // Remove dots (thousand separators) and commas (if any)
           cleanAmount = cleanAmount.replace(/\./g, '').replace(/,/g, '');
           amountValue = parseFloat(cleanAmount) || 0;
-        } else if (typeof amountValue === 'number') {
-          amountValue = amountValue;
-        } else {
+        } else if (typeof amountValue !== 'number') {
           amountValue = 0;
         }
         
+        // Show actual status of THIS row (not latest status)
         return {
           voucherNumber: voucherNumber || '',
-          voucherType: latestRow[idxVoucherType] || '',
-          company: latestRow[idxCompany] || '',
-          employee: latestRow[idxEmployee] || '',
+          voucherType: row[idxVoucherType] || '',
+          company: row[idxCompany] || '',
+          employee: row[idxEmployee] || '',
           amount: amountValue,
-          status: latestRow[idxStatus] || 'Pending',
-          action: row[idxAction] || '',
+          status: row[idxStatus] || 'Pending',  // THIS row's status
+          action: row[idxAction] || '',          // THIS row's action
           by: row[idxBy] || '',
           note: row[idxNote] || '',
           timestamp: formatTimestamp(row[idxTimestamp])
         };
-      });
+      })
+      .filter(item => item !== null); // Remove any null entries
     
     const summary = {
       total: total,
