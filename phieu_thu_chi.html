@@ -1330,7 +1330,8 @@
                 </div>
                 <div class="form-group">
                     <label for="voucher-date">Ngày lập phiếu:</label>
-                    <input type="date" id="voucher-date" name="voucher-date" required readonly style="background-color: #f5f5f5; cursor: not-allowed;">
+                    <input type="date" id="voucher-date" name="voucher-date" required>
+                    <small class="form-hint" style="display: block; margin-top: 0.25rem; color: #6b7280; font-size: 0.875rem;">Chỉ được chọn ngày hiện tại trở đi</small>
                 </div>
             </div>
         </div>
@@ -2174,16 +2175,28 @@
             const voucherNumber = document.getElementById('voucher-number');
             safeSetText('review-number', voucherNumber ? voucherNumber.value : '');
             
-            // Display current date/time (when submitting), not the form date
-            const now = new Date();
-            const formattedDate = now.toLocaleDateString('vi-VN', { 
-                year: 'numeric', 
-                month: 'long', 
-                day: 'numeric',
-                hour: '2-digit',
-                minute: '2-digit'
-            });
-            safeSetText('review-date', `lúc ${formattedDate}`);
+            // Display voucher date from form input (user selected date)
+            const voucherDateInput = document.getElementById('voucher-date');
+            let reviewDateText = '-';
+            if (voucherDateInput && voucherDateInput.value) {
+                const selectedDate = new Date(voucherDateInput.value);
+                const formattedDate = selectedDate.toLocaleDateString('vi-VN', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric'
+                });
+                reviewDateText = formattedDate;
+            } else {
+                // Fallback to current date if no date selected
+                const now = new Date();
+                const formattedDate = now.toLocaleDateString('vi-VN', { 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric'
+                });
+                reviewDateText = formattedDate;
+            }
+            safeSetText('review-date', reviewDateText);
             
             const employee = document.getElementById('employee');
             safeSetText('review-employee', employee ? employee.value : '');
@@ -2475,10 +2488,26 @@
             if (voucherDateInput) {
                 // Set min date to today (prevent back date selection)
                 voucherDateInput.setAttribute('min', formattedDate);
-                // Set value to today (current system date)
+                // Set value to today (current system date) as default
                 voucherDateInput.value = formattedDate;
-                // Make it readonly to prevent manual editing
-                voucherDateInput.setAttribute('readonly', 'readonly');
+                // Remove readonly to allow user to select date (but only from today onwards)
+                voucherDateInput.removeAttribute('readonly');
+                // Remove disabled style
+                voucherDateInput.style.backgroundColor = '';
+                voucherDateInput.style.cursor = '';
+                
+                // Add validation on change to ensure date is not in the past
+                voucherDateInput.addEventListener('change', function() {
+                    const selectedDate = new Date(this.value);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    selectedDate.setHours(0, 0, 0, 0);
+                    
+                    if (selectedDate < today) {
+                        alert('Ngày lập phiếu không được là ngày quá khứ. Vui lòng chọn ngày hiện tại trở đi.');
+                        this.value = formattedDate; // Reset to today
+                    }
+                });
             }
         }
         
@@ -3170,9 +3199,31 @@
             const totalAmount = document.getElementById('amount').value;
             const amountInWords = document.getElementById('amount-in-words').value;
             const reason = document.getElementById('reason').value;
-            // Always use current system date, not the form input value (to prevent back date)
-            const currentDate = new Date();
-            const voucherDate = currentDate.toISOString().substr(0, 10); // Current date in YYYY-MM-DD format
+            
+            // Get voucher date from input, but validate it's not in the past
+            const voucherDateInput = document.getElementById('voucher-date');
+            let voucherDate = voucherDateInput ? voucherDateInput.value : '';
+            
+            // Validate date is not in the past
+            if (voucherDate) {
+                const selectedDate = new Date(voucherDate);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                selectedDate.setHours(0, 0, 0, 0);
+                
+                if (selectedDate < today) {
+                    console.warn('⚠️ Selected date is in the past, using current date instead');
+                    showToast('Ngày lập phiếu không được là ngày quá khứ. Đã tự động sử dụng ngày hiện tại.', 'warning');
+                    voucherDate = getCurrentVoucherDate(); // Use current date
+                    if (voucherDateInput) {
+                        voucherDateInput.value = voucherDate; // Update input
+                    }
+                }
+            } else {
+                // If no date selected, use current date
+                voucherDate = getCurrentVoucherDate();
+            }
+            
             const department = document.getElementById('department').value;
 
             const selectedApproverName = document.getElementById('approver').value;
