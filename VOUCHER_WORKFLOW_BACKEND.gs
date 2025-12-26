@@ -505,7 +505,8 @@ function createResponse(success, message, data) {
 function doPost(e) {
   try {
     Logger.log('=== doPost called ===');
-    Logger.log('e.postData: ' + JSON.stringify(e.postData));
+    Logger.log('e.postData type: ' + (e.postData ? e.postData.type : 'null'));
+    Logger.log('e.postData contents length: ' + (e.postData && e.postData.contents ? e.postData.contents.length : 0));
     Logger.log('e.parameter: ' + JSON.stringify(e.parameter));
 
     let requestBody;
@@ -518,13 +519,27 @@ function doPost(e) {
       Logger.log('Parsed action from FormData: ' + action);
     }
 
-    // 1) e.postData.contents (JSON body)
+    // 1) e.postData.contents (JSON or text/plain body)
     if (!action && e.postData && e.postData.contents) {
       try {
+        // Log the first 500 chars for debugging
+        Logger.log('postData.contents preview: ' + e.postData.contents.substring(0, 500));
+        
         requestBody = JSON.parse(e.postData.contents);
         action = requestBody.action;
         Logger.log('Parsed from e.postData.contents');
         Logger.log('Parsed requestBody keys: ' + Object.keys(requestBody).join(', '));
+        
+        // Log voucher.files info specifically
+        if (requestBody.voucher && requestBody.voucher.files) {
+          Logger.log('📁 voucher.files count: ' + requestBody.voucher.files.length);
+          requestBody.voucher.files.forEach((f, idx) => {
+            Logger.log('📁 File ' + (idx+1) + ': ' + f.fileName + ', hasData: ' + (f.fileData ? 'YES' : 'NO') + ', dataLen: ' + (f.fileData ? f.fileData.length : 0));
+          });
+        } else {
+          Logger.log('📁 No voucher.files found in request');
+        }
+        
         if (requestBody.requesterEmail) {
           Logger.log('requesterEmail found in requestBody: ' + JSON.stringify(requestBody.requesterEmail));
         } else {
@@ -532,6 +547,7 @@ function doPost(e) {
         }
       } catch (err) {
         Logger.log('Error parsing e.postData.contents: ' + err);
+        Logger.log('Raw contents (first 1000 chars): ' + (e.postData.contents ? e.postData.contents.substring(0, 1000) : 'null'));
       }
     }
 
@@ -768,7 +784,20 @@ function handleSendEmail(requestBody) {
     try {
       // Upload files to Drive if present
       let attachmentsText = '';
+      
+      // Debug: Log file information
+      Logger.log('=== CHECKING FILES FOR UPLOAD ===');
+      Logger.log('voucher.files exists: ' + (voucher.files ? 'YES' : 'NO'));
+      Logger.log('voucher.files type: ' + (voucher.files ? typeof voucher.files : 'N/A'));
+      Logger.log('voucher.files is array: ' + (Array.isArray(voucher.files) ? 'YES' : 'NO'));
+      Logger.log('voucher.files length: ' + (voucher.files ? voucher.files.length : 0));
+      
       if (voucher.files && voucher.files.length > 0) {
+        // Log each file info (without the actual data)
+        voucher.files.forEach((f, idx) => {
+          Logger.log('File ' + (idx + 1) + ': ' + f.fileName + ', mimeType: ' + f.mimeType + ', size: ' + f.fileSize + ', hasData: ' + (f.fileData ? 'YES' : 'NO') + ', dataLength: ' + (f.fileData ? f.fileData.length : 0));
+        });
+        
         Logger.log('Uploading ' + voucher.files.length + ' files to Drive...');
         try {
           const uploadedFiles = uploadFilesToDrive_(voucher.files, voucherNumberForHistory);
@@ -778,13 +807,15 @@ function handleSendEmail(requestBody) {
             const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '?';
             return `${f.fileName} (${sizeMB} MB)\n${f.fileUrl}`;
           }).join('\n\n');
-          Logger.log('Files uploaded successfully. Attachments text: ' + attachmentsText);
+        Logger.log('Files uploaded successfully. Attachments text: ' + attachmentsText);
         } catch (uploadError) {
           Logger.log('⚠️ Warning: File upload failed: ' + uploadError.toString());
-          // Fallback to just file names if upload fails
+          Logger.log('⚠️ Upload error stack: ' + (uploadError.stack || 'No stack'));
+          // Fallback to just file names and sizes if upload fails
           attachmentsText = voucher.files.map(f => {
             const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '?';
-            return `${f.fileName} (${sizeMB} MB) - Upload failed`;
+            const dataStatus = f.fileData ? 'data present (' + f.fileData.length + ' chars)' : 'NO DATA';
+            return `${f.fileName} (${sizeMB} MB) - Upload failed [${dataStatus}]`;
           }).join('\n');
         }
       } else if (voucher.attachments && voucher.attachments.length > 0) {
@@ -1750,11 +1781,33 @@ function uploadFilesToDrive_(files, voucherNumber) {
     for (let i = 0; i < files.length; i++) {
       const fileData = files[i];
       Logger.log('Processing file ' + (i + 1) + ': ' + fileData.fileName);
+      Logger.log('File mimeType: ' + fileData.mimeType);
+      Logger.log('File size: ' + fileData.fileSize);
+      Logger.log('fileData.fileData exists: ' + (fileData.fileData ? 'YES' : 'NO'));
+      Logger.log('fileData.fileData length: ' + (fileData.fileData ? fileData.fileData.length : 0));
       
       try {
-        // Decode base64 data
-        const base64Data = fileData.fileData.split(',')[1] || fileData.fileData;
+        // Validate fileData exists
+        if (!fileData.fileData || fileData.fileData.length === 0) {
+          throw new Error('No file data received for ' + fileData.fileName);
+        }
+        
+        // Decode base64 data - handle both "data:mime;base64,xxx" and plain base64
+        let base64Data = fileData.fileData;
+        if (base64Data.indexOf(',') !== -1) {
+          base64Data = base64Data.split(',')[1];
+        }
+        
+        Logger.log('Base64 data length after split: ' + base64Data.length);
+        
+        // Check for valid base64
+        if (!base64Data || base64Data.length < 10) {
+          throw new Error('Invalid or empty base64 data');
+        }
+        
         const bytes = Utilities.base64Decode(base64Data);
+        Logger.log('Decoded bytes length: ' + bytes.length);
+        
         const blob = Utilities.newBlob(bytes, fileData.mimeType, fileData.fileName);
         
         // Upload to Drive
@@ -1777,6 +1830,7 @@ function uploadFilesToDrive_(files, voucherNumber) {
         
       } catch (fileError) {
         Logger.log('❌ Error uploading file ' + fileData.fileName + ': ' + fileError.toString());
+        Logger.log('❌ Error stack: ' + (fileError.stack || 'No stack'));
         // Continue with next file even if one fails
         uploadedFiles.push({
           fileName: fileData.fileName,
@@ -1797,5 +1851,59 @@ function uploadFilesToDrive_(files, voucherNumber) {
   }
 }
 
+/**
+ * TEST FUNCTION - Run this to verify Drive access
+ * Run from Apps Script Editor > Select this function > Run
+ */
+function testDriveAccess() {
+  const DRIVE_FOLDER_ID = '1RBBUUAQIrYTWeBONIgkMtELL0hxZhtqG';
+  
+  try {
+    Logger.log('=== TESTING DRIVE ACCESS ===');
+    
+    // Test 1: Can we access the folder?
+    const parentFolder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+    Logger.log('✅ Parent folder accessed: ' + parentFolder.getName());
+    
+    // Test 2: Can we create a test subfolder?
+    const testFolderName = 'TEST-' + new Date().getTime();
+    const testFolder = parentFolder.createFolder(testFolderName);
+    Logger.log('✅ Created test folder: ' + testFolder.getName());
+    
+    // Test 3: Can we create a test file?
+    const testBlob = Utilities.newBlob('Hello World', 'text/plain', 'test.txt');
+    const testFile = testFolder.createFile(testBlob);
+    testFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    Logger.log('✅ Created test file: ' + testFile.getUrl());
+    
+    // Cleanup: Delete test folder
+    testFolder.setTrashed(true);
+    Logger.log('✅ Cleaned up test folder');
+    
+    Logger.log('=== ALL TESTS PASSED ===');
+    return 'SUCCESS: Drive access working properly. Folder: ' + parentFolder.getName();
+    
+  } catch (error) {
+    Logger.log('❌ DRIVE ACCESS ERROR: ' + error.toString());
+    Logger.log('Stack: ' + error.stack);
+    return 'ERROR: ' + error.message;
+  }
+}
 
-
+/**
+ * TEST FUNCTION - Test base64 decoding
+ */
+function testBase64Decode() {
+  try {
+    // Small test string in base64
+    const testBase64 = 'SGVsbG8gV29ybGQ='; // "Hello World"
+    const bytes = Utilities.base64Decode(testBase64);
+    const text = Utilities.newBlob(bytes).getDataAsString();
+    Logger.log('Decoded text: ' + text);
+    Logger.log('✅ Base64 decoding works');
+    return 'SUCCESS: ' + text;
+  } catch (error) {
+    Logger.log('❌ ERROR: ' + error.toString());
+    return 'ERROR: ' + error.message;
+  }
+}

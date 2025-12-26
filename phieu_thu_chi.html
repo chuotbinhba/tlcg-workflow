@@ -1697,7 +1697,7 @@
         // 8. Click "Deploy".
         // 9. Copy the "Web app URL" and paste it here.
         // 10. Ensure your Google account has permissions to send emails via Gmail (usually default).
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzcvYyQgbMjZkQRRB9CiCzJh14bS--CAvP5mpk13LB0IuOBRl7DKrfZ3WmJ8BvfyTQE/exec';
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwXNfk9LYDg_ZACtqybON-K5kyKK76j9233Fa53rfA0fmlOtfGe2NzqEuNstgEUITum/exec';
 
         // Initialize email mappings based on provided exact emails and company data
         const employeeEmailMap = {
@@ -3589,18 +3589,35 @@
 
             // Collect files for upload to Drive
             const filesToUpload = [];
+            const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB max per file
+            
             for (let i = 0; i < expenseItems.length; i++) {
                 const item = expenseItems[i];
                 if (item.attachments && item.attachments.length > 0) {
                     for (const file of item.attachments) {
                         if (file instanceof File) {
+                            // Check file size
+                            if (file.size > MAX_FILE_SIZE) {
+                                console.warn(`File ${file.name} is too large (${(file.size / 1024 / 1024).toFixed(2)} MB). Max: 10MB. Skipping.`);
+                                continue;
+                            }
+                            
                             try {
                                 // Convert file to base64
                                 const base64Data = await fileToBase64(file);
+                                
+                                // Verify base64 data was generated
+                                if (!base64Data || base64Data.length < 100) {
+                                    console.error(`Failed to convert ${file.name} to base64. Result was empty or too short.`);
+                                    continue;
+                                }
+                                
+                                console.log(`✅ File ${file.name}: ${file.size} bytes -> ${base64Data.length} chars base64`);
+                                
                                 filesToUpload.push({
                                     fileName: file.name,
                                     fileData: base64Data,
-                                    mimeType: file.type,
+                                    mimeType: file.type || 'application/octet-stream',
                                     fileSize: file.size,
                                     rowIndex: i
                                 });
@@ -3675,19 +3692,34 @@
 
             // Debug: Log payload trước khi gửi
             console.log('=== SENDING EMAIL ===');
-            console.log('Payload:', payload);
             console.log('Recipients:', recipients);
             console.log('CC Recipients:', ccRecipients);
             console.log('Google Apps Script URL:', GOOGLE_APPS_SCRIPT_WEB_APP_URL);
+            
+            // Calculate total payload size
+            const payloadString = JSON.stringify(payload);
+            const payloadSizeKB = (payloadString.length / 1024).toFixed(2);
+            const payloadSizeMB = (payloadString.length / 1024 / 1024).toFixed(2);
+            console.log(`📦 Total payload size: ${payloadSizeKB} KB (${payloadSizeMB} MB)`);
+            console.log(`📁 Files in payload: ${filesToUpload.length}`);
+            filesToUpload.forEach((f, i) => {
+                console.log(`   File ${i+1}: ${f.fileName} - base64 length: ${f.fileData ? f.fileData.length : 0}`);
+            });
+            
+            // Check if payload is too large (> 5MB might fail)
+            if (payloadString.length > 5 * 1024 * 1024) {
+                console.warn('⚠️ Payload is very large (> 5MB), upload may fail');
+            }
 
             try {
+                // Use text/plain to avoid CORS preflight issues with large payloads
                 const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
                     method: 'POST',
-                    mode: 'no-cors', // Required for simple POST to Apps Script without preflight
+                    mode: 'no-cors',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'text/plain',
                     },
-                    body: JSON.stringify(payload),
+                    body: payloadString,
                 });
                 
                 console.log('Response status:', response.status);
