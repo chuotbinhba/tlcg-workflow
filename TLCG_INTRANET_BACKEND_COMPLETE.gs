@@ -124,6 +124,10 @@ function doPost(e) {
         result = handleApproveVoucher(requestBody);
         break;
       
+      case 'getMasterData':
+        result = handleGetMasterData(requestBody);
+        break;
+      
       default:
         result = createResponse(false, 'Invalid action: ' + action);
     }
@@ -1092,6 +1096,86 @@ function testHashPassword() {
   Logger.log('Password: ' + password);
   Logger.log('Hash: ' + hash);
   return hash;
+}
+
+/**
+ * Handle getMasterData action
+ * Fetches data from Nhân viên, Khách hàng, Nhà cung cấp sheets
+ */
+function handleGetMasterData(requestBody) {
+  try {
+    Logger.log('=== handleGetMasterData called ===');
+    
+    const ss = SpreadsheetApp.openById(USERS_SHEET_ID);
+    
+    // Fetch Nhân viên (Employees)
+    const employeesSheet = ss.getSheetByName('Nhân viên');
+    let employeesData = [];
+    if (employeesSheet) {
+      const employeesValues = employeesSheet.getDataRange().getValues();
+      const employeesHeaders = employeesValues[0];
+      employeesData = employeesValues.slice(1).map(row => {
+        const obj = {};
+        employeesHeaders.forEach((header, index) => {
+          obj[header] = row[index];
+        });
+        return obj;
+      });
+      Logger.log('Nhân viên records: ' + employeesData.length);
+    } else {
+      Logger.log('⚠️ Sheet "Nhân viên" not found');
+    }
+    
+    // Fetch Khách hàng (Customers)
+    const customersSheet = ss.getSheetByName('Khách hàng');
+    let customersData = [];
+    if (customersSheet) {
+      const customersValues = customersSheet.getDataRange().getValues();
+      const customersHeaders = customersValues[0];
+      customersData = customersValues.slice(1).map(row => {
+        const obj = {};
+        customersHeaders.forEach((header, index) => {
+          obj[header] = row[index];
+        });
+        return obj;
+      });
+      Logger.log('Khách hàng records: ' + customersData.length);
+    } else {
+      Logger.log('⚠️ Sheet "Khách hàng" not found');
+    }
+    
+    // Fetch Nhà cung cấp (Suppliers)
+    const suppliersSheet = ss.getSheetByName('Nhà cung cấp');
+    let suppliersData = [];
+    if (suppliersSheet) {
+      const suppliersValues = suppliersSheet.getDataRange().getValues();
+      const suppliersHeaders = suppliersValues[0];
+      suppliersData = suppliersValues.slice(1).map(row => {
+        const obj = {};
+        suppliersHeaders.forEach((header, index) => {
+          obj[header] = row[index];
+        });
+        return obj;
+      });
+      Logger.log('Nhà cung cấp records: ' + suppliersData.length);
+    } else {
+      Logger.log('⚠️ Sheet "Nhà cung cấp" not found');
+    }
+    
+    const masterData = {
+      employees: employeesData,
+      customers: customersData,
+      suppliers: suppliersData,
+      timestamp: new Date().toISOString()
+    };
+    
+    Logger.log('✅ Master data fetched successfully');
+    return createResponse(true, 'Master data fetched successfully', masterData);
+  } catch (error) {
+    Logger.log('❌ Error in handleGetMasterData: ' + error.toString());
+    Logger.log('Stack: ' + error.stack);
+    return createResponse(false, 'Error fetching master data: ' + error.message);
+  }
 }
 
 /**
