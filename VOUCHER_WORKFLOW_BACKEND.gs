@@ -1116,6 +1116,8 @@ function handleGetVoucherSummary(requestBody) {
   try {
     Logger.log('=== GET VOUCHER SUMMARY ===');
     Logger.log('Request body: ' + JSON.stringify(requestBody));
+    Logger.log('VOUCHER_HISTORY_SHEET_ID: ' + VOUCHER_HISTORY_SHEET_ID);
+    Logger.log('VH_SHEET_NAME: ' + VH_SHEET_NAME);
     
     // Get optional filter parameters
     const userEmail = requestBody ? (requestBody.userEmail || requestBody.email || '') : '';
@@ -1124,8 +1126,25 @@ function handleGetVoucherSummary(requestBody) {
     Logger.log('Filter by userEmail: ' + userEmail);
     Logger.log('Filter by employeeName: ' + employeeName);
     
-    const sheet = getVoucherHistorySheet_();
+    Logger.log('Attempting to get voucher history sheet...');
+    let sheet;
+    try {
+      sheet = getVoucherHistorySheet_();
+      Logger.log('✅ Sheet accessed successfully');
+    } catch (sheetError) {
+      Logger.log('❌ ERROR accessing sheet: ' + sheetError.toString());
+      Logger.log('Sheet error stack: ' + (sheetError.stack || 'No stack'));
+      return createResponse(false, 'Error accessing voucher history sheet: ' + sheetError.message);
+    }
+    
+    if (!sheet) {
+      Logger.log('❌ ERROR: Sheet is null');
+      return createResponse(false, 'Voucher history sheet not found. Please run setupVoucherHistorySheet() first.');
+    }
+    
+    Logger.log('Getting data range from sheet...');
     const data = sheet.getDataRange().getValues();
+    Logger.log('Data rows retrieved: ' + data.length);
     
     if (data.length <= 1) {
       // Only header row, no data
