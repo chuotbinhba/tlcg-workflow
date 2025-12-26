@@ -1330,7 +1330,7 @@
                 </div>
                 <div class="form-group">
                     <label for="voucher-date">Ngày lập phiếu:</label>
-                    <input type="date" id="voucher-date" name="voucher-date" required>
+                    <input type="date" id="voucher-date" name="voucher-date" required readonly style="background-color: #f5f5f5; cursor: not-allowed;">
                 </div>
             </div>
         </div>
@@ -1921,7 +1921,7 @@
                     payeeName: document.getElementById('payee-name').value,
                     currency: document.getElementById('currency').value,
                     reason: document.getElementById('reason').value,
-                    voucherDate: document.getElementById('voucher-date').value,
+                    voucherDate: getCurrentVoucherDate(), // Always use current system date
                     voucherNumber: document.getElementById('voucher-number').value,
                     approver: document.getElementById('approver').value,
                     expenseItems: expenseItems.map(item => ({
@@ -1959,7 +1959,9 @@
                     if (formData.payeeName) document.getElementById('payee-name').value = formData.payeeName;
                     if (formData.currency) document.getElementById('currency').value = formData.currency;
                     if (formData.reason) document.getElementById('reason').value = formData.reason;
-                    if (formData.voucherDate) document.getElementById('voucher-date').value = formData.voucherDate;
+                    // Don't restore voucherDate from localStorage - always use current date
+                    // This prevents back date submission
+                    // if (formData.voucherDate) document.getElementById('voucher-date').value = formData.voucherDate;
                     if (formData.voucherNumber) document.getElementById('voucher-number').value = formData.voucherNumber;
                     if (formData.approver) document.getElementById('approver').value = formData.approver;
                     
@@ -2318,12 +2320,14 @@
 
         document.addEventListener('DOMContentLoaded', function() {
             initializeForm();
-            setCurrentDate();
             generateVoucherNumber();
             renderExpenseTable();
 
-            // Load saved data
+            // Load saved data (but voucherDate will not be restored - always use current date)
             loadFromLocalStorage();
+            
+            // Always set current date after loading saved data (to prevent back date)
+            setCurrentDate();
             
             // Update title based on initial voucher type value
             updateVoucherTitle();
@@ -2459,10 +2463,23 @@
             }
         }
         
-        function setCurrentDate() {
+        // Helper function to get current system date (YYYY-MM-DD format)
+        function getCurrentVoucherDate() {
             const today = new Date();
-            const formattedDate = today.toISOString().substr(0, 10);
-            document.getElementById('voucher-date').value = formattedDate;
+            return today.toISOString().substr(0, 10);
+        }
+        
+        function setCurrentDate() {
+            const formattedDate = getCurrentVoucherDate();
+            const voucherDateInput = document.getElementById('voucher-date');
+            if (voucherDateInput) {
+                // Set min date to today (prevent back date selection)
+                voucherDateInput.setAttribute('min', formattedDate);
+                // Set value to today (current system date)
+                voucherDateInput.value = formattedDate;
+                // Make it readonly to prevent manual editing
+                voucherDateInput.setAttribute('readonly', 'readonly');
+            }
         }
         
         function generateVoucherNumber() {
@@ -2567,7 +2584,7 @@
                     ['Công ty', document.getElementById('company').value],
                     ['Loại phiếu', document.getElementById('voucher-type').value],
                     ['Số phiếu', document.getElementById('voucher-number').value],
-                    ['Ngày lập phiếu', document.getElementById('voucher-date').value],
+                    ['Ngày lập phiếu', getCurrentVoucherDate()], // Always use current system date
                     ['Người đề nghị', document.getElementById('employee').value],
                     ['Bộ phận', document.getElementById('department').value],
                     ['Người nộp/nhận', document.getElementById('payee-name').value],
@@ -2746,7 +2763,7 @@
                     timestamp: new Date().toISOString(),
                     voucherNumber: document.getElementById('voucher-number').value,
                     voucherType: document.getElementById('voucher-type').value,
-                    voucherDate: document.getElementById('voucher-date').value,
+                    voucherDate: getCurrentVoucherDate(), // Always use current system date
                     company: document.getElementById('company').value,
                     employee: document.getElementById('employee').value,
                     department: document.getElementById('department').value,
@@ -3136,7 +3153,9 @@
             const totalAmount = document.getElementById('amount').value;
             const amountInWords = document.getElementById('amount-in-words').value;
             const reason = document.getElementById('reason').value;
-            const voucherDate = document.getElementById('voucher-date').value;
+            // Always use current system date, not the form input value (to prevent back date)
+            const currentDate = new Date();
+            const voucherDate = currentDate.toISOString().substr(0, 10); // Current date in YYYY-MM-DD format
             const department = document.getElementById('department').value;
 
             const selectedApproverName = document.getElementById('approver').value;
@@ -3252,8 +3271,8 @@
             console.log('Approval Link:', approvalLink);
 
             // Get current date/time for submission (not the form date)
-            const now = new Date();
-            const currentDateTime = now.toLocaleDateString('vi-VN', { 
+            const submitDateTime = new Date();
+            const currentDateTime = submitDateTime.toLocaleDateString('vi-VN', { 
                 year: 'numeric', 
                 month: 'long', 
                 day: 'numeric',
@@ -3412,6 +3431,17 @@
                 validCCRecipients.push(requestorEmail);
                 console.log('Added requestor email to notification list:', requestorEmail);
             }
+            
+            // CRITICAL FIX: Ensure requesterEmail.to is always set if requestorEmail is valid
+            // Even if validCCRecipients is empty, we should still send email to requester
+            let requesterEmailTo = validCCRecipients.join(',');
+            if (!requesterEmailTo && requestorEmail && emailRegex.test(requestorEmail)) {
+                requesterEmailTo = requestorEmail;
+                console.log('⚠️ validCCRecipients was empty, using requestorEmail directly:', requestorEmail);
+            }
+            
+            console.log('Final requesterEmail.to:', requesterEmailTo);
+            console.log('requestorEmail value:', requestorEmail);
 
             const payload = {
                 action: 'sendApprovalEmail',
@@ -3422,7 +3452,7 @@
                     body: approverEmailBodyHtml // Email with buttons for approvers
                 },
                 requesterEmail: {
-                    to: validCCRecipients.join(','), // Requester gets separate email
+                    to: requesterEmailTo, // Requester gets separate email (always set if requestorEmail is valid)
                     subject: `[THÔNG BÁO] Phiếu ${voucherType} ${voucherNumber} đã được gửi phê duyệt`,
                     body: requesterEmailBodyHtml // Email without buttons for requester
                 },
@@ -3441,8 +3471,13 @@
                 }
             };
 
+            console.log('=== EMAIL PAYLOAD DEBUG ===');
             console.log('Valid Recipients:', validRecipients);
             console.log('Valid CC Recipients:', validCCRecipients);
+            console.log('Requestor Email:', requestorEmail);
+            console.log('Requester Email To (final):', requesterEmailTo);
+            console.log('Requester Email Subject:', `[THÔNG BÁO] Phiếu ${voucherType} ${voucherNumber} đã được gửi phê duyệt`);
+            console.log('=== END EMAIL PAYLOAD DEBUG ===');
 
             // Debug: Log payload trước khi gửi
             console.log('=== SENDING EMAIL ===');
