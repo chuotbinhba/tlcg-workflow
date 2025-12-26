@@ -2477,9 +2477,14 @@
         }
         
         // Helper function to get current system date (YYYY-MM-DD format)
+        // Uses local date, not UTC, to match Mac system date
         function getCurrentVoucherDate() {
             const today = new Date();
-            return today.toISOString().substr(0, 10);
+            // Use local date to match Mac system date, not UTC
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
         }
         
         function setCurrentDate() {
