@@ -3791,7 +3791,7 @@
             currentModalMeta = null;
         }
         
-        // Print voucher - opens print-friendly view
+        // Print voucher - opens print-friendly view matching Vietnamese voucher format
         function printVoucher() {
             if (!currentModalVoucher) {
                 showToast('Không tìm thấy thông tin phiếu', 'error');
@@ -3801,148 +3801,167 @@
             const voucher = currentModalVoucher;
             const meta = currentModalMeta || voucher.meta || {}; // Use merged meta
             
-            // Status text mapping
-            const statusText = {
-                'pending': 'Chờ duyệt',
-                'approved': 'Đã duyệt', 
-                'rejected': 'Từ chối'
-            }[(voucher.status || 'Pending').toLowerCase()] || voucher.status;
+            // Determine voucher type title
+            const voucherTypeUpper = (voucher.voucherType || '').toUpperCase();
+            const isPhieuChi = voucherTypeUpper.includes('CHI') || voucherTypeUpper.includes('PAYMENT');
+            const voucherTitle = isPhieuChi ? 'PHIẾU CHI' : 'PHIẾU THU';
+            const formNumber = isPhieuChi ? '02 - TT' : '01 - TT';
+            
+            // Format date
+            const now = new Date();
+            const voucherDate = meta.voucherDate ? new Date(meta.voucherDate) : now;
+            const day = voucherDate.getDate();
+            const month = voucherDate.getMonth() + 1;
+            const year = voucherDate.getFullYear();
             
             // Format amount
-            let amountFormatted = '0 ₫';
+            let amountValue = 0;
             if (typeof voucher.amount === 'number') {
-                amountFormatted = voucher.amount.toLocaleString('vi-VN') + ' ₫';
+                amountValue = voucher.amount;
             } else if (voucher.amount) {
-                amountFormatted = voucher.amount;
+                amountValue = parseFloat(String(voucher.amount).replace(/[^\d]/g, '')) || 0;
+            }
+            const amountFormatted = amountValue.toLocaleString('vi-VN');
+            
+            // Get company address from data
+            let companyAddress = '';
+            const companyData = data.companies_data.find(c => c["Tên công ty"] === voucher.company);
+            if (companyData) {
+                companyAddress = companyData["Địa chỉ"] || '';
             }
             
-            // Build print content
+            // Build print content matching the Vietnamese voucher format
             const printContent = `
                 <!DOCTYPE html>
                 <html>
                 <head>
                     <meta charset="UTF-8">
-                    <title>Phiếu ${voucher.voucherNumber}</title>
+                    <title>${voucherTitle} - ${voucher.voucherNumber}</title>
                     <style>
                         * { margin: 0; padding: 0; box-sizing: border-box; }
                         body { 
                             font-family: 'Times New Roman', Times, serif; 
-                            padding: 20mm; 
-                            font-size: 12pt;
-                            line-height: 1.5;
-                        }
-                        .header { 
-                            text-align: center; 
-                            margin-bottom: 20px;
-                            border-bottom: 2px solid #333;
-                            padding-bottom: 15px;
-                        }
-                        .company-name { 
-                            font-size: 16pt; 
-                            font-weight: bold; 
-                            color: #1a365d;
-                            margin-bottom: 5px;
-                        }
-                        .voucher-title { 
-                            font-size: 18pt; 
-                            font-weight: bold; 
-                            margin: 15px 0;
-                            text-transform: uppercase;
-                        }
-                        .voucher-number { 
-                            font-size: 11pt; 
-                            color: #555;
-                        }
-                        .info-grid { 
-                            display: grid; 
-                            grid-template-columns: 1fr 1fr; 
-                            gap: 10px;
-                            margin: 20px 0;
-                        }
-                        .info-item { 
-                            padding: 8px 0;
-                            border-bottom: 1px dotted #ccc;
-                        }
-                        .info-label { 
-                            font-weight: bold; 
-                            color: #333;
-                            display: inline-block;
-                            width: 120px;
-                        }
-                        .info-value { 
+                            padding: 15mm 20mm; 
+                            font-size: 13pt;
+                            line-height: 1.4;
                             color: #000;
                         }
-                        .amount-section { 
-                            background: #f5f5f5; 
-                            padding: 15px; 
-                            margin: 20px 0;
-                            border: 1px solid #ddd;
+                        .voucher-container {
+                            max-width: 210mm;
+                            margin: 0 auto;
+                        }
+                        .header-section {
+                            display: flex;
+                            justify-content: space-between;
+                            margin-bottom: 15px;
+                        }
+                        .header-left {
+                            flex: 1;
+                        }
+                        .header-right {
+                            text-align: right;
+                            font-size: 11pt;
+                        }
+                        .company-name {
+                            font-size: 15pt;
+                            font-weight: bold;
+                            text-transform: uppercase;
+                            margin-bottom: 5px;
+                        }
+                        .voucher-number-line {
+                            font-size: 11pt;
+                            margin-top: 5px;
+                        }
+                        .form-reference {
+                            font-size: 11pt;
+                            font-style: italic;
+                        }
+                        .voucher-title {
                             text-align: center;
+                            font-size: 22pt;
+                            font-weight: bold;
+                            font-style: italic;
+                            margin: 20px 0 10px 0;
                         }
-                        .amount-label { 
-                            font-size: 11pt; 
-                            color: #555;
+                        .voucher-date {
+                            text-align: center;
+                            font-size: 12pt;
+                            margin-bottom: 25px;
                         }
-                        .amount-value { 
-                            font-size: 20pt; 
-                            font-weight: bold; 
-                            color: #059669;
-                            margin: 10px 0;
+                        .info-row {
+                            display: flex;
+                            margin-bottom: 12px;
+                            font-size: 13pt;
+                        }
+                        .info-label {
+                            min-width: 160px;
+                            text-decoration: underline;
+                        }
+                        .info-value {
+                            flex: 1;
+                        }
+                        .info-colon {
+                            margin: 0 8px;
+                        }
+                        .amount-section {
+                            margin: 20px 0;
+                            padding: 10px 0;
                         }
                         .amount-words {
                             font-style: italic;
-                            font-size: 11pt;
-                            color: #333;
+                            margin-top: 5px;
                         }
-                        .status-badge { 
-                            display: inline-block;
-                            padding: 5px 15px; 
-                            border-radius: 20px;
-                            font-weight: bold;
+                        .attachments-section {
+                            margin: 15px 0;
+                            font-size: 12pt;
+                            font-style: italic;
+                        }
+                        .signatures-section {
+                            margin-top: 40px;
+                        }
+                        .signatures-row {
+                            display: flex;
+                            justify-content: space-between;
+                            text-align: center;
+                        }
+                        .signature-box {
+                            width: 18%;
+                            min-height: 120px;
+                        }
+                        .signature-title {
                             font-size: 11pt;
+                            font-weight: bold;
+                            margin-bottom: 5px;
+                        }
+                        .signature-required {
+                            color: red;
+                        }
+                        .signature-image-container {
+                            height: 70px;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                            margin: 10px 0;
+                        }
+                        .signature-img {
+                            max-height: 60px;
+                            max-width: 120px;
+                        }
+                        .signature-name {
+                            font-size: 12pt;
+                            margin-top: 5px;
+                        }
+                        .status-badge {
+                            display: inline-block;
+                            padding: 3px 12px;
+                            border-radius: 4px;
+                            font-size: 11pt;
+                            font-weight: bold;
                         }
                         .status-pending { background: #fef3c7; color: #92400e; }
                         .status-approved { background: #d1fae5; color: #065f46; }
                         .status-rejected { background: #fee2e2; color: #991b1b; }
-                        .signatures { 
-                            display: grid; 
-                            grid-template-columns: 1fr 1fr; 
-                            gap: 40px;
-                            margin-top: 40px;
-                            text-align: center;
-                        }
-                        .signature-box { 
-                            border: 1px solid #ddd; 
-                            padding: 20px; 
-                            min-height: 150px;
-                        }
-                        .signature-title { 
-                            font-weight: bold; 
-                            margin-bottom: 10px;
-                            border-bottom: 1px solid #eee;
-                            padding-bottom: 5px;
-                        }
-                        .signature-img { 
-                            max-height: 80px; 
-                            max-width: 150px;
-                            margin: 10px auto;
-                        }
-                        .signature-name { 
-                            font-size: 10pt; 
-                            color: #666;
-                            margin-top: 10px;
-                        }
-                        .reason-section {
-                            background: #f9fafb;
-                            padding: 15px;
-                            margin: 20px 0;
-                            border-left: 4px solid #3b82f6;
-                        }
-                        .reason-label {
-                            font-weight: bold;
-                            margin-bottom: 5px;
-                        }
-                        .footer { 
+                        .footer-section {
                             margin-top: 30px;
                             text-align: center;
                             font-size: 10pt;
@@ -3951,81 +3970,162 @@
                             padding-top: 15px;
                         }
                         @media print {
-                            body { padding: 10mm; }
-                            .no-print { display: none; }
+                            body { padding: 10mm 15mm; }
+                            .no-print { display: none !important; }
+                            .signature-image-container { 
+                                -webkit-print-color-adjust: exact;
+                                print-color-adjust: exact;
+                            }
                         }
+                        .no-print {
+                            margin-top: 30px;
+                            text-align: center;
+                            padding: 20px;
+                            background: #f8fafc;
+                            border-radius: 8px;
+                        }
+                        .no-print button {
+                            padding: 12px 30px;
+                            border: none;
+                            border-radius: 6px;
+                            cursor: pointer;
+                            font-size: 14px;
+                            margin: 0 5px;
+                        }
+                        .btn-print { background: #3b82f6; color: white; }
+                        .btn-close { background: #6b7280; color: white; }
                     </style>
                 </head>
                 <body>
-                    <div class="header">
-                        <div class="company-name">${voucher.company || 'TLCG'}</div>
-                        <div class="voucher-title">${voucher.voucherType || 'PHIẾU THU/CHI'}</div>
-                        <div class="voucher-number">Số phiếu: <strong>${voucher.voucherNumber}</strong></div>
-                    </div>
-                    
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Người đề nghị:</span>
-                            <span class="info-value">${voucher.employee || 'N/A'}</span>
+                    <div class="voucher-container">
+                        <!-- Header Section -->
+                        <div class="header-section">
+                            <div class="header-left">
+                                <div class="company-name">${voucher.company || 'CÔNG TY'}</div>
+                                ${companyAddress ? `<div style="font-size: 11pt;">${companyAddress}</div>` : ''}
+                                <div class="voucher-number-line">Số: <strong>${voucher.voucherNumber}</strong></div>
+                            </div>
+                            <div class="header-right">
+                                <div style="font-weight: bold;">Mẫu số: ${formNumber}</div>
+                                <div class="form-reference">(Ban hành theo Thông tư số 200/2014/TT-BTC</div>
+                                <div class="form-reference">Ngày 22/12/2014 của Bộ Tài chính)</div>
+                            </div>
                         </div>
-                        <div class="info-item">
-                            <span class="info-label">Phòng ban:</span>
-                            <span class="info-value">${meta.department || 'N/A'}</span>
+                        
+                        <!-- Voucher Title -->
+                        <div class="voucher-title">${voucherTitle}</div>
+                        <div class="voucher-date">Ngày ${day} tháng ${month} năm ${year}</div>
+                        
+                        <!-- Voucher Information -->
+                        <div class="info-row">
+                            <span class="info-label">Người nộp/nhận tiền</span>
+                            <span class="info-colon">:</span>
+                            <span class="info-value"><strong>${meta.payeeName || voucher.employee || 'N/A'}</strong></span>
                         </div>
-                        <div class="info-item">
-                            <span class="info-label">Người nhận tiền:</span>
-                            <span class="info-value">${meta.payeeName || 'N/A'}</span>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Nội dung</span>
+                            <span class="info-colon">:</span>
+                            <span class="info-value">${voucher.note || meta.reason || 'N/A'}</span>
                         </div>
-                        <div class="info-item">
-                            <span class="info-label">Trạng thái:</span>
-                            <span class="status-badge status-${(voucher.status || 'pending').toLowerCase()}">${statusText}</span>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Số tiền (VNĐ)</span>
+                            <span class="info-colon">:</span>
+                            <span class="info-value"><strong>${amountFormatted}</strong></span>
                         </div>
-                    </div>
-                    
-                    ${voucher.note ? `
-                    <div class="reason-section">
-                        <div class="reason-label">Lý do / Nội dung:</div>
-                        <div>${voucher.note}</div>
-                    </div>
-                    ` : ''}
-                    
-                    <div class="amount-section">
-                        <div class="amount-label">Số tiền</div>
-                        <div class="amount-value">${amountFormatted}</div>
-                        ${meta.amountInWords ? `<div class="amount-words">(${meta.amountInWords})</div>` : ''}
-                    </div>
-                    
-                    <div class="signatures">
-                        <div class="signature-box">
-                            <div class="signature-title">Người đề nghị</div>
-                            ${meta.requesterSignature 
-                                ? `<img src="${meta.requesterSignature}" alt="Chữ ký" class="signature-img">`
-                                : '<div style="height: 60px; display: flex; align-items: center; justify-content: center; color: #999;">Chưa ký</div>'
-                            }
-                            <div class="signature-name">${voucher.employee || ''}</div>
+                        
+                        ${meta.amountInWords ? `
+                        <div class="info-row">
+                            <span class="info-label">Bằng chữ</span>
+                            <span class="info-colon">:</span>
+                            <span class="info-value" style="font-style: italic;">${meta.amountInWords}</span>
                         </div>
-                        <div class="signature-box">
-                            <div class="signature-title">Người phê duyệt</div>
-                            ${meta.approverSignature 
-                                ? `<img src="${meta.approverSignature}" alt="Chữ ký" class="signature-img">`
-                                : '<div style="height: 60px; display: flex; align-items: center; justify-content: center; color: #999;">Chưa ký</div>'
-                            }
-                            <div class="signature-name">${voucher.approvedBy || voucher.rejectedBy || ''}</div>
+                        ` : ''}
+                        
+                        <div class="info-row">
+                            <span class="info-label">Kèm theo</span>
+                            <span class="info-colon">:</span>
+                            <span class="info-value" style="font-style: italic;">${voucher.attachments ? `<a href="${voucher.attachments}" target="_blank" style="color: #2563eb;">Xem tệp đính kèm</a>` : '(Cung cấp chứng từ bản gốc cho kế toán)'}</span>
                         </div>
-                    </div>
-                    
-                    <div class="footer">
-                        <p>Ngày in: ${new Date().toLocaleDateString('vi-VN')} ${new Date().toLocaleTimeString('vi-VN')}</p>
-                        <p>Tài liệu được tạo tự động từ hệ thống TLCG Workflow</p>
-                    </div>
-                    
-                    <div class="no-print" style="margin-top: 20px; text-align: center;">
-                        <button onclick="window.print()" style="padding: 10px 30px; background: #3b82f6; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 14px;">
-                            🖨️ In phiếu
-                        </button>
-                        <button onclick="window.close()" style="padding: 10px 30px; background: #6b7280; color: white; border: none; border-radius: 5px; cursor: pointer; margin-left: 10px; font-size: 14px;">
-                            ✕ Đóng
-                        </button>
+                        
+                        <div class="info-row">
+                            <span class="info-label">Trạng thái</span>
+                            <span class="info-colon">:</span>
+                            <span class="info-value">
+                                <span class="status-badge status-${(voucher.status || 'pending').toLowerCase()}">
+                                    ${voucher.status === 'Approved' ? 'Đã duyệt' : voucher.status === 'Rejected' ? 'Từ chối' : 'Chờ duyệt'}
+                                </span>
+                            </span>
+                        </div>
+                        
+                        <!-- Signatures Section -->
+                        <div class="signatures-section">
+                            <div class="signatures-row">
+                                <div class="signature-box">
+                                    <div class="signature-title">Người lập <span class="signature-required">*</span></div>
+                                    <div class="signature-image-container">
+                                        ${meta.requesterSignature 
+                                            ? `<img src="${meta.requesterSignature}" alt="Chữ ký" class="signature-img">`
+                                            : ''
+                                        }
+                                    </div>
+                                    <div class="signature-name">${voucher.employee || ''}</div>
+                                </div>
+                                
+                                <div class="signature-box">
+                                    <div class="signature-title">Kế toán trưởng <span class="signature-required">*</span></div>
+                                    <div class="signature-image-container">
+                                        ${(voucher.status === 'Approved' && meta.approverSignature) 
+                                            ? `<img src="${meta.approverSignature}" alt="Chữ ký" class="signature-img">`
+                                            : ''
+                                        }
+                                    </div>
+                                    <div class="signature-name">${voucher.status === 'Approved' ? (voucher.approvedBy || '') : ''}</div>
+                                </div>
+                                
+                                <div class="signature-box">
+                                    <div class="signature-title">Giám đốc <span class="signature-required">*</span></div>
+                                    <div class="signature-image-container">
+                                        ${(voucher.status === 'Approved' && meta.approverSignature) 
+                                            ? `<img src="${meta.approverSignature}" alt="Chữ ký" class="signature-img">`
+                                            : ''
+                                        }
+                                    </div>
+                                    <div class="signature-name">${voucher.status === 'Approved' ? (voucher.approvedBy || '') : ''}</div>
+                                </div>
+                                
+                                <div class="signature-box">
+                                    <div class="signature-title">Thủ quỹ <span class="signature-required">*</span></div>
+                                    <div class="signature-image-container">
+                                    </div>
+                                    <div class="signature-name"></div>
+                                </div>
+                                
+                                <div class="signature-box">
+                                    <div class="signature-title">Người nộp/nhận tiền <span class="signature-required">*</span></div>
+                                    <div class="signature-image-container">
+                                        ${meta.requesterSignature 
+                                            ? `<img src="${meta.requesterSignature}" alt="Chữ ký" class="signature-img">`
+                                            : ''
+                                        }
+                                    </div>
+                                    <div class="signature-name">${meta.payeeName || voucher.employee || ''}</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Footer -->
+                        <div class="footer-section">
+                            <p>Ngày in: ${new Date().toLocaleDateString('vi-VN')} ${new Date().toLocaleTimeString('vi-VN')}</p>
+                            <p>Tài liệu được tạo tự động từ hệ thống TLCG Workflow</p>
+                        </div>
+                        
+                        <!-- Print Buttons (hidden when printing) -->
+                        <div class="no-print">
+                            <button class="btn-print" onclick="window.print()">🖨️ In phiếu</button>
+                            <button class="btn-close" onclick="window.close()">✕ Đóng</button>
+                        </div>
                     </div>
                 </body>
                 </html>
