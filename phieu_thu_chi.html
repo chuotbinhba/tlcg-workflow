@@ -3256,10 +3256,18 @@
         
         // Open voucher detail modal
         async function openVoucherDetail(voucherNumber) {
+            console.log('=== OPENING VOUCHER DETAIL ===');
+            console.log('Voucher Number:', voucherNumber);
+            
             const modal = document.getElementById('voucher-modal-overlay');
             const modalContent = document.getElementById('modal-content');
             const modalLoading = document.getElementById('modal-loading');
             const modalFooter = document.getElementById('modal-footer');
+            
+            if (!modal) {
+                console.error('Modal overlay not found!');
+                return;
+            }
             
             modal.classList.add('show');
             modalLoading.classList.add('show');
@@ -3270,22 +3278,36 @@
             approverSignatureData = localStorage.getItem(APPROVER_SIGNATURE_KEY);
             
             try {
+                console.log('Fetching voucher history from:', `${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=getVoucherHistory&voucherNumber=${encodeURIComponent(voucherNumber)}`);
                 const response = await fetch(`${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=getVoucherHistory&voucherNumber=${encodeURIComponent(voucherNumber)}`);
                 const result = await response.json();
                 
+                console.log('Voucher history response:', result);
+                
                 modalLoading.classList.remove('show');
                 
-                if (result.success && result.data && result.data.length > 0) {
+                // Handle both formats: result.data (array) or result.data.history (object with history array)
+                let historyData = result.data;
+                if (result.data && result.data.history) {
+                    historyData = result.data.history;
+                }
+                
+                console.log('History data:', historyData);
+                
+                if (result.success && historyData && historyData.length > 0) {
                     // Get the most recent entry (first one since sorted by timestamp desc)
-                    const voucher = result.data[0];
+                    const voucher = historyData[0];
                     currentModalVoucher = voucher;
+                    
+                    console.log('Current voucher:', voucher);
+                    console.log('Voucher status:', voucher.status);
                     
                     document.getElementById('modal-title').textContent = `Phiếu ${voucher.voucherNumber}`;
                     
                     // Render voucher details
-                    modalContent.innerHTML = renderVoucherDetails(voucher, result.data);
+                    modalContent.innerHTML = renderVoucherDetails(voucher, historyData);
                     
-                    // Add action buttons for pending vouchers
+                    // Add action buttons based on voucher status
                     if (voucher.status === 'Pending') {
                         modalFooter.innerHTML = `
                             <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
@@ -3297,6 +3319,20 @@
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
                                 Phê duyệt
                             </button>
+                        `;
+                    } else if (voucher.status === 'Rejected') {
+                        // Rejected vouchers can be edited and resubmitted
+                        modalFooter.innerHTML = `
+                            <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
+                            <button class="modal-btn" style="background: #3b82f6; color: white;" onclick="editVoucherFromModal()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                Chỉnh sửa & Gửi lại
+                            </button>
+                        `;
+                    } else {
+                        // Approved vouchers - view only
+                        modalFooter.innerHTML = `
+                            <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
                         `;
                     }
                 } else {
@@ -3615,6 +3651,103 @@
             const modal = document.getElementById('voucher-modal-overlay');
             modal.classList.remove('show');
             currentModalVoucher = null;
+        }
+        
+        // Edit voucher from modal - load data into form for editing
+        function editVoucherFromModal() {
+            if (!currentModalVoucher) {
+                showToast('Không tìm thấy thông tin phiếu', 'error');
+                return;
+            }
+            
+            const voucher = currentModalVoucher;
+            const meta = voucher.meta || {};
+            
+            console.log('=== LOADING VOUCHER FOR EDIT ===');
+            console.log('Voucher:', voucher);
+            console.log('Meta:', meta);
+            
+            try {
+                // Set company
+                const companySelect = document.getElementById('company');
+                if (companySelect && voucher.company) {
+                    // Try exact match first
+                    let found = false;
+                    for (let option of companySelect.options) {
+                        if (option.value === voucher.company || option.text === voucher.company) {
+                            companySelect.value = option.value;
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) {
+                        updateCompanyDetails(); // Trigger company change handler
+                    }
+                }
+                
+                // Set voucher type
+                const voucherTypeSelect = document.getElementById('voucher-type');
+                if (voucherTypeSelect && voucher.voucherType) {
+                    voucherTypeSelect.value = voucher.voucherType;
+                }
+                
+                // Set employee/requestor
+                const employeeSelect = document.getElementById('employee');
+                if (employeeSelect && voucher.employee) {
+                    for (let option of employeeSelect.options) {
+                        if (option.value === voucher.employee || option.text === voucher.employee) {
+                            employeeSelect.value = option.value;
+                            break;
+                        }
+                    }
+                }
+                
+                // Set department
+                const departmentInput = document.getElementById('department');
+                if (departmentInput && meta.department) {
+                    departmentInput.value = meta.department;
+                }
+                
+                // Set payee name
+                const payeeNameInput = document.getElementById('payee-name');
+                if (payeeNameInput && meta.payeeName) {
+                    payeeNameInput.value = meta.payeeName;
+                }
+                
+                // Set reason/note
+                const reasonInput = document.getElementById('reason');
+                if (reasonInput && voucher.note) {
+                    reasonInput.value = voucher.note;
+                }
+                
+                // Set amount (parse from string if needed)
+                let amount = voucher.amount;
+                if (typeof amount === 'string') {
+                    amount = amount.replace(/[^\d]/g, '');
+                }
+                const amountInput = document.getElementById('amount');
+                if (amountInput && amount) {
+                    amountInput.value = amount;
+                    // Trigger amount change to update amount in words
+                    amountInput.dispatchEvent(new Event('input'));
+                }
+                
+                // Generate new voucher number for resubmission
+                generateVoucherNumber();
+                
+                // Close modal and go to step 1
+                closeVoucherModal();
+                goToStep(1);
+                
+                showToast('Đã tải thông tin phiếu. Vui lòng kiểm tra và chỉnh sửa trước khi gửi lại.', 'info');
+                
+                // Scroll to top of form
+                document.getElementById('voucher-form').scrollIntoView({ behavior: 'smooth' });
+                
+            } catch (error) {
+                console.error('Error loading voucher for edit:', error);
+                showToast('Lỗi tải thông tin phiếu: ' + error.message, 'error');
+            }
         }
         
         // Initialize recent vouchers on page load
