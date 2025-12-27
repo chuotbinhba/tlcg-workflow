@@ -694,14 +694,16 @@ function doGet(e) {
         requestorEmail: e.parameter.requestorEmail|| '',
         approverEmail : e.parameter.approverEmail || '',
         approvedBy    : e.parameter.approvedBy    || e.parameter.approverEmail || '',
-        rejectReason  : e.parameter.rejectReason  || '',
-        rejectedBy    : e.parameter.rejectedBy    || e.parameter.approverEmail || ''
+        rejectReason  : e.parameter.rejectReason  || e.parameter.reason || '',
+        rejectedBy    : e.parameter.rejectedBy    || e.parameter.approverEmail || '',
+        approverSignature: e.parameter.approverSignature || '' // Approver's signature
       };
 
       Logger.log('=== PARSED VOUCHER FROM GET ===');
       Logger.log('voucherNumber: ' + voucher.voucherNumber);
       Logger.log('requestorEmail: ' + voucher.requestorEmail);
       Logger.log('approverEmail: ' + voucher.approverEmail);
+      Logger.log('Has approverSignature: ' + (voucher.approverSignature ? 'YES' : 'NO'));
       Logger.log('Full voucher: ' + JSON.stringify(voucher));
 
       const requestBody = { action, voucher };
@@ -714,6 +716,17 @@ function doGet(e) {
         Logger.log('=== CALLING handleRejectVoucher FROM GET ===');
         return handleRejectVoucher(requestBody);
       }
+    }
+
+    // Handle getVoucherSummary and getVoucherHistory via GET
+    if (action === 'getVoucherSummary') {
+      Logger.log('=== CALLING handleGetVoucherSummary FROM GET ===');
+      return handleGetVoucherSummary({ userEmail: e.parameter.userEmail || '', employeeName: e.parameter.employeeName || '' });
+    }
+    
+    if (action === 'getVoucherHistory') {
+      Logger.log('=== CALLING handleGetVoucherHistory FROM GET ===');
+      return handleGetVoucherHistory({ voucherNumber: e.parameter.voucherNumber || '' });
     }
 
     return ContentService.createTextOutput('Google Apps Script is running!')
@@ -888,7 +901,8 @@ function handleSendEmail(requestBody) {
           voucherDate: voucher.voucherDate || '',
           department : voucher.department || '',
           payeeName  : voucher.payeeName || '',
-          originalVoucherNumber: voucher.voucherNumber || null // Track original if missing
+          originalVoucherNumber: voucher.voucherNumber || null, // Track original if missing
+          requesterSignature: voucher.requesterSignature || '' // Requester's signature
         }
       });
       Logger.log('✅ History append completed successfully');
@@ -1127,11 +1141,13 @@ function handleApproveVoucher(requestBody) {
     const requestorEmail = voucher.requestorEmail|| '';
     const approverEmail  = voucher.approverEmail || '';
     const approvedBy     = voucher.approvedBy    || approverEmail || 'Unknown';
+    const approverSignature = voucher.approverSignature || ''; // Approver signature data
 
     Logger.log('Voucher Number: ' + voucherNumber);
     Logger.log('Requestor Email: ' + requestorEmail);
     Logger.log('Approver Email: ' + approverEmail);
     Logger.log('Approved By: ' + approvedBy);
+    Logger.log('Has Approver Signature: ' + (approverSignature ? 'Yes' : 'No'));
 
     if (!voucherNumber) {
       Logger.log('❌ ERROR: voucherNumber is required');
@@ -1149,6 +1165,12 @@ function handleApproveVoucher(requestBody) {
       return createResponse(false, 'Voucher already processed: ' + lastAction);
     }
 
+    // Include approver signature in meta data
+    const meta = {
+      approverSignature: approverSignature,
+      approvedAt: new Date().toISOString()
+    };
+
     appendHistory_({
       voucherNumber,
       voucherType,
@@ -1160,15 +1182,23 @@ function handleApproveVoucher(requestBody) {
       by: approvedBy || approverEmail || 'Unknown',
       note: '',
       requestorEmail,
-      approverEmail
+      approverEmail,
+      meta: meta
     });
     Logger.log('✅ History appended');
+
+    // Build approval email with approver signature if available
+    let signatureHtml = '';
+    if (approverSignature && approverSignature.startsWith('data:image')) {
+      signatureHtml = `<p><b>Chữ ký người phê duyệt:</b></p><img src="${approverSignature}" style="max-height: 80px; max-width: 200px;" alt="Chữ ký">`;
+    }
 
     const subject = `[ĐÃ PHÊ DUYỆT] Phiếu ${voucherType.toUpperCase()} - ${voucherNumber}`;
     const emailBodyHtml = [
       `<p>Kính gửi <b>${employee}</b>,</p>`,
       `<p>Phiếu <b>${voucherType}</b> số <b>${voucherNumber}</b> của bạn đã được <b style="color:#34A853;">phê duyệt</b>.</p>`,
       `<p><b>Công ty:</b> ${company}<br><b>Tổng số tiền:</b> ${amount}<br><b>Người phê duyệt:</b> ${approvedBy || approverEmail}</p>`,
+      signatureHtml,
       `<p>Trân trọng,<br>Hệ thống Kế toán Tự động</p>`
     ].join('');
 
@@ -1220,12 +1250,14 @@ function handleRejectVoucher(requestBody) {
     const approverEmail  = voucher.approverEmail || '';
     const rejectReason   = voucher.rejectReason  || '';
     const rejectedBy     = voucher.rejectedBy    || approverEmail || 'Unknown';
+    const approverSignature = voucher.approverSignature || ''; // Approver signature data
 
     Logger.log('Voucher Number: ' + voucherNumber);
     Logger.log('Requestor Email: ' + requestorEmail);
     Logger.log('Approver Email: ' + approverEmail);
     Logger.log('Reject Reason: ' + rejectReason);
     Logger.log('Rejected By: ' + rejectedBy);
+    Logger.log('Has Approver Signature: ' + (approverSignature ? 'Yes' : 'No'));
 
     if (!voucherNumber) {
       Logger.log('❌ ERROR: voucherNumber is required');
@@ -1247,6 +1279,12 @@ function handleRejectVoucher(requestBody) {
       return createResponse(false, 'Voucher already processed: ' + lastAction);
     }
 
+    // Include approver signature in meta data
+    const meta = {
+      approverSignature: approverSignature,
+      rejectedAt: new Date().toISOString()
+    };
+
     appendHistory_({
       voucherNumber,
       voucherType,
@@ -1258,9 +1296,16 @@ function handleRejectVoucher(requestBody) {
       by: rejectedBy || approverEmail || 'Unknown',
       note: rejectReason,
       requestorEmail,
-      approverEmail
+      approverEmail,
+      meta: meta
     });
     Logger.log('✅ History appended');
+
+    // Build rejection email with approver signature if available
+    let signatureHtml = '';
+    if (approverSignature && approverSignature.startsWith('data:image')) {
+      signatureHtml = `<p><b>Chữ ký người từ chối:</b></p><img src="${approverSignature}" style="max-height: 80px; max-width: 200px;" alt="Chữ ký">`;
+    }
 
     const subject = `[TRẢ LẠI] Phiếu ${voucherType.toUpperCase()} - ${voucherNumber}`;
     const emailBodyHtml = [
@@ -1268,6 +1313,7 @@ function handleRejectVoucher(requestBody) {
       `<p>Phiếu <b>${voucherType}</b> số <b>${voucherNumber}</b> của bạn đã bị <b style="color:#EA4335;">trả lại / từ chối</b>.</p>`,
       `<p><b>Lý do:</b> ${rejectReason}</p>`,
       `<p><b>Công ty:</b> ${company}<br><b>Tổng số tiền:</b> ${amount}<br><b>Người trả lại:</b> ${rejectedBy}</p>`,
+      signatureHtml,
       `<p>Vui lòng chỉnh sửa và gửi lại nếu cần.</p>`,
       `<p>Trân trọng,<br>Hệ thống Kế toán Tự động</p>`
     ].join('');

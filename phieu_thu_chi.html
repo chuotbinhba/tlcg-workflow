@@ -1295,6 +1295,410 @@
                 max-width: 100%;
             }
         }
+
+        /* ============ RECENT VOUCHERS SECTION ============ */
+        .recent-vouchers-section {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .recent-vouchers-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .recent-vouchers-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .recent-vouchers-header h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        .refresh-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #2563eb;
+        }
+
+        .voucher-stats {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-item .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .stat-item .stat-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .stat-item.pending .stat-value { color: #f59e0b; }
+        .stat-item.approved .stat-value { color: #10b981; }
+        .stat-item.rejected .stat-value { color: #ef4444; }
+
+        .voucher-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .voucher-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .voucher-item:hover {
+            background: #f8fafc;
+        }
+
+        .voucher-item:last-child {
+            border-bottom: none;
+        }
+
+        .voucher-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .voucher-icon.pending { background: #fef3c7; color: #d97706; }
+        .voucher-icon.approved { background: #d1fae5; color: #059669; }
+        .voucher-icon.rejected { background: #fee2e2; color: #dc2626; }
+
+        .voucher-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .voucher-info .voucher-title {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.9375rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .voucher-info .voucher-meta {
+            font-size: 0.8125rem;
+            color: #64748b;
+        }
+
+        .voucher-amount {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.9375rem;
+            text-align: right;
+            margin-left: 1rem;
+        }
+
+        .voucher-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 1rem;
+            white-space: nowrap;
+        }
+
+        .voucher-status.pending { background: #fef3c7; color: #92400e; }
+        .voucher-status.approved { background: #d1fae5; color: #065f46; }
+        .voucher-status.rejected { background: #fee2e2; color: #991b1b; }
+
+        .no-vouchers {
+            padding: 3rem;
+            text-align: center;
+            color: #94a3b8;
+        }
+
+        /* ============ VOUCHER DETAIL MODAL ============ */
+        .voucher-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .voucher-modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .voucher-modal {
+            background: white;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 95%;
+            max-height: 90vh;
+            overflow: hidden;
+            transform: scale(0.95) translateY(20px);
+            transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .voucher-modal-overlay.show .voucher-modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .voucher-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .voucher-modal-header h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        .modal-close-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            border: none;
+            background: #e2e8f0;
+            color: #64748b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .modal-close-btn:hover {
+            background: #cbd5e1;
+            color: #1e293b;
+        }
+
+        .voucher-modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .voucher-detail-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .voucher-detail-item {
+            padding: 0.75rem;
+            background: #f8fafc;
+            border-radius: 8px;
+        }
+
+        .voucher-detail-item .label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 0.25rem;
+        }
+
+        .voucher-detail-item .value {
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: #1e293b;
+        }
+
+        .voucher-detail-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .voucher-detail-section h4 {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .approver-signature-section {
+            background: #f0fdf4;
+            border: 1px solid #86efac;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .approver-signature-section h4 {
+            color: #166534;
+            margin-bottom: 1rem;
+            border-bottom-color: #86efac;
+        }
+
+        .approver-signature-preview {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 80px;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #86efac;
+            margin-bottom: 0.75rem;
+        }
+
+        .approver-signature-preview img {
+            max-width: 200px;
+            max-height: 80px;
+            object-fit: contain;
+        }
+
+        .voucher-modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .modal-btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-btn-secondary {
+            background: #e2e8f0;
+            color: #475569;
+        }
+
+        .modal-btn-secondary:hover {
+            background: #cbd5e1;
+        }
+
+        .modal-btn-approve {
+            background: #10b981;
+            color: white;
+        }
+
+        .modal-btn-approve:hover {
+            background: #059669;
+        }
+
+        .modal-btn-reject {
+            background: #ef4444;
+            color: white;
+        }
+
+        .modal-btn-reject:hover {
+            background: #dc2626;
+        }
+
+        .modal-loading {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+            padding: 2rem;
+        }
+
+        .modal-loading.show {
+            display: flex;
+        }
+
+        .modal-spinner {
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #3b82f6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @media (max-width: 640px) {
+            .voucher-detail-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .voucher-stats {
+                flex-wrap: wrap;
+            }
+            
+            .voucher-modal-footer {
+                flex-direction: column;
+            }
+            
+            .modal-btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -1768,6 +2172,63 @@
         </div>
     </div>
     
+    <!-- Recent Vouchers Section -->
+    <div class="recent-vouchers-section">
+        <div class="recent-vouchers-card">
+            <div class="recent-vouchers-header">
+                <h3>📋 Phiếu gần đây</h3>
+                <button class="refresh-btn" onclick="loadRecentVouchers()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                    Làm mới
+                </button>
+            </div>
+            <div class="voucher-stats" id="voucher-stats">
+                <div class="stat-item pending">
+                    <span class="stat-value" id="stat-pending">0</span>
+                    <span class="stat-label">Chờ duyệt</span>
+                </div>
+                <div class="stat-item approved">
+                    <span class="stat-value" id="stat-approved">0</span>
+                    <span class="stat-label">Đã duyệt</span>
+                </div>
+                <div class="stat-item rejected">
+                    <span class="stat-value" id="stat-rejected">0</span>
+                    <span class="stat-label">Từ chối</span>
+                </div>
+            </div>
+            <div class="voucher-list" id="voucher-list">
+                <div class="no-vouchers">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem; opacity: 0.5;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <p>Đang tải danh sách phiếu...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Voucher Detail Modal -->
+    <div class="voucher-modal-overlay" id="voucher-modal-overlay" onclick="closeVoucherModal(event)">
+        <div class="voucher-modal" onclick="event.stopPropagation()">
+            <div class="voucher-modal-header">
+                <h2 id="modal-title">Chi tiết phiếu</h2>
+                <button class="modal-close-btn" onclick="closeVoucherModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="voucher-modal-body">
+                <div class="modal-loading" id="modal-loading">
+                    <div class="modal-spinner"></div>
+                    <span>Đang tải...</span>
+                </div>
+                <div id="modal-content">
+                    <!-- Voucher details will be loaded here -->
+                </div>
+            </div>
+            <div class="voucher-modal-footer" id="modal-footer">
+                <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
+            </div>
+        </div>
+    </div>
+    
     <script>
         const data = (function(b64){
   const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
@@ -1786,7 +2247,7 @@
         // 8. Click "Deploy".
         // 9. Copy the "Web app URL" and paste it here.
         // 10. Ensure your Google account has permissions to send emails via Gmail (usually default).
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyA2NFLA4uIcNwwQBlM4g5qOOlFcP19NX11CggNOt_OZg5HA5yd_Sg1kKchVF9GLYyt/exec';
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzKFWrObvlx5J42oszAxx6UwENMZyloLbTaJ63ko5-P0jc9O_OVNTO5xZnS_0gJDtjv/exec';
 
         // Initialize email mappings based on provided exact emails and company data
         const employeeEmailMap = {
@@ -2698,6 +3159,470 @@
             return currentSignatureData;
         }
         // ============ END SIGNATURE FUNCTIONS ============
+        
+        // ============ RECENT VOUCHERS & APPROVAL FUNCTIONS ============
+        let currentModalVoucher = null;
+        let approverSignatureData = null;
+        const APPROVER_SIGNATURE_KEY = 'tlcg_approver_signature';
+        
+        // Load recent vouchers from backend
+        async function loadRecentVouchers() {
+            const voucherList = document.getElementById('voucher-list');
+            voucherList.innerHTML = `
+                <div class="no-vouchers">
+                    <div class="modal-spinner" style="margin: 0 auto 1rem;"></div>
+                    <p>Đang tải danh sách phiếu...</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch(`${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=getVoucherSummary`, {
+                    method: 'GET'
+                });
+                
+                const result = await response.json();
+                console.log('Voucher summary:', result);
+                
+                if (result.success && result.data) {
+                    // Update stats
+                    document.getElementById('stat-pending').textContent = result.data.pending || 0;
+                    document.getElementById('stat-approved').textContent = result.data.approved || 0;
+                    document.getElementById('stat-rejected').textContent = result.data.rejected || 0;
+                    
+                    // Render voucher list
+                    const vouchers = result.data.recent || [];
+                    if (vouchers.length === 0) {
+                        voucherList.innerHTML = `
+                            <div class="no-vouchers">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem; opacity: 0.5;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                                <p>Chưa có phiếu nào</p>
+                            </div>
+                        `;
+                    } else {
+                        voucherList.innerHTML = vouchers.map(v => renderVoucherItem(v)).join('');
+                    }
+                } else {
+                    voucherList.innerHTML = `
+                        <div class="no-vouchers">
+                            <p style="color: #ef4444;">Không thể tải danh sách phiếu</p>
+                            <p style="font-size: 0.75rem; margin-top: 0.5rem;">${result.message || 'Vui lòng thử lại'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading vouchers:', error);
+                voucherList.innerHTML = `
+                    <div class="no-vouchers">
+                        <p style="color: #ef4444;">Lỗi kết nối</p>
+                        <p style="font-size: 0.75rem; margin-top: 0.5rem;">Vui lòng kiểm tra kết nối mạng</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Render a single voucher item
+        function renderVoucherItem(voucher) {
+            const statusClass = (voucher.status || 'Pending').toLowerCase();
+            const statusText = {
+                'pending': 'Chờ duyệt',
+                'approved': 'Đã duyệt',
+                'rejected': 'Từ chối'
+            }[statusClass] || voucher.status;
+            
+            const statusIcon = {
+                'pending': '<i class="fas fa-clock"></i>',
+                'approved': '<i class="fas fa-check"></i>',
+                'rejected': '<i class="fas fa-times"></i>'
+            }[statusClass] || '<i class="fas fa-file"></i>';
+            
+            const amount = typeof voucher.amount === 'number' 
+                ? voucher.amount.toLocaleString('vi-VN') + ' ₫'
+                : voucher.amount || '0 ₫';
+            
+            return `
+                <div class="voucher-item" onclick="openVoucherDetail('${voucher.voucherNumber}')">
+                    <div class="voucher-icon ${statusClass}">
+                        ${statusIcon}
+                    </div>
+                    <div class="voucher-info">
+                        <div class="voucher-title">${voucher.voucherNumber || 'N/A'} - ${voucher.voucherType || ''}</div>
+                        <div class="voucher-meta">${voucher.employee || ''} • ${voucher.company || ''} • ${voucher.timestamp || ''}</div>
+                    </div>
+                    <div class="voucher-amount">${amount}</div>
+                    <span class="voucher-status ${statusClass}">${statusText}</span>
+                </div>
+            `;
+        }
+        
+        // Open voucher detail modal
+        async function openVoucherDetail(voucherNumber) {
+            const modal = document.getElementById('voucher-modal-overlay');
+            const modalContent = document.getElementById('modal-content');
+            const modalLoading = document.getElementById('modal-loading');
+            const modalFooter = document.getElementById('modal-footer');
+            
+            modal.classList.add('show');
+            modalLoading.classList.add('show');
+            modalContent.innerHTML = '';
+            modalFooter.innerHTML = '<button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>';
+            
+            // Load approver signature from localStorage
+            approverSignatureData = localStorage.getItem(APPROVER_SIGNATURE_KEY);
+            
+            try {
+                const response = await fetch(`${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=getVoucherHistory&voucherNumber=${encodeURIComponent(voucherNumber)}`);
+                const result = await response.json();
+                
+                modalLoading.classList.remove('show');
+                
+                if (result.success && result.data && result.data.length > 0) {
+                    // Get the most recent entry (first one since sorted by timestamp desc)
+                    const voucher = result.data[0];
+                    currentModalVoucher = voucher;
+                    
+                    document.getElementById('modal-title').textContent = `Phiếu ${voucher.voucherNumber}`;
+                    
+                    // Render voucher details
+                    modalContent.innerHTML = renderVoucherDetails(voucher, result.data);
+                    
+                    // Add action buttons for pending vouchers
+                    if (voucher.status === 'Pending') {
+                        modalFooter.innerHTML = `
+                            <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
+                            <button class="modal-btn modal-btn-reject" onclick="rejectFromModal()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                Từ chối
+                            </button>
+                            <button class="modal-btn modal-btn-approve" onclick="approveFromModal()">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                Phê duyệt
+                            </button>
+                        `;
+                    }
+                } else {
+                    modalContent.innerHTML = `
+                        <div style="text-align: center; padding: 2rem; color: #94a3b8;">
+                            <p>Không tìm thấy thông tin phiếu</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Error loading voucher details:', error);
+                modalLoading.classList.remove('show');
+                modalContent.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #ef4444;">
+                        <p>Lỗi tải thông tin phiếu</p>
+                        <p style="font-size: 0.75rem; margin-top: 0.5rem;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        // Render voucher details HTML
+        function renderVoucherDetails(voucher, historyList) {
+            const statusClass = (voucher.status || 'Pending').toLowerCase();
+            const statusText = {
+                'pending': 'Chờ duyệt',
+                'approved': 'Đã duyệt',
+                'rejected': 'Từ chối'
+            }[statusClass] || voucher.status;
+            
+            // Parse meta data if available
+            let meta = voucher.meta || {};
+            
+            // Build history timeline
+            let historyHtml = '';
+            if (historyList && historyList.length > 0) {
+                historyHtml = historyList.map((h, index) => {
+                    const actionClass = (h.action || '').toLowerCase().includes('reject') ? 'rejected' : 
+                                       (h.action || '').toLowerCase().includes('approve') ? 'approved' : 'pending';
+                    return `
+                        <div style="display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.75rem 0; ${index < historyList.length - 1 ? 'border-bottom: 1px solid #f1f5f9;' : ''}">
+                            <div class="voucher-icon ${actionClass}" style="width: 32px; height: 32px; font-size: 0.75rem; flex-shrink: 0;">
+                                ${actionClass === 'approved' ? '<i class="fas fa-check"></i>' : actionClass === 'rejected' ? '<i class="fas fa-times"></i>' : '<i class="fas fa-paper-plane"></i>'}
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-weight: 500; font-size: 0.875rem; color: #1e293b;">${h.action || 'Submitted'}</div>
+                                <div style="font-size: 0.75rem; color: #64748b;">
+                                    ${h.by || 'N/A'} • ${h.timestampFormatted || h.timestamp || ''}
+                                </div>
+                                ${h.note ? `<div style="font-size: 0.8125rem; color: #475569; margin-top: 0.25rem; font-style: italic;">"${h.note}"</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+            
+            // Approver signature section (only for pending)
+            let approverSignatureSection = '';
+            if (voucher.status === 'Pending') {
+                approverSignatureSection = `
+                    <div class="approver-signature-section">
+                        <h4>✍️ Chữ ký người phê duyệt</h4>
+                        <div class="approver-signature-preview" id="approver-signature-preview">
+                            ${approverSignatureData 
+                                ? `<img src="${approverSignatureData}" alt="Chữ ký" id="approver-signature-img">`
+                                : `<span style="color: #94a3b8; font-size: 0.875rem;" id="approver-signature-placeholder">Chưa có chữ ký</span>`
+                            }
+                        </div>
+                        <div class="signature-actions">
+                            <label class="btn-secondary signature-upload-btn" style="padding: 0.5rem 1rem; font-size: 0.8125rem;">
+                                <input type="file" accept="image/png,image/jpeg,image/jpg" style="display: none;" onchange="handleApproverSignatureUpload(event)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                                ${approverSignatureData ? 'Đổi chữ ký' : 'Tải lên chữ ký'}
+                            </label>
+                            ${approverSignatureData ? `
+                                <button type="button" class="btn-secondary" style="padding: 0.5rem 1rem; font-size: 0.8125rem; color: #ef4444;" onclick="clearApproverSignature()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                                    Xóa
+                                </button>
+                            ` : ''}
+                        </div>
+                        <div class="signature-note">
+                            <small>💡 Chữ ký sẽ được lưu để sử dụng cho các phê duyệt sau</small>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            return `
+                <div class="voucher-detail-grid">
+                    <div class="voucher-detail-item">
+                        <div class="label">Số phiếu</div>
+                        <div class="value">${voucher.voucherNumber || 'N/A'}</div>
+                    </div>
+                    <div class="voucher-detail-item">
+                        <div class="label">Loại phiếu</div>
+                        <div class="value">${voucher.voucherType || 'N/A'}</div>
+                    </div>
+                    <div class="voucher-detail-item">
+                        <div class="label">Công ty</div>
+                        <div class="value">${voucher.company || 'N/A'}</div>
+                    </div>
+                    <div class="voucher-detail-item">
+                        <div class="label">Người đề nghị</div>
+                        <div class="value">${voucher.employee || 'N/A'}</div>
+                    </div>
+                    <div class="voucher-detail-item">
+                        <div class="label">Số tiền</div>
+                        <div class="value" style="color: #059669; font-weight: 600;">
+                            ${typeof voucher.amount === 'number' ? voucher.amount.toLocaleString('vi-VN') + ' ₫' : voucher.amount || '0 ₫'}
+                        </div>
+                    </div>
+                    <div class="voucher-detail-item">
+                        <div class="label">Trạng thái</div>
+                        <div class="value">
+                            <span class="voucher-status ${statusClass}" style="display: inline-block;">${statusText}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                ${approverSignatureSection}
+                
+                ${meta.requesterSignature ? `
+                <div class="voucher-detail-section">
+                    <h4>✍️ Chữ ký người đề nghị</h4>
+                    <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; text-align: center;">
+                        <img src="${meta.requesterSignature}" alt="Chữ ký người đề nghị" style="max-height: 80px; max-width: 200px;">
+                    </div>
+                </div>
+                ` : ''}
+                
+                <div class="voucher-detail-section">
+                    <h4>📋 Lịch sử xử lý</h4>
+                    <div style="max-height: 200px; overflow-y: auto;">
+                        ${historyHtml || '<p style="color: #94a3b8; text-align: center; padding: 1rem;">Không có lịch sử</p>'}
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Handle approver signature upload
+        async function handleApproverSignatureUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Validate file type
+            if (!file.type.match(/^image\/(png|jpeg|jpg)$/)) {
+                showToast('Chỉ hỗ trợ file PNG, JPG, JPEG', 'error');
+                return;
+            }
+            
+            // Validate file size (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                showToast('File quá lớn. Tối đa 2MB', 'error');
+                return;
+            }
+            
+            try {
+                const base64Data = await readFileAsBase64(file);
+                approverSignatureData = base64Data;
+                localStorage.setItem(APPROVER_SIGNATURE_KEY, base64Data);
+                
+                // Update preview
+                const preview = document.getElementById('approver-signature-preview');
+                preview.innerHTML = `<img src="${base64Data}" alt="Chữ ký" id="approver-signature-img">`;
+                
+                showToast('Đã tải lên chữ ký', 'success');
+                
+                // Refresh modal content to show clear button
+                if (currentModalVoucher) {
+                    openVoucherDetail(currentModalVoucher.voucherNumber);
+                }
+            } catch (error) {
+                showToast('Lỗi tải file: ' + error.message, 'error');
+            }
+        }
+        
+        // Clear approver signature
+        function clearApproverSignature() {
+            if (confirm('Bạn có chắc muốn xóa chữ ký?')) {
+                approverSignatureData = null;
+                localStorage.removeItem(APPROVER_SIGNATURE_KEY);
+                
+                const preview = document.getElementById('approver-signature-preview');
+                if (preview) {
+                    preview.innerHTML = `<span style="color: #94a3b8; font-size: 0.875rem;" id="approver-signature-placeholder">Chưa có chữ ký</span>`;
+                }
+                
+                showToast('Đã xóa chữ ký', 'info');
+                
+                // Refresh modal content
+                if (currentModalVoucher) {
+                    openVoucherDetail(currentModalVoucher.voucherNumber);
+                }
+            }
+        }
+        
+        // Approve voucher from modal
+        async function approveFromModal() {
+            if (!currentModalVoucher) return;
+            
+            if (!approverSignatureData) {
+                showToast('Vui lòng tải lên chữ ký trước khi phê duyệt', 'error');
+                return;
+            }
+            
+            if (!confirm('Bạn có chắc muốn PHÊ DUYỆT phiếu này?')) return;
+            
+            const modal = document.getElementById('voucher-modal-overlay');
+            const modalLoading = document.getElementById('modal-loading');
+            const modalContent = document.getElementById('modal-content');
+            const modalFooter = document.getElementById('modal-footer');
+            
+            modalLoading.classList.add('show');
+            modalContent.style.opacity = '0.5';
+            modalFooter.querySelectorAll('button').forEach(btn => btn.disabled = true);
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'approveVoucher',
+                    voucherNumber: currentModalVoucher.voucherNumber,
+                    voucherType: currentModalVoucher.voucherType || '',
+                    company: currentModalVoucher.company || '',
+                    employee: currentModalVoucher.employee || '',
+                    amount: currentModalVoucher.amount || '',
+                    requestorEmail: currentModalVoucher.requestorEmail || '',
+                    approverEmail: currentModalVoucher.approverEmail || '',
+                    approvedBy: 'Approver',
+                    approverSignature: approverSignatureData
+                });
+                
+                const response = await fetch(`${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?${params.toString()}`);
+                const result = await response.json();
+                
+                modalLoading.classList.remove('show');
+                modalContent.style.opacity = '1';
+                
+                if (result.success) {
+                    showToast('Đã phê duyệt phiếu thành công!', 'success');
+                    closeVoucherModal();
+                    loadRecentVouchers();
+                } else {
+                    showToast(result.message || 'Lỗi phê duyệt', 'error');
+                    modalFooter.querySelectorAll('button').forEach(btn => btn.disabled = false);
+                }
+            } catch (error) {
+                console.error('Error approving:', error);
+                modalLoading.classList.remove('show');
+                modalContent.style.opacity = '1';
+                modalFooter.querySelectorAll('button').forEach(btn => btn.disabled = false);
+                showToast('Lỗi kết nối: ' + error.message, 'error');
+            }
+        }
+        
+        // Reject voucher from modal
+        async function rejectFromModal() {
+            if (!currentModalVoucher) return;
+            
+            const reason = prompt('Vui lòng nhập lý do từ chối:');
+            if (reason === null) return; // User cancelled
+            if (!reason.trim()) {
+                showToast('Vui lòng nhập lý do từ chối', 'error');
+                return;
+            }
+            
+            const modal = document.getElementById('voucher-modal-overlay');
+            const modalLoading = document.getElementById('modal-loading');
+            const modalContent = document.getElementById('modal-content');
+            const modalFooter = document.getElementById('modal-footer');
+            
+            modalLoading.classList.add('show');
+            modalContent.style.opacity = '0.5';
+            modalFooter.querySelectorAll('button').forEach(btn => btn.disabled = true);
+            
+            try {
+                const params = new URLSearchParams({
+                    action: 'rejectVoucher',
+                    voucherNumber: currentModalVoucher.voucherNumber,
+                    voucherType: currentModalVoucher.voucherType || '',
+                    company: currentModalVoucher.company || '',
+                    employee: currentModalVoucher.employee || '',
+                    amount: currentModalVoucher.amount || '',
+                    requestorEmail: currentModalVoucher.requestorEmail || '',
+                    approverEmail: currentModalVoucher.approverEmail || '',
+                    rejectedBy: 'Approver',
+                    reason: reason.trim(),
+                    approverSignature: approverSignatureData || ''
+                });
+                
+                const response = await fetch(`${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?${params.toString()}`);
+                const result = await response.json();
+                
+                modalLoading.classList.remove('show');
+                modalContent.style.opacity = '1';
+                
+                if (result.success) {
+                    showToast('Đã từ chối phiếu', 'info');
+                    closeVoucherModal();
+                    loadRecentVouchers();
+                } else {
+                    showToast(result.message || 'Lỗi từ chối', 'error');
+                    modalFooter.querySelectorAll('button').forEach(btn => btn.disabled = false);
+                }
+            } catch (error) {
+                console.error('Error rejecting:', error);
+                modalLoading.classList.remove('show');
+                modalContent.style.opacity = '1';
+                modalFooter.querySelectorAll('button').forEach(btn => btn.disabled = false);
+                showToast('Lỗi kết nối: ' + error.message, 'error');
+            }
+        }
+        
+        // Close voucher detail modal
+        function closeVoucherModal(event) {
+            if (event && event.target !== event.currentTarget) return;
+            const modal = document.getElementById('voucher-modal-overlay');
+            modal.classList.remove('show');
+            currentModalVoucher = null;
+        }
+        
+        // Initialize recent vouchers on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            // Load recent vouchers after a short delay to ensure page is ready
+            setTimeout(loadRecentVouchers, 1000);
+        });
+        // ============ END RECENT VOUCHERS FUNCTIONS ============
         
         function setCurrentDate() {
             const formattedDate = getCurrentVoucherDate();
@@ -3893,7 +4818,8 @@
                     department: department || '',
                     payeeName: payeeName || '',
                     reason: reason || '',
-                    files: filesToUpload  // Files for Drive upload
+                    files: filesToUpload,  // Files for Drive upload
+                    requesterSignature: currentSignatureData || '' // Requester signature for history
                 }
             };
 
