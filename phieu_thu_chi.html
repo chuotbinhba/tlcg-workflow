@@ -3166,6 +3166,43 @@
         let approverSignatureData = null;
         const APPROVER_SIGNATURE_KEY = 'tlcg_approver_signature';
         
+        // Get current user's email from the employee dropdown
+        function getCurrentUserEmail() {
+            const employeeSelect = document.getElementById('employee');
+            if (employeeSelect && employeeSelect.value) {
+                return employeeEmailMap[employeeSelect.value] || '';
+            }
+            return '';
+        }
+        
+        // Get current user's name from the employee dropdown
+        function getCurrentUserName() {
+            const employeeSelect = document.getElementById('employee');
+            return employeeSelect ? employeeSelect.value : '';
+        }
+        
+        // Check if current user is the requester of the voucher
+        function isCurrentUserRequester(voucher) {
+            const currentEmail = getCurrentUserEmail().toLowerCase().trim();
+            const currentName = getCurrentUserName().toLowerCase().trim();
+            const voucherRequestorEmail = (voucher.requestorEmail || '').toLowerCase().trim();
+            const voucherEmployee = (voucher.employee || '').toLowerCase().trim();
+            
+            // Match by email or employee name
+            const isRequester = (currentEmail && voucherRequestorEmail && currentEmail === voucherRequestorEmail) ||
+                               (currentName && voucherEmployee && currentName === voucherEmployee);
+            
+            console.log('User role check:', {
+                currentEmail,
+                currentName,
+                voucherRequestorEmail,
+                voucherEmployee,
+                isRequester
+            });
+            
+            return isRequester;
+        }
+        
         // Load recent vouchers from backend
         async function loadRecentVouchers() {
             const voucherList = document.getElementById('voucher-list');
@@ -3315,41 +3352,68 @@
                     console.log('Voucher status:', voucher.status);
                     console.log('Merged modal meta:', currentModalMeta);
                     
+                    // Check if current user is the requester
+                    const isRequester = isCurrentUserRequester(voucher);
+                    console.log('Is current user the requester:', isRequester);
+                    
                     document.getElementById('modal-title').textContent = `Phiếu ${voucher.voucherNumber}`;
                     
-                    // Render voucher details
-                    modalContent.innerHTML = renderVoucherDetails(voucher, historyData);
+                    // Render voucher details (pass isRequester to hide approver signature section)
+                    modalContent.innerHTML = renderVoucherDetails(voucher, historyData, isRequester);
                     
-                    // Add action buttons based on voucher status
+                    // Add action buttons based on voucher status AND user role
                     if (voucher.status === 'Pending') {
-                        modalFooter.innerHTML = `
-                            <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
-                            <button class="modal-btn" style="background: #6366f1; color: white;" onclick="printVoucher()">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                                In phiếu
-                            </button>
-                            <button class="modal-btn modal-btn-reject" onclick="rejectFromModal()">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                                Từ chối
-                            </button>
-                            <button class="modal-btn modal-btn-approve" onclick="approveFromModal()">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                                Phê duyệt
-                            </button>
-                        `;
+                        if (isRequester) {
+                            // Requester can only view and print their pending request
+                            modalFooter.innerHTML = `
+                                <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
+                                <button class="modal-btn" style="background: #6366f1; color: white;" onclick="printVoucher()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                                    In phiếu
+                                </button>
+                            `;
+                        } else {
+                            // Approver can approve or reject
+                            modalFooter.innerHTML = `
+                                <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
+                                <button class="modal-btn" style="background: #6366f1; color: white;" onclick="printVoucher()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                                    In phiếu
+                                </button>
+                                <button class="modal-btn modal-btn-reject" onclick="rejectFromModal()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                                    Từ chối
+                                </button>
+                                <button class="modal-btn modal-btn-approve" onclick="approveFromModal()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                    Phê duyệt
+                                </button>
+                            `;
+                        }
                     } else if (voucher.status === 'Rejected') {
-                        // Rejected vouchers - review and edit/resubmit
-                        modalFooter.innerHTML = `
-                            <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
-                            <button class="modal-btn" style="background: #6366f1; color: white;" onclick="printVoucher()">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
-                                In phiếu
-                            </button>
-                            <button class="modal-btn" style="background: #3b82f6; color: white;" onclick="editVoucherFromModal()">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                                Chỉnh sửa & Gửi lại
-                            </button>
-                        `;
+                        if (isRequester) {
+                            // Requester can edit and resubmit their rejected voucher
+                            modalFooter.innerHTML = `
+                                <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
+                                <button class="modal-btn" style="background: #6366f1; color: white;" onclick="printVoucher()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                                    In phiếu
+                                </button>
+                                <button class="modal-btn" style="background: #3b82f6; color: white;" onclick="editVoucherFromModal()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                    Chỉnh sửa & Gửi lại
+                                </button>
+                            `;
+                        } else {
+                            // Others can only view and print rejected vouchers
+                            modalFooter.innerHTML = `
+                                <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
+                                <button class="modal-btn" style="background: #6366f1; color: white;" onclick="printVoucher()">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
+                                    In phiếu
+                                </button>
+                            `;
+                        }
                     } else {
                         // Approved vouchers - review and print only
                         modalFooter.innerHTML = `
@@ -3380,7 +3444,8 @@
         }
         
         // Render voucher details HTML
-        function renderVoucherDetails(voucher, historyList) {
+        // isRequester: boolean - if true, hide approver signature upload section
+        function renderVoucherDetails(voucher, historyList, isRequester = false) {
             const statusClass = (voucher.status || 'Pending').toLowerCase();
             const statusText = {
                 'pending': 'Chờ duyệt',
@@ -3428,9 +3493,9 @@
                 }).join('');
             }
             
-            // Approver signature section (only for pending)
+            // Approver signature section (only for pending AND only for approvers, not requesters)
             let approverSignatureSection = '';
-            if (voucher.status === 'Pending') {
+            if (voucher.status === 'Pending' && !isRequester) {
                 approverSignatureSection = `
                     <div class="approver-signature-section">
                         <h4>✍️ Chữ ký người phê duyệt</h4>
@@ -3460,7 +3525,19 @@
                 `;
             }
             
+            // Role indicator for the user
+            let roleIndicator = '';
+            if (isRequester) {
+                roleIndicator = `
+                    <div style="background: #dbeafe; color: #1e40af; padding: 0.5rem 1rem; border-radius: 8px; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.875rem;">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                        <span>Bạn là <strong>người đề nghị</strong> phiếu này</span>
+                    </div>
+                `;
+            }
+            
             return `
+                ${roleIndicator}
                 <div class="voucher-detail-grid">
                     <div class="voucher-detail-item">
                         <div class="label">Số phiếu</div>
