@@ -3456,10 +3456,16 @@
             // Merge meta data from all history entries
             // (submission entry has requesterSignature, approval/rejection has approverSignature)
             let meta = {};
+            let attachmentsUrl = voucher.attachments || ''; // Start with current voucher's attachments
+            
             if (historyList && historyList.length > 0) {
                 historyList.forEach(h => {
                     if (h.meta) {
                         meta = { ...meta, ...h.meta };
+                    }
+                    // Get attachments from any history entry (usually the Submit entry has it)
+                    if (h.attachments && !attachmentsUrl) {
+                        attachmentsUrl = h.attachments;
                     }
                 });
             }
@@ -3468,7 +3474,11 @@
                 meta = { ...meta, ...voucher.meta };
             }
             
+            // Store merged attachments URL for use in the template
+            voucher.attachments = attachmentsUrl;
+            
             console.log('Merged meta data:', meta);
+            console.log('Attachments URL:', attachmentsUrl);
             
             // Build history timeline
             let historyHtml = '';

@@ -418,6 +418,7 @@ function getVoucherHistory_(voucherNumber) {
     const idxAction = header.indexOf('Action');
     const idxBy = header.indexOf('By');
     const idxNote = header.indexOf('Note');
+    const idxAttachments = header.indexOf('Attachments'); // Column J
     const idxRequestorEmail = header.indexOf('RequestorEmail');
     const idxApproverEmail = header.indexOf('ApproverEmail');
     const idxTimestamp = header.indexOf('Timestamp');
@@ -435,6 +436,16 @@ function getVoucherHistory_(voucherNumber) {
           Logger.log('Error parsing meta JSON: ' + e);
         }
         
+        // Get attachments - handle RichTextValue or plain text
+        let attachments = '';
+        if (idxAttachments >= 0) {
+          const cellValue = data[i][idxAttachments];
+          if (cellValue) {
+            // If it's a string URL, use it directly
+            attachments = cellValue.toString();
+          }
+        }
+        
         history.push({
           voucherNumber: data[i][idxVoucherNumber] || '',
           voucherType: data[i][idxVoucherType] || '',
@@ -445,6 +456,7 @@ function getVoucherHistory_(voucherNumber) {
           action: data[i][idxAction] || '',
           by: data[i][idxBy] || '',
           note: data[i][idxNote] || '',
+          attachments: attachments,
           requestorEmail: data[i][idxRequestorEmail] || '',
           approverEmail: data[i][idxApproverEmail] || '',
           timestamp: data[i][idxTimestamp] || '',
@@ -1502,6 +1514,9 @@ function handleGetVoucherSummary(requestBody) {
           action: row[idxAction] || '',          // THIS row's action
           by: row[idxBy] || '',
           note: row[idxNote] || '',
+          attachments: row[idxAttachments] ? row[idxAttachments].toString() : '',  // Column J
+          requestorEmail: row[idxRequestorEmail] || '',
+          approverEmail: row[idxApproverEmail] || '',
           timestamp: formatTimestamp(row[idxTimestamp])
         };
       })
