@@ -611,9 +611,27 @@ function createResponse(success, message, data) {
 function doPost(e) {
   try {
     Logger.log('=== doPost called ===');
-    Logger.log('e.postData type: ' + (e.postData ? e.postData.type : 'null'));
-    Logger.log('e.postData contents length: ' + (e.postData && e.postData.contents ? e.postData.contents.length : 0));
-    Logger.log('e.parameter: ' + JSON.stringify(e.parameter));
+    Logger.log('e exists: ' + (e ? 'YES' : 'NO'));
+    Logger.log('e type: ' + typeof e);
+    
+    // Safety check - if called manually without event parameter
+    if (!e) {
+      Logger.log('❌ ERROR: doPost called without event parameter (e is null/undefined)');
+      return createResponse(false, 'Invalid request - no event data');
+    }
+    
+    // Log all available properties of e
+    Logger.log('e keys: ' + Object.keys(e).join(', '));
+    Logger.log('e.postData exists: ' + (e.postData ? 'YES' : 'NO'));
+    Logger.log('e.parameter exists: ' + (e.parameter ? 'YES' : 'NO'));
+    
+    if (e.postData) {
+      Logger.log('e.postData type: ' + (e.postData.type || 'null'));
+      Logger.log('e.postData contents length: ' + (e.postData.contents ? e.postData.contents.length : 0));
+    }
+    if (e.parameter) {
+      Logger.log('e.parameter: ' + JSON.stringify(e.parameter));
+    }
 
     let requestBody;
     let action;
