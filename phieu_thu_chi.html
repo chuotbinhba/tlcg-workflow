@@ -2247,7 +2247,7 @@
         // 8. Click "Deploy".
         // 9. Copy the "Web app URL" and paste it here.
         // 10. Ensure your Google account has permissions to send emails via Gmail (usually default).
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzF_Pqp_RnU6dRGXn2oAhJSUiRBLS3s4zYYMDW3-XwcTPRdAVR0yFPj-w0fkWjk9uNP/exec';
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwp-lvHKCXhUEB4bxb7BeRjd3s3HHY8x7QgocNeLoQ4CZLjyuuiHH7SuJnWkwXYJ5Pl/exec';
 
         // Initialize email mappings based on provided exact emails and company data
         const employeeEmailMap = {
@@ -3626,10 +3626,28 @@
                         <p style="font-size: 0.8125rem; color: #64748b; margin-bottom: 0.75rem;">
                             Vui lòng xem xét tất cả tài liệu đính kèm trước khi phê duyệt hoặc từ chối.
                         </p>
-                        <a href="${voucher.attachments}" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #3b82f6; color: white; padding: 0.625rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.875rem; font-weight: 500;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
-                            Mở thư mục tài liệu
-                        </a>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+                            ${(function() {
+                                // Parse attachments: format is "filename|url\nfilename2|url2" or just "url"
+                                const lines = voucher.attachments.split('\n').filter(l => l.trim());
+                                return lines.map(line => {
+                                    const parts = line.split('|');
+                                    let fileName, fileUrl;
+                                    if (parts.length >= 2) {
+                                        fileName = parts[0].trim();
+                                        fileUrl = parts[1].trim();
+                                    } else {
+                                        fileUrl = parts[0].trim();
+                                        fileName = 'Tài liệu đính kèm';
+                                    }
+                                    if (!fileUrl.startsWith('http')) return '';
+                                    return '<a href="' + fileUrl + '" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #3b82f6; color: white; padding: 0.5rem 0.75rem; border-radius: 6px; text-decoration: none; font-size: 0.8125rem; font-weight: 500; margin-right: 0.5rem;">' +
+                                        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>' +
+                                        fileName +
+                                    '</a>';
+                                }).join('');
+                            })()}
+                        </div>
                     </div>
                 </div>
                 ` : `

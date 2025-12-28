@@ -437,27 +437,39 @@ function getVoucherHistory_(voucherNumber) {
           Logger.log('Error parsing meta JSON: ' + e);
         }
         
-        // Get attachments URL - try multiple methods
+        // Get attachments URLs - extract ALL URLs from RichTextValue runs
         let attachments = '';
         if (idxAttachments >= 0) {
-          // Method 1: Try to get URL from RichTextValue (for hyperlinked cells)
+          // Method 1: Try to get ALL URLs from RichTextValue runs (for multi-hyperlink cells)
           if (richTextValues && richTextValues[i - 1] && richTextValues[i - 1][0]) {
             const richText = richTextValues[i - 1][0];
-            const url = richText.getLinkUrl();
-            if (url) {
-              attachments = url;
-              Logger.log('Row ' + i + ' - Got attachment URL from RichText: ' + url);
+            const runs = richText.getRuns();
+            const urlsWithNames = [];
+            
+            // Extract URLs and their display text from each run
+            for (const run of runs) {
+              const url = run.getLinkUrl();
+              const text = run.getText().trim();
+              if (url && url.startsWith('http')) {
+                urlsWithNames.push(text + '|' + url);
+              }
+            }
+            
+            if (urlsWithNames.length > 0) {
+              // Return all URLs with their names, separated by newline
+              attachments = urlsWithNames.join('\n');
+              Logger.log('Row ' + i + ' - Got ' + urlsWithNames.length + ' attachment(s): ' + attachments);
             }
           }
           
-          // Method 2: Try to get from cell note (we store FOLDER_URL there)
+          // Method 2: Try to get from cell note (we store FOLDER_URL there for new uploads)
           if (!attachments) {
             try {
-              const note = sheet.getRange(i + 1, 10).getNote(); // Row is 1-based, add 1 for header
+              const note = sheet.getRange(i + 1, 10).getNote();
               if (note && note.includes('FOLDER_URL:')) {
                 const urlMatch = note.match(/FOLDER_URL:\s*(https?:\/\/[^\s\n]+)/);
                 if (urlMatch) {
-                  attachments = urlMatch[1];
+                  attachments = 'Tài liệu đính kèm|' + urlMatch[1];
                   Logger.log('Row ' + i + ' - Got attachment URL from note: ' + attachments);
                 }
               }
@@ -469,12 +481,11 @@ function getVoucherHistory_(voucherNumber) {
           // Method 3: Check if cell value is a URL or contains URL
           if (!attachments && data[i][idxAttachments]) {
             const cellValue = data[i][idxAttachments].toString();
-            // New format: FOLDER_URL|file1|file2|...
             if (cellValue.includes('|') && cellValue.startsWith('http')) {
-              attachments = cellValue.split('|')[0];
+              attachments = 'Tài liệu đính kèm|' + cellValue.split('|')[0];
               Logger.log('Row ' + i + ' - Got attachment URL from pipe format: ' + attachments);
             } else if (cellValue.startsWith('http')) {
-              attachments = cellValue;
+              attachments = 'Tài liệu đính kèm|' + cellValue;
               Logger.log('Row ' + i + ' - Got attachment URL from plain text: ' + attachments);
             }
           }
@@ -1477,29 +1488,39 @@ function handleGetVoucherSummary(requestBody) {
     const idxApproverEmail = 11;
     const idxTimestamp = 12;
     
-    // Helper function to get attachment URL for a row
+    // Helper function to get attachment URLs for a row (returns all URLs with names)
     function getAttachmentUrl(rowIndex) {
       let attachments = '';
       
-      // Method 1: Try to get URL from RichTextValue (for hyperlinked cells)
+      // Method 1: Try to get ALL URLs from RichTextValue runs (for multi-hyperlink cells)
       if (richTextValues && richTextValues[rowIndex] && richTextValues[rowIndex][0]) {
         const richText = richTextValues[rowIndex][0];
-        const url = richText.getLinkUrl();
-        if (url) {
-          attachments = url;
-          Logger.log('Row ' + rowIndex + ' attachment URL from RichText: ' + url);
+        const runs = richText.getRuns();
+        const urlsWithNames = [];
+        
+        // Extract URLs and their display text from each run
+        for (const run of runs) {
+          const url = run.getLinkUrl();
+          const text = run.getText().trim();
+          if (url && url.startsWith('http')) {
+            urlsWithNames.push(text + '|' + url);
+          }
+        }
+        
+        if (urlsWithNames.length > 0) {
+          attachments = urlsWithNames.join('\n');
+          Logger.log('Row ' + rowIndex + ' - Got ' + urlsWithNames.length + ' attachment(s)');
           return attachments;
         }
       }
       
-      // Method 2: Try to get from cell note (we store FOLDER_URL there)
+      // Method 2: Try to get from cell note (for new uploads with folder URL)
       try {
-        const note = sheet.getRange(rowIndex + 2, attachmentsColIndex).getNote(); // +2 for header and 0-based
+        const note = sheet.getRange(rowIndex + 2, attachmentsColIndex).getNote();
         if (note && note.includes('FOLDER_URL:')) {
           const urlMatch = note.match(/FOLDER_URL:\s*(https?:\/\/[^\s\n]+)/);
           if (urlMatch) {
-            attachments = urlMatch[1];
-            Logger.log('Row ' + rowIndex + ' attachment URL from note: ' + attachments);
+            attachments = 'Tài liệu đính kèm|' + urlMatch[1];
             return attachments;
           }
         }
@@ -1511,14 +1532,11 @@ function handleGetVoucherSummary(requestBody) {
       const cellValue = rows[rowIndex] && rows[rowIndex][idxAttachments];
       if (cellValue) {
         const textValue = cellValue.toString();
-        // New format: FOLDER_URL|file1|file2|...
         if (textValue.includes('|') && textValue.startsWith('http')) {
-          attachments = textValue.split('|')[0];
-          Logger.log('Row ' + rowIndex + ' attachment URL from pipe format: ' + attachments);
+          attachments = 'Tài liệu đính kèm|' + textValue.split('|')[0];
           return attachments;
         } else if (textValue.startsWith('http')) {
-          attachments = textValue;
-          Logger.log('Row ' + rowIndex + ' attachment URL from plain text: ' + attachments);
+          attachments = 'Tài liệu đính kèm|' + textValue;
           return attachments;
         }
       }
