@@ -3774,15 +3774,17 @@
                 // Use POST request because approverSignature is too long for URL
                 const requestData = {
                     action: 'approveVoucher',
-                    voucherNumber: currentModalVoucher.voucherNumber,
-                    voucherType: currentModalVoucher.voucherType || '',
-                    company: currentModalVoucher.company || '',
-                    employee: currentModalVoucher.employee || '',
-                    amount: currentModalVoucher.amount || '',
-                    requestorEmail: currentModalVoucher.requestorEmail || '',
-                    approverEmail: currentModalVoucher.approverEmail || '',
-                    approvedBy: 'Approver',
-                    approverSignature: approverSignatureData
+                    voucher: {
+                        voucherNumber: currentModalVoucher.voucherNumber,
+                        voucherType: currentModalVoucher.voucherType || '',
+                        company: currentModalVoucher.company || '',
+                        employee: currentModalVoucher.employee || '',
+                        amount: currentModalVoucher.amount || '',
+                        requestorEmail: currentModalVoucher.requestorEmail || '',
+                        approverEmail: currentModalVoucher.approverEmail || '',
+                        approvedBy: 'Approver',
+                        approverSignature: approverSignatureData
+                    }
                 };
                 
                 const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
@@ -3838,16 +3840,18 @@
                 // Use POST request because approverSignature can be long
                 const requestData = {
                     action: 'rejectVoucher',
-                    voucherNumber: currentModalVoucher.voucherNumber,
-                    voucherType: currentModalVoucher.voucherType || '',
-                    company: currentModalVoucher.company || '',
-                    employee: currentModalVoucher.employee || '',
-                    amount: currentModalVoucher.amount || '',
-                    requestorEmail: currentModalVoucher.requestorEmail || '',
-                    approverEmail: currentModalVoucher.approverEmail || '',
-                    rejectedBy: 'Approver',
-                    reason: reason.trim(),
-                    approverSignature: approverSignatureData || ''
+                    voucher: {
+                        voucherNumber: currentModalVoucher.voucherNumber,
+                        voucherType: currentModalVoucher.voucherType || '',
+                        company: currentModalVoucher.company || '',
+                        employee: currentModalVoucher.employee || '',
+                        amount: currentModalVoucher.amount || '',
+                        requestorEmail: currentModalVoucher.requestorEmail || '',
+                        approverEmail: currentModalVoucher.approverEmail || '',
+                        rejectedBy: 'Approver',
+                        reason: reason.trim(),
+                        approverSignature: approverSignatureData || ''
+                    }
                 };
                 
                 const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
