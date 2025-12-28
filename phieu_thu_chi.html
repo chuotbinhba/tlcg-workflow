@@ -3771,7 +3771,8 @@
             modalFooter.querySelectorAll('button').forEach(btn => btn.disabled = true);
             
             try {
-                const params = new URLSearchParams({
+                // Use POST request because approverSignature is too long for URL
+                const requestData = {
                     action: 'approveVoucher',
                     voucherNumber: currentModalVoucher.voucherNumber,
                     voucherType: currentModalVoucher.voucherType || '',
@@ -3782,9 +3783,15 @@
                     approverEmail: currentModalVoucher.approverEmail || '',
                     approvedBy: 'Approver',
                     approverSignature: approverSignatureData
-                });
+                };
                 
-                const response = await fetch(`${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?${params.toString()}`);
+                const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: JSON.stringify(requestData)
+                });
                 const result = await response.json();
                 
                 modalLoading.classList.remove('show');
@@ -3828,7 +3835,8 @@
             modalFooter.querySelectorAll('button').forEach(btn => btn.disabled = true);
             
             try {
-                const params = new URLSearchParams({
+                // Use POST request because approverSignature can be long
+                const requestData = {
                     action: 'rejectVoucher',
                     voucherNumber: currentModalVoucher.voucherNumber,
                     voucherType: currentModalVoucher.voucherType || '',
@@ -3840,9 +3848,15 @@
                     rejectedBy: 'Approver',
                     reason: reason.trim(),
                     approverSignature: approverSignatureData || ''
-                });
+                };
                 
-                const response = await fetch(`${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?${params.toString()}`);
+                const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    },
+                    body: JSON.stringify(requestData)
+                });
                 const result = await response.json();
                 
                 modalLoading.classList.remove('show');
@@ -4129,7 +4143,23 @@
                         <div class="info-row">
                             <span class="info-label">Kèm theo</span>
                             <span class="info-colon">:</span>
-                            <span class="info-value" style="font-style: italic;">${voucher.attachments ? `<a href="${voucher.attachments}" target="_blank" style="color: #2563eb;">Xem tệp đính kèm</a>` : '(Cung cấp chứng từ bản gốc cho kế toán)'}</span>
+                            <span class="info-value" style="font-style: italic;">${voucher.attachments ? (function() {
+                                // Parse attachments: format is "filename|url\nfilename2|url2"
+                                const lines = voucher.attachments.split('\\n').filter(l => l.trim());
+                                return lines.map(line => {
+                                    const parts = line.split('|');
+                                    let fileName, fileUrl;
+                                    if (parts.length >= 2) {
+                                        fileName = parts[0].trim();
+                                        fileUrl = parts[1].trim();
+                                    } else {
+                                        fileUrl = parts[0].trim();
+                                        fileName = 'Tệp đính kèm';
+                                    }
+                                    if (!fileUrl.startsWith('http')) return fileName;
+                                    return '<a href="' + fileUrl + '" target="_blank" style="color: #2563eb; text-decoration: underline;">' + fileName + '</a>';
+                                }).join(', ');
+                            })() : '(Cung cấp chứng từ bản gốc cho kế toán)'}</span>
                         </div>
                         
                         <div class="info-row">
