@@ -336,32 +336,73 @@ function appendHistory_(entry) {
     const lastRow = sheet.getLastRow();
     Logger.log('✅ Last row in sheet: ' + lastRow);
     
-    // Set attachments in Column J - store folder URL with hyperlink for easy access
+    // Set attachments in Column J - individual file links with clickable URLs
     if (entry.attachments && entry.attachments.trim() !== '') {
       try {
         const attachmentsCell = sheet.getRange(lastRow, 10); // Column J
         
-        // Check if attachments is in new format: FOLDER_URL|file1|file2|...
-        const parts = entry.attachments.split('|');
-        if (parts[0] && parts[0].startsWith('http')) {
-          const folderUrl = parts[0];
-          const fileNames = parts.slice(1).join(', ') || 'Files';
+        // NEW FORMAT: Individual file links
+        // Format: filename (size MB) - URL\nfilename2 (size MB) - URL2
+        const lines = entry.attachments.split('\n');
+        const hasMultipleFiles = lines.length > 0 && lines[0].includes(' - http');
+        
+        if (hasMultipleFiles) {
+          // Build RichTextValue with multiple clickable links
+          let displayParts = [];
+          let linkRanges = [];
+          let currentPos = 0;
           
-          // Create clickable link with folder URL and file names as display text
+          lines.forEach((line, index) => {
+            // Parse: filename (size MB) - URL
+            const urlMatch = line.match(/(.*?) - (https?:\/\/[^\s]+)/);
+            if (urlMatch) {
+              const fileInfo = urlMatch[1]; // filename (size MB)
+              const fileUrl = urlMatch[2];
+              
+              // Add emoji and file info
+              const displayLine = '📄 ' + fileInfo;
+              displayParts.push(displayLine);
+              
+              // Track link position (for the file info part, not emoji)
+              const startPos = currentPos + 3; // After "📄 "
+              const endPos = startPos + fileInfo.length;
+              linkRanges.push({ start: startPos, end: endPos, url: fileUrl });
+              
+              currentPos += displayLine.length;
+              
+              // Add newline if not last
+              if (index < lines.length - 1) {
+                displayParts.push('\n');
+                currentPos += 1;
+              }
+            }
+          });
+          
+          const fullText = displayParts.join('');
+          
+          // Build RichTextValue with all links
+          let richTextBuilder = SpreadsheetApp.newRichTextValue().setText(fullText);
+          linkRanges.forEach(range => {
+            richTextBuilder = richTextBuilder.setLinkUrl(range.start, range.end, range.url);
+          });
+          
+          attachmentsCell.setRichTextValue(richTextBuilder.build());
+          
+          // Store raw data in note for programmatic access
+          attachmentsCell.setNote(entry.attachments);
+          
+          Logger.log('✅ Set ' + lines.length + ' clickable file links in Column J');
+        } else if (entry.attachments.startsWith('http')) {
+          // Single URL - make it clickable
           const displayText = 'Tài liệu đính kèm';
           const richText = SpreadsheetApp.newRichTextValue()
             .setText(displayText)
-            .setLinkUrl(0, displayText.length, folderUrl)
+            .setLinkUrl(0, displayText.length, entry.attachments)
             .build();
-          
           attachmentsCell.setRichTextValue(richText);
-          
-          // Also store the raw URL in a note for easy extraction
-          attachmentsCell.setNote('FOLDER_URL: ' + folderUrl + '\nFILES: ' + fileNames);
-          
-          Logger.log('✅ Set clickable folder link in Column J: ' + folderUrl);
+          Logger.log('✅ Set single clickable link in Column J');
         } else {
-          // Old format or plain URL - just store as text
+          // Plain text - just store as text
           attachmentsCell.setValue(entry.attachments);
           Logger.log('✅ Set plain text attachments in Column J');
         }
@@ -944,20 +985,100 @@ function handleSendEmail(requestBody) {
     }
     
     debugLog_('FINAL Subject: ' + subject);
-    
-    const body    = emailData.body;
-
-    // Debug log the subject
-    debugLog_('Subject: ' + subject);
-    debugLog_('Email TO: ' + to);
 
     if (!to) {
       debugLog_('❌ ERROR: Recipient email (TO) is required');
       return createResponse(false, 'Recipient email is required');
     }
 
-    // Send email to APPROVERS (with buttons)
-    // Use MailApp instead of GmailApp - it handles UTF-8 subjects better with multipart emails
+    // ========== UPLOAD FILES FIRST ==========
+    let uploadedFiles = [];
+    let attachmentsText = '';
+    let fileLinksHtml = '';
+    
+    const voucherNumberForHistory = voucher.voucherNumber || 'AUTO-' + new Date().getTime();
+    
+    Logger.log('=== CHECKING FILES FOR UPLOAD ===');
+    Logger.log('voucher.files exists: ' + (voucher.files ? 'YES' : 'NO'));
+    Logger.log('voucher.files length: ' + (voucher.files ? voucher.files.length : 0));
+    
+    if (voucher.files && voucher.files.length > 0) {
+      Logger.log('Uploading ' + voucher.files.length + ' files to Drive...');
+      try {
+        const uploadResult = uploadFilesToDrive_(voucher.files, voucherNumberForHistory);
+        uploadedFiles = uploadResult.files.filter(f => !f.error);
+        
+        Logger.log('Files uploaded successfully. Count: ' + uploadedFiles.length);
+        
+        // Generate individual file links for Column J (Option B)
+        // Format: filename (size MB) - URL\nfilename2 (size MB) - URL2
+        attachmentsText = uploadedFiles.map(f => {
+          const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '0.00';
+          return f.fileName + ' (' + sizeMB + ' MB) - ' + f.fileUrl;
+        }).join('\n');
+        
+        // Generate HTML links for email body
+        fileLinksHtml = generateFileLinksHtml_(uploadedFiles);
+        
+        Logger.log('Attachments text for history: ' + attachmentsText);
+        Logger.log('File links HTML generated: ' + (fileLinksHtml ? 'YES' : 'NO'));
+        
+      } catch (uploadError) {
+        Logger.log('⚠️ Warning: File upload failed: ' + uploadError.toString());
+        // Fallback to just file names if upload fails
+        attachmentsText = voucher.files.map(f => {
+          const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '?';
+          return f.fileName + ' (' + sizeMB + ' MB) - Upload failed';
+        }).join('\n');
+      }
+    }
+    
+    // ========== INJECT FILE LINKS INTO EMAIL BODY ==========
+    let body = emailData.body;
+    let requesterBodyBase = requesterEmailData && requesterEmailData.body ? requesterEmailData.body : body;
+    
+    if (fileLinksHtml) {
+      // Replace the placeholder "Đính kèm" section or append before closing
+      // Look for the table with attachments column and add file links section after it
+      const filesSectionHtml = `
+        <div style="margin: 20px 0; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
+          <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">📎 Tài liệu đính kèm:</p>
+          ${fileLinksHtml}
+        </div>
+      `;
+      
+      // Insert before the approval buttons div or before "Trân trọng"
+      if (body.indexOf('Vui lòng xem xét') !== -1) {
+        body = body.replace(
+          '<p><b>Vui lòng xem xét',
+          filesSectionHtml + '<p><b>Vui lòng xem xét'
+        );
+      } else if (body.indexOf('Trân trọng') !== -1) {
+        body = body.replace(
+          '<p>Trân trọng',
+          filesSectionHtml + '<p>Trân trọng'
+        );
+      }
+      
+      // Also update requester body
+      if (requesterBodyBase.indexOf('Email thông báo kết quả') !== -1) {
+        requesterBodyBase = requesterBodyBase.replace(
+          '<p style="color: #666; font-style: italic;">Email thông báo kết quả',
+          filesSectionHtml + '<p style="color: #666; font-style: italic;">Email thông báo kết quả'
+        );
+      } else if (requesterBodyBase.indexOf('Trân trọng') !== -1) {
+        requesterBodyBase = requesterBodyBase.replace(
+          '<p>Trân trọng',
+          filesSectionHtml + '<p>Trân trọng'
+        );
+      }
+    }
+    
+    // Debug log the subject
+    debugLog_('Subject: ' + subject);
+    debugLog_('Email TO: ' + to);
+
+    // ========== SEND EMAIL TO APPROVERS ==========
     try {
       const emailOptions = { 
         to: to,
@@ -975,35 +1096,30 @@ function handleSendEmail(requestBody) {
       return createResponse(false, 'Failed to send email to approvers: ' + approverEmailError.message);
     }
     
-    // Send separate email to REQUESTER (info only, no buttons)
-    // Try multiple sources for requester email
+    // ========== SEND EMAIL TO REQUESTER ==========
     let requesterTo = null;
     let requesterSubject = null;
     let requesterBody = null;
     
     Logger.log('=== CHECKING REQUESTER EMAIL ===');
-    Logger.log('requesterEmailData: ' + JSON.stringify(requesterEmailData));
-    Logger.log('voucher.requestorEmail: ' + (voucher.requestorEmail || 'NOT FOUND'));
     
     // Priority 1: requesterEmailData.to from frontend
     if (requesterEmailData && requesterEmailData.to && requesterEmailData.to.trim() !== '') {
       requesterTo = requesterEmailData.to;
-      // Build subject in backend to avoid UTF-8 encoding issues
-      requesterSubject = `[THÔNG BÁO] Phiếu ${voucher.voucherType || ''} ${voucher.voucherNumber || ''} đã được gửi phê duyệt`;
-      requesterBody = requesterEmailData.body || body.replace(/<a href="[^"]*">.*?<\/a>/g, ''); // Remove buttons
+      requesterSubject = '[THÔNG BÁO] Phiếu ' + (voucher.voucherType || '') + ' ' + (voucher.voucherNumber || '') + ' đã được gửi phê duyệt';
+      requesterBody = requesterBodyBase.replace(/<a href="[^"]*">.*?<\/a>/g, ''); // Remove buttons
       Logger.log('📧 Priority 1: Using requesterEmailData.to: ' + requesterTo);
     }
     // Priority 2: voucher.requestorEmail
     else if (voucher.requestorEmail && voucher.requestorEmail.trim() !== '') {
       requesterTo = voucher.requestorEmail;
-      requesterSubject = `[THÔNG BÁO] Phiếu ${voucher.voucherType || ''} ${voucher.voucherNumber || ''} đã được gửi phê duyệt`;
-      requesterBody = requesterEmailData && requesterEmailData.body ? requesterEmailData.body : body.replace(/<a href="[^"]*">.*?<\/a>/g, ''); // Remove buttons
+      requesterSubject = '[THÔNG BÁO] Phiếu ' + (voucher.voucherType || '') + ' ' + (voucher.voucherNumber || '') + ' đã được gửi phê duyệt';
+      requesterBody = requesterBodyBase.replace(/<a href="[^"]*">.*?<\/a>/g, ''); // Remove buttons
       Logger.log('📧 Priority 2: Using voucher.requestorEmail: ' + requesterTo);
     }
     
     if (requesterTo) {
       Logger.log('📧 Sending requester notification email to: ' + requesterTo);
-      Logger.log('📧 Subject: ' + requesterSubject);
       try {
         MailApp.sendEmail({
           to: requesterTo,
@@ -1014,78 +1130,12 @@ function handleSendEmail(requestBody) {
         Logger.log('✅ Info email sent to requester: ' + requesterTo);
       } catch (emailError) {
         Logger.log('❌ ERROR sending requester email: ' + emailError.toString());
-        Logger.log('Error stack: ' + emailError.stack);
-        // Don't fail the whole request if requester email fails
       }
-    } else {
-      Logger.log('⚠️ WARNING: No requester email found. Requester will not receive notification.');
-      Logger.log('⚠️ requesterEmailData: ' + JSON.stringify(requesterEmailData));
-      Logger.log('⚠️ voucher.requestorEmail: ' + (voucher.requestorEmail || 'NOT SET'));
     }
 
-    // Ghi lịch sử SUBMIT nếu có thông tin voucher
-    Logger.log('=== CHECKING VOUCHER DATA FOR HISTORY ===');
-    Logger.log('voucher object: ' + JSON.stringify(voucher));
-    Logger.log('voucher.voucherNumber: ' + (voucher.voucherNumber || 'NOT FOUND'));
-    Logger.log('voucher.voucherType: ' + (voucher.voucherType || 'NOT FOUND'));
-    Logger.log('voucher.employee: ' + (voucher.employee || 'NOT FOUND'));
-    Logger.log('voucher.requestorEmail: ' + (voucher.requestorEmail || 'NOT FOUND'));
-    
-    // Always try to append history, even if voucherNumber is missing (use fallback)
-    const voucherNumberForHistory = voucher.voucherNumber || 'AUTO-' + new Date().getTime();
-    
-    if (!voucher.voucherNumber) {
-      Logger.log('⚠️ WARNING: voucher.voucherNumber is missing! Using fallback: ' + voucherNumberForHistory);
-      Logger.log('⚠️ Full voucher object: ' + JSON.stringify(voucher));
-    } else {
-      Logger.log('✅ Voucher number found: ' + voucher.voucherNumber);
-    }
-    
-    Logger.log('✅ Attempting to append history with voucher number: ' + voucherNumberForHistory);
+    // ========== APPEND HISTORY ==========
+    Logger.log('=== APPENDING HISTORY ===');
     try {
-      // Upload files to Drive if present
-      let attachmentsText = '';
-      
-      // Debug: Log file information
-      Logger.log('=== CHECKING FILES FOR UPLOAD ===');
-      Logger.log('voucher.files exists: ' + (voucher.files ? 'YES' : 'NO'));
-      Logger.log('voucher.files type: ' + (voucher.files ? typeof voucher.files : 'N/A'));
-      Logger.log('voucher.files is array: ' + (Array.isArray(voucher.files) ? 'YES' : 'NO'));
-      Logger.log('voucher.files length: ' + (voucher.files ? voucher.files.length : 0));
-      
-      if (voucher.files && voucher.files.length > 0) {
-        // Log each file info (without the actual data)
-        voucher.files.forEach((f, idx) => {
-          Logger.log('File ' + (idx + 1) + ': ' + f.fileName + ', mimeType: ' + f.mimeType + ', size: ' + f.fileSize + ', hasData: ' + (f.fileData ? 'YES' : 'NO') + ', dataLength: ' + (f.fileData ? f.fileData.length : 0));
-        });
-        
-        Logger.log('Uploading ' + voucher.files.length + ' files to Drive...');
-        try {
-          const uploadResult = uploadFilesToDrive_(voucher.files, voucherNumberForHistory);
-          const uploadedFiles = uploadResult.files;
-          const folderUrl = uploadResult.folderUrl;
-          
-          // Store FOLDER URL as the main attachment link (this is what gets displayed)
-          // Format: FOLDER_URL|file1.pdf|file2.jpg|...
-          const fileNames = uploadedFiles.filter(f => !f.error).map(f => f.fileName).join('|');
-          attachmentsText = folderUrl + '|' + fileNames;
-          
-          Logger.log('Files uploaded successfully. Folder URL: ' + folderUrl);
-          Logger.log('Attachments text: ' + attachmentsText);
-        } catch (uploadError) {
-          Logger.log('⚠️ Warning: File upload failed: ' + uploadError.toString());
-          Logger.log('⚠️ Upload error stack: ' + (uploadError.stack || 'No stack'));
-          // Fallback to just file names and sizes if upload fails
-          attachmentsText = voucher.files.map(f => {
-            const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '?';
-            const dataStatus = f.fileData ? 'data present (' + f.fileData.length + ' chars)' : 'NO DATA';
-            return `${f.fileName} (${sizeMB} MB) - Upload failed [${dataStatus}]`;
-          }).join('\n');
-        }
-      } else if (voucher.attachments && voucher.attachments.length > 0) {
-        attachmentsText = voucher.attachments;
-      }
-      
       appendHistory_({
         voucherNumber : voucherNumberForHistory,
         voucherType   : voucher.voucherType || '',
@@ -1103,24 +1153,44 @@ function handleSendEmail(requestBody) {
           voucherDate: voucher.voucherDate || '',
           department : voucher.department || '',
           payeeName  : voucher.payeeName || '',
-          originalVoucherNumber: voucher.voucherNumber || null, // Track original if missing
-          requesterSignature: voucher.requesterSignature || '' // Requester's signature
+          requesterSignature: voucher.requesterSignature || '',
+          uploadedFiles: uploadedFiles // Store file details in meta
         }
       });
       Logger.log('✅ History append completed successfully');
     } catch (historyError) {
       Logger.log('❌ ERROR appending history: ' + historyError.toString());
-      Logger.log('History error name: ' + historyError.name);
-      Logger.log('History error message: ' + historyError.message);
-      Logger.log('History error stack: ' + (historyError.stack || 'No stack'));
-      // Don't fail the whole request if history fails, but log it
     }
 
     return createResponse(true, 'Email sent successfully');
   } catch (error) {
-    Logger.log('Error sending email: ' + error.toString());
+    Logger.log('Error in handleSendEmail: ' + error.toString());
+    debugLog_('❌ ERROR: ' + error.toString());
     return createResponse(false, 'Error sending email: ' + error.message);
   }
+}
+
+/**
+ * Generate HTML for file links to include in email body
+ * @param {Array} uploadedFiles - Array of {fileName, fileUrl, fileSize}
+ * @returns {string} HTML string with clickable file links
+ */
+function generateFileLinksHtml_(uploadedFiles) {
+  if (!uploadedFiles || uploadedFiles.length === 0) {
+    return '';
+  }
+  
+  const fileLinks = uploadedFiles.map(f => {
+    const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '0.00';
+    return '<div style="margin: 5px 0;">' +
+      '<span style="margin-right: 8px;">📄</span>' +
+      '<a href="' + f.fileUrl + '" style="color: #1a73e8; text-decoration: none; font-weight: 500;">' + 
+      f.fileName + '</a>' +
+      '<span style="color: #666; margin-left: 8px;">(' + sizeMB + ' MB)</span>' +
+      '</div>';
+  }).join('');
+  
+  return fileLinks;
 }
 
 /** ===================== 2. SYNC TO SHEETS (GIỮ NGUYÊN) ===================== */
