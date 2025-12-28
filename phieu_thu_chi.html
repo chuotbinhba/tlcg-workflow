@@ -2489,6 +2489,34 @@
                 if (saved) {
                     const formData = JSON.parse(saved);
                     
+                    // Check if there's meaningful data to restore
+                    const hasMeaningfulData = formData.company || formData.employee || 
+                        formData.reason || (formData.expenseItems && formData.expenseItems.length > 0);
+                    
+                    if (!hasMeaningfulData) {
+                        // No meaningful data, clear it and don't ask
+                        localStorage.removeItem('voucher_draft');
+                        return;
+                    }
+                    
+                    // Ask user if they want to restore
+                    const confirmRestore = confirm(
+                        'Bạn có dữ liệu phiếu chưa gửi từ lần trước.\n\n' +
+                        'Công ty: ' + (formData.company || 'Chưa chọn') + '\n' +
+                        'Người đề nghị: ' + (formData.employee || 'Chưa chọn') + '\n' +
+                        'Loại phiếu: ' + (formData.voucherType || 'Chưa chọn') + '\n\n' +
+                        'Bạn có muốn khôi phục dữ liệu này không?\n\n' +
+                        '• Nhấn OK để khôi phục\n' +
+                        '• Nhấn Cancel để tạo phiếu mới'
+                    );
+                    
+                    if (!confirmRestore) {
+                        // User chose to start fresh - clear saved data
+                        localStorage.removeItem('voucher_draft');
+                        showToast('Đã xóa dữ liệu cũ. Bạn có thể tạo phiếu mới.', 'info', 'Tạo mới');
+                        return;
+                    }
+                    
                     // Restore form fields
                     if (formData.company) document.getElementById('company').value = formData.company;
                     if (formData.voucherType) {
