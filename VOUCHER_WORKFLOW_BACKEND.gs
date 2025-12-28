@@ -19,6 +19,23 @@ const USERS_SHEET_NAME = 'Nhân viên'; // Sheet name: Nhân viên
 const VOUCHER_HISTORY_SHEET_ID = '1-1Q75iKeoRAGO4p7U-1IAOp9jqx77HrxF6WUxuUuT_c'; // Use same spreadsheet as users
 const VH_SHEET_NAME = 'Voucher_History';
 
+/**
+ * Debug logging function - writes to a Debug_Log sheet
+ */
+function debugLog_(message) {
+  try {
+    const ss = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID);
+    let debugSheet = ss.getSheetByName('Debug_Log');
+    if (!debugSheet) {
+      debugSheet = ss.insertSheet('Debug_Log');
+      debugSheet.appendRow(['Timestamp', 'Message']);
+    }
+    debugSheet.appendRow([new Date().toLocaleString('vi-VN'), message]);
+  } catch (e) {
+    // Ignore errors in debug logging
+  }
+}
+
 function getVoucherHistorySheet_() {
   try {
     // Use SpreadsheetApp.openById instead of getActiveSpreadsheet for Web App
@@ -611,14 +628,15 @@ function createResponse(success, message, data) {
 function doPost(e) {
   try {
     Logger.log('=== doPost called ===');
-    Logger.log('e exists: ' + (e ? 'YES' : 'NO'));
-    Logger.log('e type: ' + typeof e);
+    debugLog_('=== doPost called ===');
     
     // Safety check - if called manually without event parameter
     if (!e) {
-      Logger.log('❌ ERROR: doPost called without event parameter (e is null/undefined)');
+      debugLog_('❌ ERROR: e is null/undefined');
       return createResponse(false, 'Invalid request - no event data');
     }
+    
+    debugLog_('e keys: ' + Object.keys(e).join(', '));
     
     // Log all available properties of e
     Logger.log('e keys: ' + Object.keys(e).join(', '));
@@ -868,18 +886,14 @@ function fixGarbledUtf8(str) {
 function handleSendEmail(requestBody) {
   try {
     Logger.log('=== handleSendEmail START ===');
-    Logger.log('Full requestBody: ' + JSON.stringify(requestBody));
+    debugLog_('=== handleSendEmail START ===');
     
     const emailData = requestBody.email;
     const requesterEmailData = requestBody.requesterEmail || null;
     const voucher   = requestBody.voucher || {};
 
-    Logger.log('emailData: ' + JSON.stringify(emailData));
-    Logger.log('requesterEmailData: ' + JSON.stringify(requesterEmailData));
-    Logger.log('voucher: ' + JSON.stringify(voucher));
-
     if (!emailData) {
-      Logger.log('❌ ERROR: emailData is missing');
+      debugLog_('❌ ERROR: emailData is missing');
       return createResponse(false, 'Email data is required');
     }
 
@@ -890,13 +904,13 @@ function handleSendEmail(requestBody) {
     const subject = fixGarbledUtf8(rawSubject);
     const body    = emailData.body;
 
-    Logger.log('Email TO: ' + to);
-    Logger.log('Email CC: ' + cc);
-    Logger.log('Email Subject: ' + subject);
-    Logger.log('Subject char codes: ' + subject.split('').map(c => c.charCodeAt(0)).slice(0, 20).join(','));
+    // Debug log the subject - THIS IS KEY!
+    debugLog_('RAW Subject: ' + rawSubject);
+    debugLog_('FIXED Subject: ' + subject);
+    debugLog_('Email TO: ' + to);
 
     if (!to) {
-      Logger.log('❌ ERROR: Recipient email (TO) is required');
+      debugLog_('❌ ERROR: Recipient email (TO) is required');
       return createResponse(false, 'Recipient email is required');
     }
 
