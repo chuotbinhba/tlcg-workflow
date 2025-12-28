@@ -855,6 +855,32 @@ function doGet(e) {
 /** ===================== 1. GỬI EMAIL PHÊ DUYỆT ===================== */
 
 /**
+ * Encode subject line for proper UTF-8 display in email
+ * Uses RFC 2047 MIME encoded-word format: =?UTF-8?B?base64encodedtext?=
+ */
+function encodeSubjectUtf8(subject) {
+  if (!subject) return subject;
+  
+  // Check if subject contains non-ASCII characters
+  var hasNonAscii = false;
+  for (var i = 0; i < subject.length; i++) {
+    if (subject.charCodeAt(i) > 127) {
+      hasNonAscii = true;
+      break;
+    }
+  }
+  
+  if (!hasNonAscii) {
+    return subject; // Pure ASCII, no encoding needed
+  }
+  
+  // Encode as RFC 2047 MIME encoded-word (Base64)
+  var utf8Bytes = Utilities.newBlob(subject).getBytes();
+  var base64 = Utilities.base64Encode(utf8Bytes);
+  return '=?UTF-8?B?' + base64 + '?=';
+}
+
+/**
  * Fix garbled UTF-8 text that was misinterpreted as Latin-1
  * Example: "PHIÃ¡ÂºÂ¾U" should become "PHIẾU"
  */
@@ -899,14 +925,14 @@ function handleSendEmail(requestBody) {
 
     const to      = emailData.to;
     const cc      = emailData.cc || '';
-    // Fix any garbled UTF-8 in subject line
+    // Get raw subject and encode for proper UTF-8 display
     const rawSubject = emailData.subject || '';
-    const subject = fixGarbledUtf8(rawSubject);
+    const subject = encodeSubjectUtf8(rawSubject);
     const body    = emailData.body;
 
-    // Debug log the subject - THIS IS KEY!
+    // Debug log the subject
     debugLog_('RAW Subject: ' + rawSubject);
-    debugLog_('FIXED Subject: ' + subject);
+    debugLog_('ENCODED Subject: ' + subject);
     debugLog_('Email TO: ' + to);
 
     if (!to) {
@@ -936,16 +962,16 @@ function handleSendEmail(requestBody) {
     // Priority 1: requesterEmailData.to from frontend
     if (requesterEmailData && requesterEmailData.to && requesterEmailData.to.trim() !== '') {
       requesterTo = requesterEmailData.to;
-      // Fix any garbled UTF-8 in requester subject too
+      // Encode subject for proper UTF-8 display
       const rawRequesterSubject = requesterEmailData.subject || `[THÔNG BÁO] Phiếu ${voucher.voucherType || ''} ${voucher.voucherNumber || ''} đã được gửi phê duyệt`;
-      requesterSubject = fixGarbledUtf8(rawRequesterSubject);
+      requesterSubject = encodeSubjectUtf8(rawRequesterSubject);
       requesterBody = requesterEmailData.body || body.replace(/<a href="[^"]*">.*?<\/a>/g, ''); // Remove buttons
       Logger.log('📧 Priority 1: Using requesterEmailData.to: ' + requesterTo);
     }
     // Priority 2: voucher.requestorEmail
     else if (voucher.requestorEmail && voucher.requestorEmail.trim() !== '') {
       requesterTo = voucher.requestorEmail;
-      requesterSubject = `[THÔNG BÁO] Phiếu ${voucher.voucherType || ''} ${voucher.voucherNumber || ''} đã được gửi phê duyệt`;
+      requesterSubject = encodeSubjectUtf8(`[THÔNG BÁO] Phiếu ${voucher.voucherType || ''} ${voucher.voucherNumber || ''} đã được gửi phê duyệt`);
       requesterBody = requesterEmailData && requesterEmailData.body ? requesterEmailData.body : body.replace(/<a href="[^"]*">.*?<\/a>/g, ''); // Remove buttons
       Logger.log('📧 Priority 2: Using voucher.requestorEmail: ' + requesterTo);
     }
@@ -1341,7 +1367,7 @@ function handleApproveVoucher(requestBody) {
       signatureHtml = `<p><b>Chữ ký người phê duyệt:</b></p><img src="${approverSignature}" style="max-height: 80px; max-width: 200px;" alt="Chữ ký">`;
     }
 
-    const subject = `[ĐÃ PHÊ DUYỆT] Phiếu ${voucherType.toUpperCase()} - ${voucherNumber}`;
+    const subject = encodeSubjectUtf8(`[ĐÃ PHÊ DUYỆT] Phiếu ${voucherType.toUpperCase()} - ${voucherNumber}`);
     const emailBodyHtml = [
       `<p>Kính gửi <b>${employee}</b>,</p>`,
       `<p>Phiếu <b>${voucherType}</b> số <b>${voucherNumber}</b> của bạn đã được <b style="color:#34A853;">phê duyệt</b>.</p>`,
@@ -1457,7 +1483,7 @@ function handleRejectVoucher(requestBody) {
       signatureHtml = `<p><b>Chữ ký người từ chối:</b></p><img src="${approverSignature}" style="max-height: 80px; max-width: 200px;" alt="Chữ ký">`;
     }
 
-    const subject = `[TRẢ LẠI] Phiếu ${voucherType.toUpperCase()} - ${voucherNumber}`;
+    const subject = encodeSubjectUtf8(`[TRẢ LẠI] Phiếu ${voucherType.toUpperCase()} - ${voucherNumber}`);
     const emailBodyHtml = [
       `<p>Kính gửi <b>${employee}</b>,</p>`,
       `<p>Phiếu <b>${voucherType}</b> số <b>${voucherNumber}</b> của bạn đã bị <b style="color:#EA4335;">trả lại / từ chối</b>.</p>`,
