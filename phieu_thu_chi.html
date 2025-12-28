@@ -5225,7 +5225,7 @@
             const voucherDateInput = document.getElementById('voucher-date');
             let voucherDate = voucherDateInput ? voucherDateInput.value : '';
             
-            // Validate date is not in the past
+            // Validate date is not in the past - silently use current date if past
             if (voucherDate) {
                 const selectedDate = new Date(voucherDate);
                 const today = new Date();
@@ -5234,10 +5234,10 @@
                 
                 if (selectedDate < today) {
                     console.warn('⚠️ Selected date is in the past, using current date instead');
-                    showToast('Ngày lập phiếu không được là ngày quá khứ. Đã tự động sử dụng ngày hiện tại.', 'warning');
-                    voucherDate = getCurrentVoucherDate(); // Use current date
+                    // Silently use current date without showing notification
+                    voucherDate = getCurrentVoucherDate();
                     if (voucherDateInput) {
-                        voucherDateInput.value = voucherDate; // Update input
+                        voucherDateInput.value = voucherDate;
                     }
                 }
             } else {
