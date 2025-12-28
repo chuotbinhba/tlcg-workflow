@@ -3787,14 +3787,18 @@
                     }
                 };
                 
+                console.log('Sending approve request:', JSON.stringify(requestData).substring(0, 500));
+                
                 const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain'
-                    },
+                    mode: 'cors',
+                    redirect: 'follow',
                     body: JSON.stringify(requestData)
                 });
+                
+                console.log('Response status:', response.status);
                 const result = await response.json();
+                console.log('Response result:', result);
                 
                 modalLoading.classList.remove('show');
                 modalContent.style.opacity = '1';
@@ -3854,14 +3858,18 @@
                     }
                 };
                 
+                console.log('Sending reject request:', JSON.stringify(requestData).substring(0, 500));
+                
                 const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'text/plain'
-                    },
+                    mode: 'cors',
+                    redirect: 'follow',
                     body: JSON.stringify(requestData)
                 });
+                
+                console.log('Response status:', response.status);
                 const result = await response.json();
+                console.log('Response result:', result);
                 
                 modalLoading.classList.remove('show');
                 modalContent.style.opacity = '1';
@@ -4144,13 +4152,15 @@
                         </div>
                         ` : ''}
                         
-                        <div class="info-row">
+                        <div class="info-row" style="align-items: flex-start;">
                             <span class="info-label">Kèm theo</span>
                             <span class="info-colon">:</span>
                             <span class="info-value" style="font-style: italic;">${voucher.attachments ? (function() {
                                 // Parse attachments: format is "filename|url\nfilename2|url2"
-                                const lines = voucher.attachments.split('\\n').filter(l => l.trim());
-                                return lines.map(line => {
+                                const lines = voucher.attachments.split(/\\n|\n/).filter(l => l.trim());
+                                if (lines.length === 0) return '(Không có tệp đính kèm)';
+                                
+                                const linksList = lines.map((line, index) => {
                                     const parts = line.split('|');
                                     let fileName, fileUrl;
                                     if (parts.length >= 2) {
@@ -4158,11 +4168,13 @@
                                         fileUrl = parts[1].trim();
                                     } else {
                                         fileUrl = parts[0].trim();
-                                        fileName = 'Tệp đính kèm';
+                                        fileName = 'Tệp đính kèm ' + (index + 1);
                                     }
-                                    if (!fileUrl.startsWith('http')) return fileName;
-                                    return '<a href="' + fileUrl + '" target="_blank" style="color: #2563eb; text-decoration: underline;">' + fileName + '</a>';
-                                }).join(', ');
+                                    if (!fileUrl.startsWith('http')) return '';
+                                    return '<div style="margin-bottom: 4px;"><a href="' + fileUrl + '" target="_blank" style="color: #2563eb; text-decoration: underline;">' + fileName + '</a></div>';
+                                }).filter(l => l).join('');
+                                
+                                return '<div style="display: flex; flex-direction: column;">' + linksList + '</div>';
                             })() : '(Cung cấp chứng từ bản gốc cho kế toán)'}</span>
                         </div>
                         
