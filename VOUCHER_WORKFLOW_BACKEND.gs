@@ -338,15 +338,22 @@ function appendHistory_(entry) {
     
     // Set attachments in Column J - individual file links with clickable URLs
     if (entry.attachments && entry.attachments.trim() !== '') {
+      Logger.log('=== SETTING COLUMN J ATTACHMENTS ===');
+      Logger.log('Raw attachments: ' + entry.attachments);
+      
       try {
         const attachmentsCell = sheet.getRange(lastRow, 10); // Column J
         
         // NEW FORMAT: Individual file links
         // Format: filename (size MB) - URL\nfilename2 (size MB) - URL2
-        const lines = entry.attachments.split('\n');
-        const hasMultipleFiles = lines.length > 0 && lines[0].includes(' - http');
+        const lines = entry.attachments.split('\n').filter(l => l.trim() !== '');
+        Logger.log('Lines count: ' + lines.length);
+        Logger.log('First line: ' + (lines[0] || 'EMPTY'));
         
-        if (hasMultipleFiles) {
+        const hasFileLinks = lines.length > 0 && lines[0].includes(' - https://');
+        Logger.log('Has file links format: ' + hasFileLinks);
+        
+        if (hasFileLinks) {
           // Build RichTextValue with multiple clickable links
           let displayParts = [];
           let linkRanges = [];
@@ -355,16 +362,21 @@ function appendHistory_(entry) {
           lines.forEach((line, index) => {
             // Parse: filename (size MB) - URL
             const urlMatch = line.match(/(.*?) - (https?:\/\/[^\s]+)/);
+            Logger.log('Line ' + index + ' match: ' + (urlMatch ? 'YES' : 'NO'));
+            
             if (urlMatch) {
               const fileInfo = urlMatch[1]; // filename (size MB)
               const fileUrl = urlMatch[2];
+              
+              Logger.log('File info: ' + fileInfo);
+              Logger.log('File URL: ' + fileUrl);
               
               // Add emoji and file info
               const displayLine = '📄 ' + fileInfo;
               displayParts.push(displayLine);
               
               // Track link position (for the file info part, not emoji)
-              const startPos = currentPos + 3; // After "📄 "
+              const startPos = currentPos + 2; // After "📄 " (emoji is 2 chars in some encodings)
               const endPos = startPos + fileInfo.length;
               linkRanges.push({ start: startPos, end: endPos, url: fileUrl });
               
@@ -379,11 +391,17 @@ function appendHistory_(entry) {
           });
           
           const fullText = displayParts.join('');
+          Logger.log('Full display text: ' + fullText);
+          Logger.log('Link ranges: ' + JSON.stringify(linkRanges));
           
           // Build RichTextValue with all links
           let richTextBuilder = SpreadsheetApp.newRichTextValue().setText(fullText);
           linkRanges.forEach(range => {
-            richTextBuilder = richTextBuilder.setLinkUrl(range.start, range.end, range.url);
+            try {
+              richTextBuilder = richTextBuilder.setLinkUrl(range.start, range.end, range.url);
+            } catch (rangeError) {
+              Logger.log('⚠️ Error setting link for range: ' + JSON.stringify(range) + ' - ' + rangeError.toString());
+            }
           });
           
           attachmentsCell.setRichTextValue(richTextBuilder.build());
@@ -1037,41 +1055,64 @@ function handleSendEmail(requestBody) {
     let body = emailData.body;
     let requesterBodyBase = requesterEmailData && requesterEmailData.body ? requesterEmailData.body : body;
     
-    if (fileLinksHtml) {
-      // Replace the placeholder "Đính kèm" section or append before closing
-      // Look for the table with attachments column and add file links section after it
-      const filesSectionHtml = `
-        <div style="margin: 20px 0; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">
-          <p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">📎 Tài liệu đính kèm:</p>
-          ${fileLinksHtml}
-        </div>
-      `;
+    Logger.log('=== INJECTING FILE LINKS INTO EMAIL ===');
+    Logger.log('fileLinksHtml exists: ' + (fileLinksHtml ? 'YES (' + fileLinksHtml.length + ' chars)' : 'NO'));
+    
+    if (fileLinksHtml && fileLinksHtml.length > 0) {
+      // Create the files section HTML
+      const filesSectionHtml = 
+        '<div style="margin: 20px 0; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">' +
+          '<p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">📎 Tài liệu đính kèm:</p>' +
+          fileLinksHtml +
+        '</div>';
       
-      // Insert before the approval buttons div or before "Trân trọng"
+      Logger.log('Files section HTML created: ' + filesSectionHtml.substring(0, 200) + '...');
+      
+      // Try multiple injection points for approver email
+      let injected = false;
+      
+      // Method 1: Before "Vui lòng xem xét"
       if (body.indexOf('Vui lòng xem xét') !== -1) {
-        body = body.replace(
-          '<p><b>Vui lòng xem xét',
-          filesSectionHtml + '<p><b>Vui lòng xem xét'
-        );
-      } else if (body.indexOf('Trân trọng') !== -1) {
-        body = body.replace(
-          '<p>Trân trọng',
-          filesSectionHtml + '<p>Trân trọng'
-        );
+        body = body.replace(/(<p[^>]*><b>Vui lòng xem xét)/i, filesSectionHtml + '$1');
+        injected = true;
+        Logger.log('✅ Injected before "Vui lòng xem xét"');
+      }
+      // Method 2: Before approval buttons div
+      else if (body.indexOf('style="margin: 20px 0;"') !== -1 && body.indexOf('#34A853') !== -1) {
+        body = body.replace(/(<div style="margin: 20px 0;">[\s\S]*?#34A853)/i, filesSectionHtml + '$1');
+        injected = true;
+        Logger.log('✅ Injected before approval buttons');
+      }
+      // Method 3: Before "Trân trọng"
+      else if (body.indexOf('Trân trọng') !== -1) {
+        body = body.replace(/(<p[^>]*>Trân trọng)/i, filesSectionHtml + '$1');
+        injected = true;
+        Logger.log('✅ Injected before "Trân trọng"');
+      }
+      // Method 4: Append at end before closing tags
+      else {
+        body = body + filesSectionHtml;
+        injected = true;
+        Logger.log('✅ Appended at end of email body');
       }
       
-      // Also update requester body
+      Logger.log('Approver email injection success: ' + injected);
+      
+      // Also update requester body with same logic
+      let requesterInjected = false;
       if (requesterBodyBase.indexOf('Email thông báo kết quả') !== -1) {
-        requesterBodyBase = requesterBodyBase.replace(
-          '<p style="color: #666; font-style: italic;">Email thông báo kết quả',
-          filesSectionHtml + '<p style="color: #666; font-style: italic;">Email thông báo kết quả'
-        );
+        requesterBodyBase = requesterBodyBase.replace(/(<p[^>]*>Email thông báo kết quả)/i, filesSectionHtml + '$1');
+        requesterInjected = true;
       } else if (requesterBodyBase.indexOf('Trân trọng') !== -1) {
-        requesterBodyBase = requesterBodyBase.replace(
-          '<p>Trân trọng',
-          filesSectionHtml + '<p>Trân trọng'
-        );
+        requesterBodyBase = requesterBodyBase.replace(/(<p[^>]*>Trân trọng)/i, filesSectionHtml + '$1');
+        requesterInjected = true;
+      } else {
+        requesterBodyBase = requesterBodyBase + filesSectionHtml;
+        requesterInjected = true;
       }
+      Logger.log('Requester email injection success: ' + requesterInjected);
+    } else {
+      Logger.log('⚠️ No file links HTML to inject');
     }
     
     // Debug log the subject
