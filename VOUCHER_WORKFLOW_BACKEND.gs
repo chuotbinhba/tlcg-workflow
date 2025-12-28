@@ -405,8 +405,23 @@ function getLastActionForVoucher_(voucherNumber) {
 function getVoucherHistory_(voucherNumber) {
   try {
     const sheet = getVoucherHistorySheet_();
-    const data = sheet.getDataRange().getValues();
-    if (data.length <= 1) return [];
+    const lastRow = sheet.getLastRow();
+    const lastCol = sheet.getLastColumn();
+    
+    if (lastRow <= 1) return [];
+    
+    const data = sheet.getRange(1, 1, lastRow, lastCol).getValues();
+    
+    // Get RichTextValues for attachments column (Column J = index 9, but 1-based = 10)
+    const attachmentsColIndex = 10; // Column J (1-based)
+    let richTextValues = null;
+    try {
+      if (lastRow > 1) {
+        richTextValues = sheet.getRange(2, attachmentsColIndex, lastRow - 1, 1).getRichTextValues();
+      }
+    } catch (rtError) {
+      Logger.log('Could not get RichTextValues: ' + rtError);
+    }
     
     const header = data[0];
     const idxVoucherNumber = header.indexOf('VoucherNumber');
@@ -436,13 +451,27 @@ function getVoucherHistory_(voucherNumber) {
           Logger.log('Error parsing meta JSON: ' + e);
         }
         
-        // Get attachments - handle RichTextValue or plain text
+        // Get attachments URL - try RichTextValue first, then plain text
         let attachments = '';
         if (idxAttachments >= 0) {
-          const cellValue = data[i][idxAttachments];
-          if (cellValue) {
-            // If it's a string URL, use it directly
-            attachments = cellValue.toString();
+          // First try to get URL from RichTextValue (for hyperlinked cells)
+          if (richTextValues && richTextValues[i - 1] && richTextValues[i - 1][0]) {
+            const richText = richTextValues[i - 1][0];
+            const url = richText.getLinkUrl();
+            if (url) {
+              attachments = url;
+              Logger.log('Got attachment URL from RichText: ' + url);
+            }
+          }
+          
+          // If no URL from RichText, try plain text value
+          if (!attachments && data[i][idxAttachments]) {
+            const cellValue = data[i][idxAttachments].toString();
+            // Check if it looks like a URL
+            if (cellValue.startsWith('http')) {
+              attachments = cellValue;
+              Logger.log('Got attachment URL from plain text: ' + cellValue);
+            }
           }
         }
         
@@ -1392,10 +1421,10 @@ function handleGetVoucherSummary(requestBody) {
     }
     
     Logger.log('Getting data range from sheet...');
-    const data = sheet.getDataRange().getValues();
-    Logger.log('Data rows retrieved: ' + data.length);
+    const lastRow = sheet.getLastRow();
+    const lastCol = sheet.getLastColumn();
     
-    if (data.length <= 1) {
+    if (lastRow <= 1) {
       // Only header row, no data
       return createResponse(true, 'No vouchers found', {
         total: 0,
@@ -1404,6 +1433,19 @@ function handleGetVoucherSummary(requestBody) {
         rejected: 0,
         recent: []
       });
+    }
+    
+    const data = sheet.getRange(1, 1, lastRow, lastCol).getValues();
+    Logger.log('Data rows retrieved: ' + data.length);
+    
+    // Get RichTextValues for attachments column (Column J = column 10, 1-based)
+    const attachmentsColIndex = 10; // Column J
+    let richTextValues = null;
+    try {
+      richTextValues = sheet.getRange(2, attachmentsColIndex, lastRow - 1, 1).getRichTextValues();
+      Logger.log('RichTextValues retrieved for attachments column');
+    } catch (rtError) {
+      Logger.log('Could not get RichTextValues: ' + rtError);
     }
     
     // Skip header row
@@ -1427,11 +1469,38 @@ function handleGetVoucherSummary(requestBody) {
     const idxApproverEmail = 11;
     const idxTimestamp = 12;
     
+    // Helper function to get attachment URL for a row
+    function getAttachmentUrl(rowIndex) {
+      let attachments = '';
+      
+      // Try to get URL from RichTextValue first (for hyperlinked cells)
+      if (richTextValues && richTextValues[rowIndex] && richTextValues[rowIndex][0]) {
+        const richText = richTextValues[rowIndex][0];
+        const url = richText.getLinkUrl();
+        if (url) {
+          attachments = url;
+          Logger.log('Row ' + rowIndex + ' attachment URL from RichText: ' + url);
+          return attachments;
+        }
+      }
+      
+      // Fall back to plain text value
+      const cellValue = rows[rowIndex] && rows[rowIndex][idxAttachments];
+      if (cellValue) {
+        const textValue = cellValue.toString();
+        if (textValue.startsWith('http')) {
+          attachments = textValue;
+        }
+      }
+      
+      return attachments;
+    }
+    
     // Get unique vouchers (by voucher number)
     // Filter by user if provided
     const voucherMap = new Map();
     
-    rows.forEach(row => {
+    rows.forEach((row, rowIndex) => {
       // Safety check - skip rows with insufficient columns
       if (!row || row.length < 6) {
         Logger.log('⚠️ Skipping row with insufficient columns');
@@ -1457,8 +1526,8 @@ function handleGetVoucherSummary(requestBody) {
       
       // Keep the latest entry for each voucher
       if (!voucherMap.has(voucherNumber) || 
-          new Date(row[idxTimestamp] || 0) > new Date(voucherMap.get(voucherNumber)[idxTimestamp] || 0)) {
-        voucherMap.set(voucherNumber, row);
+          new Date(row[idxTimestamp] || 0) > new Date(voucherMap.get(voucherNumber).row[idxTimestamp] || 0)) {
+        voucherMap.set(voucherNumber, { row: row, rowIndex: rowIndex });
       }
     });
     
@@ -1468,23 +1537,28 @@ function handleGetVoucherSummary(requestBody) {
     let approved = 0;
     let rejected = 0;
     
-    voucherMap.forEach(row => {
-      const status = row[idxStatus];
+    voucherMap.forEach(item => {
+      const status = item.row[idxStatus];
       if (status === 'Pending') pending++;
       else if (status === 'Approved') approved++;
       else if (status === 'Rejected') rejected++;
     });
     
-    // Get recent vouchers (last 10 entries, sorted by timestamp - showing ALL actions)
-    const recentRows = rows
-      .filter(row => row && row.length >= 6 && row[idxTimestamp])
+    // Get recent vouchers (last 15 entries, sorted by timestamp - showing ALL actions)
+    // Create rows with their original index for RichText lookup
+    const rowsWithIndex = rows.map((row, index) => ({ row, index }));
+    
+    const recentRows = rowsWithIndex
+      .filter(item => item.row && item.row.length >= 6 && item.row[idxTimestamp])
       .sort((a, b) => {
-        const dateA = new Date(a[idxTimestamp] || 0);
-        const dateB = new Date(b[idxTimestamp] || 0);
+        const dateA = new Date(a.row[idxTimestamp] || 0);
+        const dateB = new Date(b.row[idxTimestamp] || 0);
         return dateB - dateA; // Descending order (newest first)
       })
       .slice(0, 15) // Show last 15 entries
-      .map(row => {
+      .map(item => {
+        const row = item.row;
+        const rowIndex = item.index;
         const voucherNumber = row[idxVoucherNumber];
         
         // Safety check - ensure row has enough columns
@@ -1503,6 +1577,9 @@ function handleGetVoucherSummary(requestBody) {
           amountValue = 0;
         }
         
+        // Get attachment URL (from RichText or plain text)
+        const attachmentUrl = getAttachmentUrl(rowIndex);
+        
         // Show actual status of THIS row (not latest status)
         return {
           voucherNumber: voucherNumber || '',
@@ -1514,7 +1591,7 @@ function handleGetVoucherSummary(requestBody) {
           action: row[idxAction] || '',          // THIS row's action
           by: row[idxBy] || '',
           note: row[idxNote] || '',
-          attachments: row[idxAttachments] ? row[idxAttachments].toString() : '',  // Column J
+          attachments: attachmentUrl,  // Column J - with proper URL extraction
           requestorEmail: row[idxRequestorEmail] || '',
           approverEmail: row[idxApproverEmail] || '',
           timestamp: formatTimestamp(row[idxTimestamp])

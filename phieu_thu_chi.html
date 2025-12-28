@@ -3339,17 +3339,27 @@
                     
                     // Merge meta from all history entries for print function
                     currentModalMeta = {};
+                    let mergedAttachments = voucher.attachments || '';
+                    
                     historyData.forEach(h => {
                         if (h.meta) {
                             currentModalMeta = { ...currentModalMeta, ...h.meta };
+                        }
+                        // Get attachments from any history entry (usually the Submit entry has it)
+                        if (h.attachments && !mergedAttachments) {
+                            mergedAttachments = h.attachments;
                         }
                     });
                     if (voucher.meta) {
                         currentModalMeta = { ...currentModalMeta, ...voucher.meta };
                     }
                     
+                    // Store merged attachments URL back to voucher object
+                    voucher.attachments = mergedAttachments;
+                    
                     console.log('Current voucher:', voucher);
                     console.log('Voucher status:', voucher.status);
+                    console.log('Voucher attachments:', voucher.attachments);
                     console.log('Merged modal meta:', currentModalMeta);
                     
                     // Check if current user is the requester
