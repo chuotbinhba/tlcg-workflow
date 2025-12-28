@@ -859,25 +859,9 @@ function doGet(e) {
  * Uses RFC 2047 MIME encoded-word format: =?UTF-8?B?base64encodedtext?=
  */
 function encodeSubjectUtf8(subject) {
-  if (!subject) return subject;
-  
-  // Check if subject contains non-ASCII characters
-  var hasNonAscii = false;
-  for (var i = 0; i < subject.length; i++) {
-    if (subject.charCodeAt(i) > 127) {
-      hasNonAscii = true;
-      break;
-    }
-  }
-  
-  if (!hasNonAscii) {
-    return subject; // Pure ASCII, no encoding needed
-  }
-  
-  // Encode as RFC 2047 MIME encoded-word (Base64)
-  var utf8Bytes = Utilities.newBlob(subject).getBytes();
-  var base64 = Utilities.base64Encode(utf8Bytes);
-  return '=?UTF-8?B?' + base64 + '?=';
+  // GmailApp handles UTF-8 natively - just return the subject as-is
+  // The previous Base64 encoding was causing double-encoding issues
+  return subject || '';
 }
 
 /**
@@ -925,14 +909,24 @@ function handleSendEmail(requestBody) {
 
     const to      = emailData.to;
     const cc      = emailData.cc || '';
-    // Get raw subject and encode for proper UTF-8 display
-    const rawSubject = emailData.subject || '';
-    const subject = encodeSubjectUtf8(rawSubject);
+    
+    // Build subject in backend to avoid UTF-8 encoding issues from frontend
+    // Use voucher data to construct proper Vietnamese subject
+    let subject;
+    if (voucher.voucherNumber && voucher.voucherType) {
+      // Construct subject in backend (same pattern as approval email which works correctly)
+      subject = `[PHIẾU ${voucher.voucherType.toUpperCase()}] Yêu cầu phê duyệt - ${voucher.voucherNumber}`;
+      Logger.log('📧 Subject constructed in backend: ' + subject);
+    } else {
+      // Fallback to frontend subject if voucher data not available
+      subject = emailData.subject || 'Yêu cầu phê duyệt';
+      Logger.log('📧 Using frontend subject (fallback): ' + subject);
+    }
+    
     const body    = emailData.body;
 
     // Debug log the subject
-    debugLog_('RAW Subject: ' + rawSubject);
-    debugLog_('ENCODED Subject: ' + subject);
+    debugLog_('Subject: ' + subject);
     debugLog_('Email TO: ' + to);
 
     if (!to) {
@@ -962,16 +956,15 @@ function handleSendEmail(requestBody) {
     // Priority 1: requesterEmailData.to from frontend
     if (requesterEmailData && requesterEmailData.to && requesterEmailData.to.trim() !== '') {
       requesterTo = requesterEmailData.to;
-      // Encode subject for proper UTF-8 display
-      const rawRequesterSubject = requesterEmailData.subject || `[THÔNG BÁO] Phiếu ${voucher.voucherType || ''} ${voucher.voucherNumber || ''} đã được gửi phê duyệt`;
-      requesterSubject = encodeSubjectUtf8(rawRequesterSubject);
+      // Build subject in backend to avoid UTF-8 encoding issues
+      requesterSubject = `[THÔNG BÁO] Phiếu ${voucher.voucherType || ''} ${voucher.voucherNumber || ''} đã được gửi phê duyệt`;
       requesterBody = requesterEmailData.body || body.replace(/<a href="[^"]*">.*?<\/a>/g, ''); // Remove buttons
       Logger.log('📧 Priority 1: Using requesterEmailData.to: ' + requesterTo);
     }
     // Priority 2: voucher.requestorEmail
     else if (voucher.requestorEmail && voucher.requestorEmail.trim() !== '') {
       requesterTo = voucher.requestorEmail;
-      requesterSubject = encodeSubjectUtf8(`[THÔNG BÁO] Phiếu ${voucher.voucherType || ''} ${voucher.voucherNumber || ''} đã được gửi phê duyệt`);
+      requesterSubject = `[THÔNG BÁO] Phiếu ${voucher.voucherType || ''} ${voucher.voucherNumber || ''} đã được gửi phê duyệt`;
       requesterBody = requesterEmailData && requesterEmailData.body ? requesterEmailData.body : body.replace(/<a href="[^"]*">.*?<\/a>/g, ''); // Remove buttons
       Logger.log('📧 Priority 2: Using voucher.requestorEmail: ' + requesterTo);
     }
