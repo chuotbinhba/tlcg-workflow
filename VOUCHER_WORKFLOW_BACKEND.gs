@@ -957,14 +957,18 @@ function handleSendEmail(requestBody) {
     }
 
     // Send email to APPROVERS (with buttons)
-    // IMPORTANT: Only include cc option if it has actual value
-    // Empty cc causes multipart/mixed which breaks UTF-8 subject encoding
+    // Use MailApp instead of GmailApp - it handles UTF-8 subjects better with multipart emails
     try {
-      const emailOptions = { htmlBody: body };
+      const emailOptions = { 
+        to: to,
+        subject: subject,
+        htmlBody: body,
+        noReply: false
+      };
       if (cc && cc.trim() !== '') {
         emailOptions.cc = cc;
       }
-      GmailApp.sendEmail(to, subject, '', emailOptions);
+      MailApp.sendEmail(emailOptions);
       Logger.log('✅ Email sent to approvers: ' + to);
     } catch (approverEmailError) {
       Logger.log('❌ ERROR sending email to approvers: ' + approverEmailError.toString());
@@ -1001,7 +1005,12 @@ function handleSendEmail(requestBody) {
       Logger.log('📧 Sending requester notification email to: ' + requesterTo);
       Logger.log('📧 Subject: ' + requesterSubject);
       try {
-        GmailApp.sendEmail(requesterTo, requesterSubject, '', { htmlBody: requesterBody });
+        MailApp.sendEmail({
+          to: requesterTo,
+          subject: requesterSubject,
+          htmlBody: requesterBody,
+          noReply: false
+        });
         Logger.log('✅ Info email sent to requester: ' + requesterTo);
       } catch (emailError) {
         Logger.log('❌ ERROR sending requester email: ' + emailError.toString());
