@@ -5662,14 +5662,13 @@
             }
 
             try {
-                // Use text/plain with UTF-8 charset to properly handle Vietnamese characters
+                // Use Blob with UTF-8 encoding to properly handle Vietnamese characters
+                const payloadBlob = new Blob([payloadString], { type: 'application/json; charset=UTF-8' });
+                
                 const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    headers: {
-                        'Content-Type': 'text/plain;charset=UTF-8',
-                    },
-                    body: payloadString,
+                    body: payloadBlob,
                 });
                 
                 console.log('Response status:', response.status);

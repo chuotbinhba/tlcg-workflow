@@ -668,23 +668,23 @@ function doPost(e) {
         Logger.log('postData.contents preview: ' + e.postData.contents.substring(0, 500));
         Logger.log('postData.type: ' + (e.postData.type || 'unknown'));
         
-        // Try to fix encoding issues by re-encoding as UTF-8
         var rawContents = e.postData.contents;
         
-        // Check if the content looks garbled (contains Ã or Â patterns)
-        if (rawContents.indexOf('Ã') !== -1 || rawContents.indexOf('Â') !== -1) {
-          Logger.log('⚠️ Detected potentially garbled UTF-8 in POST data, attempting to fix...');
-          try {
-            // Convert Latin-1 interpreted bytes back to UTF-8
-            var bytes = [];
-            for (var i = 0; i < rawContents.length; i++) {
-              bytes.push(rawContents.charCodeAt(i) & 0xFF);
-            }
-            rawContents = Utilities.newBlob(bytes).getDataAsString('UTF-8');
-            Logger.log('✅ Fixed garbled POST data');
-          } catch (encErr) {
-            Logger.log('Could not fix encoding: ' + encErr.toString());
+        // ALWAYS try to decode as UTF-8 first to handle Vietnamese properly
+        try {
+          var bytes = [];
+          for (var i = 0; i < rawContents.length; i++) {
+            bytes.push(rawContents.charCodeAt(i) & 0xFF);
           }
+          var decodedContents = Utilities.newBlob(bytes).getDataAsString('UTF-8');
+          
+          // Only use decoded if it successfully parses as JSON
+          JSON.parse(decodedContents);
+          rawContents = decodedContents;
+          Logger.log('✅ Successfully decoded POST data as UTF-8');
+        } catch (encErr) {
+          // If decoding fails, use original content
+          Logger.log('Using original content (UTF-8 decode not needed or failed): ' + encErr.toString());
         }
         
         requestBody = JSON.parse(rawContents);
@@ -902,6 +902,10 @@ function handleSendEmail(requestBody) {
     const requesterEmailData = requestBody.requesterEmail || null;
     const voucher   = requestBody.voucher || {};
 
+    // Debug: Log full voucher object received
+    Logger.log('Voucher object received: ' + JSON.stringify(voucher));
+    debugLog_('Voucher object: ' + JSON.stringify(voucher));
+
     if (!emailData) {
       debugLog_('❌ ERROR: emailData is missing');
       return createResponse(false, 'Email data is required');
@@ -910,18 +914,36 @@ function handleSendEmail(requestBody) {
     const to      = emailData.to;
     const cc      = emailData.cc || '';
     
-    // Build subject in backend to avoid UTF-8 encoding issues from frontend
-    // Use voucher data to construct proper Vietnamese subject
+    // Extract voucherNumber and voucherType - try multiple sources
+    let voucherNumber = voucher.voucherNumber || '';
+    let voucherType = voucher.voucherType || '';
+    
+    // If voucher data missing, try to extract from frontend subject (as backup)
+    if (!voucherNumber || !voucherType) {
+      const frontendSubject = emailData.subject || '';
+      // Pattern: [PHIẾU CHI] or [PHIẾU THU] ... - TL-YYYYMM-XXXX
+      const typeMatch = frontendSubject.match(/\[PHI[^\]]*\s+(CHI|THU)\]/i);
+      const numMatch = frontendSubject.match(/(TL-\d{6}-\d+)/i);
+      if (typeMatch && !voucherType) voucherType = typeMatch[1];
+      if (numMatch && !voucherNumber) voucherNumber = numMatch[1];
+      Logger.log('Extracted from subject - Type: ' + voucherType + ', Number: ' + voucherNumber);
+    }
+    
+    // Build subject in backend with ASCII-safe Vietnamese
+    // ALWAYS construct in backend to avoid encoding issues
     let subject;
-    if (voucher.voucherNumber && voucher.voucherType) {
-      // Construct subject in backend (same pattern as approval email which works correctly)
-      subject = `[PHIẾU ${voucher.voucherType.toUpperCase()}] Yêu cầu phê duyệt - ${voucher.voucherNumber}`;
+    if (voucherNumber && voucherType) {
+      const typeUpper = voucherType.toUpperCase();
+      // Use Vietnamese text directly - it works in approval emails
+      subject = '[PHIẾU ' + typeUpper + '] Yêu cầu phê duyệt - ' + voucherNumber;
       Logger.log('📧 Subject constructed in backend: ' + subject);
     } else {
-      // Fallback to frontend subject if voucher data not available
-      subject = emailData.subject || 'Yêu cầu phê duyệt';
-      Logger.log('📧 Using frontend subject (fallback): ' + subject);
+      // Ultimate fallback - use simple ASCII
+      subject = '[VOUCHER] Approval Request - ' + (voucherNumber || 'NEW');
+      Logger.log('📧 Using fallback ASCII subject: ' + subject);
     }
+    
+    debugLog_('FINAL Subject: ' + subject);
     
     const body    = emailData.body;
 
@@ -935,8 +957,14 @@ function handleSendEmail(requestBody) {
     }
 
     // Send email to APPROVERS (with buttons)
+    // IMPORTANT: Only include cc option if it has actual value
+    // Empty cc causes multipart/mixed which breaks UTF-8 subject encoding
     try {
-      GmailApp.sendEmail(to, subject, '', { htmlBody: body, cc });
+      const emailOptions = { htmlBody: body };
+      if (cc && cc.trim() !== '') {
+        emailOptions.cc = cc;
+      }
+      GmailApp.sendEmail(to, subject, '', emailOptions);
       Logger.log('✅ Email sent to approvers: ' + to);
     } catch (approverEmailError) {
       Logger.log('❌ ERROR sending email to approvers: ' + approverEmailError.toString());
