@@ -2247,7 +2247,7 @@
         // 8. Click "Deploy".
         // 9. Copy the "Web app URL" and paste it here.
         // 10. Ensure your Google account has permissions to send emails via Gmail (usually default).
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwp-lvHKCXhUEB4bxb7BeRjd3s3HHY8x7QgocNeLoQ4CZLjyuuiHH7SuJnWkwXYJ5Pl/exec';
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbzP3zh8sA5z_lN0bkeIBMDm60_M9L2WuRgpA8Q4QMqcbaMdiFnxud0w6wlkNpJMowhk/exec';
 
         // Initialize email mappings based on provided exact emails and company data
         const employeeEmailMap = {
@@ -5614,12 +5614,12 @@
             }
 
             try {
-                // Use text/plain to avoid CORS preflight issues with large payloads
+                // Use text/plain with UTF-8 charset to properly handle Vietnamese characters
                 const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: {
-                        'Content-Type': 'text/plain',
+                        'Content-Type': 'text/plain;charset=UTF-8',
                     },
                     body: payloadString,
                 });

@@ -818,12 +818,15 @@ function handleSendEmail(requestBody) {
 
     const to      = emailData.to;
     const cc      = emailData.cc || '';
-    const subject = emailData.subject;
+    // The subject comes from frontend - use it directly 
+    // GmailApp handles UTF-8 natively
+    const subject = emailData.subject || '';
     const body    = emailData.body;
 
     Logger.log('Email TO: ' + to);
     Logger.log('Email CC: ' + cc);
     Logger.log('Email Subject: ' + subject);
+    Logger.log('Subject char codes: ' + subject.split('').map(c => c.charCodeAt(0)).slice(0, 20).join(','));
 
     if (!to) {
       Logger.log('❌ ERROR: Recipient email (TO) is required');
