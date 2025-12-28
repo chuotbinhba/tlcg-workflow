@@ -319,51 +319,37 @@ function appendHistory_(entry) {
     const lastRow = sheet.getLastRow();
     Logger.log('✅ Last row in sheet: ' + lastRow);
     
-    // Set clickable hyperlinks in Column J (Attachments) if present
+    // Set attachments in Column J - store folder URL with hyperlink for easy access
     if (entry.attachments && entry.attachments.trim() !== '') {
       try {
         const attachmentsCell = sheet.getRange(lastRow, 10); // Column J
         
-        // Parse attachments and create rich text with hyperlinks
-        const lines = entry.attachments.split('\n\n');
-        let richTextBuilder = SpreadsheetApp.newRichTextValue();
-        let fullText = '';
-        let linkRanges = [];
-        
-        lines.forEach((block, index) => {
-          const parts = block.split('\n');
-          if (parts.length >= 2) {
-            const fileName = parts[0]; // e.g., "hinh22.png (0.35 MB)"
-            const url = parts[1];      // e.g., "https://drive.google.com/..."
-            
-            // Add to full text
-            if (index > 0) fullText += '\n\n';
-            const startPos = fullText.length;
-            fullText += fileName;
-            const endPos = fullText.length;
-            
-            // Save link range
-            if (url && url.startsWith('http')) {
-              linkRanges.push({ start: startPos, end: endPos, url: url });
-            }
-          } else {
-            // Single line (error or no URL)
-            if (index > 0) fullText += '\n\n';
-            fullText += block;
-          }
-        });
-        
-        // Build rich text with links
-        richTextBuilder = SpreadsheetApp.newRichTextValue().setText(fullText);
-        linkRanges.forEach(range => {
-          richTextBuilder.setLinkUrl(range.start, range.end, range.url);
-        });
-        
-        attachmentsCell.setRichTextValue(richTextBuilder.build());
-        Logger.log('✅ Set clickable hyperlinks in Column J');
+        // Check if attachments is in new format: FOLDER_URL|file1|file2|...
+        const parts = entry.attachments.split('|');
+        if (parts[0] && parts[0].startsWith('http')) {
+          const folderUrl = parts[0];
+          const fileNames = parts.slice(1).join(', ') || 'Files';
+          
+          // Create clickable link with folder URL and file names as display text
+          const displayText = 'Tài liệu đính kèm';
+          const richText = SpreadsheetApp.newRichTextValue()
+            .setText(displayText)
+            .setLinkUrl(0, displayText.length, folderUrl)
+            .build();
+          
+          attachmentsCell.setRichTextValue(richText);
+          
+          // Also store the raw URL in a note for easy extraction
+          attachmentsCell.setNote('FOLDER_URL: ' + folderUrl + '\nFILES: ' + fileNames);
+          
+          Logger.log('✅ Set clickable folder link in Column J: ' + folderUrl);
+        } else {
+          // Old format or plain URL - just store as text
+          attachmentsCell.setValue(entry.attachments);
+          Logger.log('✅ Set plain text attachments in Column J');
+        }
       } catch (linkError) {
         Logger.log('⚠️ Could not set hyperlinks, falling back to plain text: ' + linkError.toString());
-        // Fallback to plain text
         sheet.getRange(lastRow, 10).setValue(entry.attachments);
       }
     }
@@ -451,26 +437,45 @@ function getVoucherHistory_(voucherNumber) {
           Logger.log('Error parsing meta JSON: ' + e);
         }
         
-        // Get attachments URL - try RichTextValue first, then plain text
+        // Get attachments URL - try multiple methods
         let attachments = '';
         if (idxAttachments >= 0) {
-          // First try to get URL from RichTextValue (for hyperlinked cells)
+          // Method 1: Try to get URL from RichTextValue (for hyperlinked cells)
           if (richTextValues && richTextValues[i - 1] && richTextValues[i - 1][0]) {
             const richText = richTextValues[i - 1][0];
             const url = richText.getLinkUrl();
             if (url) {
               attachments = url;
-              Logger.log('Got attachment URL from RichText: ' + url);
+              Logger.log('Row ' + i + ' - Got attachment URL from RichText: ' + url);
             }
           }
           
-          // If no URL from RichText, try plain text value
+          // Method 2: Try to get from cell note (we store FOLDER_URL there)
+          if (!attachments) {
+            try {
+              const note = sheet.getRange(i + 1, 10).getNote(); // Row is 1-based, add 1 for header
+              if (note && note.includes('FOLDER_URL:')) {
+                const urlMatch = note.match(/FOLDER_URL:\s*(https?:\/\/[^\s\n]+)/);
+                if (urlMatch) {
+                  attachments = urlMatch[1];
+                  Logger.log('Row ' + i + ' - Got attachment URL from note: ' + attachments);
+                }
+              }
+            } catch (noteError) {
+              Logger.log('Could not read note: ' + noteError);
+            }
+          }
+          
+          // Method 3: Check if cell value is a URL or contains URL
           if (!attachments && data[i][idxAttachments]) {
             const cellValue = data[i][idxAttachments].toString();
-            // Check if it looks like a URL
-            if (cellValue.startsWith('http')) {
+            // New format: FOLDER_URL|file1|file2|...
+            if (cellValue.includes('|') && cellValue.startsWith('http')) {
+              attachments = cellValue.split('|')[0];
+              Logger.log('Row ' + i + ' - Got attachment URL from pipe format: ' + attachments);
+            } else if (cellValue.startsWith('http')) {
               attachments = cellValue;
-              Logger.log('Got attachment URL from plain text: ' + cellValue);
+              Logger.log('Row ' + i + ' - Got attachment URL from plain text: ' + attachments);
             }
           }
         }
@@ -903,14 +908,17 @@ function handleSendEmail(requestBody) {
         
         Logger.log('Uploading ' + voucher.files.length + ' files to Drive...');
         try {
-          const uploadedFiles = uploadFilesToDrive_(voucher.files, voucherNumberForHistory);
-          // Format attachments with Drive links for Column J
-          attachmentsText = uploadedFiles.map(f => {
-            if (f.error) return `${f.fileName} (Upload failed)`;
-            const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '?';
-            return `${f.fileName} (${sizeMB} MB)\n${f.fileUrl}`;
-          }).join('\n\n');
-        Logger.log('Files uploaded successfully. Attachments text: ' + attachmentsText);
+          const uploadResult = uploadFilesToDrive_(voucher.files, voucherNumberForHistory);
+          const uploadedFiles = uploadResult.files;
+          const folderUrl = uploadResult.folderUrl;
+          
+          // Store FOLDER URL as the main attachment link (this is what gets displayed)
+          // Format: FOLDER_URL|file1.pdf|file2.jpg|...
+          const fileNames = uploadedFiles.filter(f => !f.error).map(f => f.fileName).join('|');
+          attachmentsText = folderUrl + '|' + fileNames;
+          
+          Logger.log('Files uploaded successfully. Folder URL: ' + folderUrl);
+          Logger.log('Attachments text: ' + attachmentsText);
         } catch (uploadError) {
           Logger.log('⚠️ Warning: File upload failed: ' + uploadError.toString());
           Logger.log('⚠️ Upload error stack: ' + (uploadError.stack || 'No stack'));
@@ -1473,7 +1481,7 @@ function handleGetVoucherSummary(requestBody) {
     function getAttachmentUrl(rowIndex) {
       let attachments = '';
       
-      // Try to get URL from RichTextValue first (for hyperlinked cells)
+      // Method 1: Try to get URL from RichTextValue (for hyperlinked cells)
       if (richTextValues && richTextValues[rowIndex] && richTextValues[rowIndex][0]) {
         const richText = richTextValues[rowIndex][0];
         const url = richText.getLinkUrl();
@@ -1484,12 +1492,34 @@ function handleGetVoucherSummary(requestBody) {
         }
       }
       
-      // Fall back to plain text value
+      // Method 2: Try to get from cell note (we store FOLDER_URL there)
+      try {
+        const note = sheet.getRange(rowIndex + 2, attachmentsColIndex).getNote(); // +2 for header and 0-based
+        if (note && note.includes('FOLDER_URL:')) {
+          const urlMatch = note.match(/FOLDER_URL:\s*(https?:\/\/[^\s\n]+)/);
+          if (urlMatch) {
+            attachments = urlMatch[1];
+            Logger.log('Row ' + rowIndex + ' attachment URL from note: ' + attachments);
+            return attachments;
+          }
+        }
+      } catch (noteError) {
+        // Ignore note read errors
+      }
+      
+      // Method 3: Fall back to plain text value
       const cellValue = rows[rowIndex] && rows[rowIndex][idxAttachments];
       if (cellValue) {
         const textValue = cellValue.toString();
-        if (textValue.startsWith('http')) {
+        // New format: FOLDER_URL|file1|file2|...
+        if (textValue.includes('|') && textValue.startsWith('http')) {
+          attachments = textValue.split('|')[0];
+          Logger.log('Row ' + rowIndex + ' attachment URL from pipe format: ' + attachments);
+          return attachments;
+        } else if (textValue.startsWith('http')) {
           attachments = textValue;
+          Logger.log('Row ' + rowIndex + ' attachment URL from plain text: ' + attachments);
+          return attachments;
         }
       }
       
@@ -2029,11 +2059,79 @@ function uploadFilesToDrive_(files, voucherNumber) {
     }
     
     Logger.log('Upload complete. Successful: ' + uploadedFiles.filter(f => !f.error).length + '/' + files.length);
-    return uploadedFiles;
+    
+    // Return both files and folder URL
+    const folderUrl = voucherFolder.getUrl();
+    Logger.log('Voucher folder URL: ' + folderUrl);
+    
+    return {
+      files: uploadedFiles,
+      folderUrl: folderUrl,
+      folderName: voucherNumber
+    };
     
   } catch (error) {
     Logger.log('❌ ERROR in uploadFilesToDrive_: ' + error.toString());
     Logger.log('Stack: ' + error.stack);
+    throw error;
+  }
+}
+
+/**
+ * UTILITY FUNCTION - Fix existing attachments data
+ * This extracts URLs from RichTextValue runs and stores them in cell notes
+ * Run this ONCE to fix existing data in the sheet
+ */
+function fixExistingAttachments() {
+  try {
+    Logger.log('=== FIX EXISTING ATTACHMENTS ===');
+    
+    const sheet = getVoucherHistorySheet_();
+    const lastRow = sheet.getLastRow();
+    
+    if (lastRow <= 1) {
+      Logger.log('No data rows to fix');
+      return;
+    }
+    
+    const attachmentsColIndex = 10; // Column J
+    let fixedCount = 0;
+    
+    for (let row = 2; row <= lastRow; row++) {
+      const cell = sheet.getRange(row, attachmentsColIndex);
+      const richText = cell.getRichTextValue();
+      
+      if (!richText) continue;
+      
+      // Try to get URL from RichText runs
+      const runs = richText.getRuns();
+      let foundUrl = null;
+      
+      for (const run of runs) {
+        const url = run.getLinkUrl();
+        if (url && url.startsWith('http')) {
+          foundUrl = url;
+          break;
+        }
+      }
+      
+      // If we found a URL, store it in the cell note
+      if (foundUrl) {
+        const existingNote = cell.getNote() || '';
+        if (!existingNote.includes('FOLDER_URL:')) {
+          const fileName = richText.getText() || 'Files';
+          cell.setNote('FOLDER_URL: ' + foundUrl + '\\nFILES: ' + fileName);
+          fixedCount++;
+          Logger.log('Row ' + row + ': Fixed attachment URL - ' + foundUrl);
+        }
+      }
+    }
+    
+    Logger.log('Fixed ' + fixedCount + ' rows with attachment URLs');
+    return fixedCount;
+    
+  } catch (error) {
+    Logger.log('Error fixing attachments: ' + error.toString());
     throw error;
   }
 }
