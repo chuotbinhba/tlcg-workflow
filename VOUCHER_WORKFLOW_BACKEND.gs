@@ -798,6 +798,35 @@ function doGet(e) {
 
 /** ===================== 1. GỬI EMAIL PHÊ DUYỆT ===================== */
 
+/**
+ * Fix garbled UTF-8 text that was misinterpreted as Latin-1
+ * Example: "PHIÃ¡ÂºÂ¾U" should become "PHIẾU"
+ */
+function fixGarbledUtf8(str) {
+  if (!str) return str;
+  
+  // Check if the string contains typical garbled patterns
+  // These patterns occur when UTF-8 bytes are interpreted as Latin-1
+  if (str.indexOf('Ã') === -1 && str.indexOf('Â') === -1) {
+    return str; // String looks fine, return as-is
+  }
+  
+  try {
+    // Convert the garbled string back: Latin-1 interpretation -> UTF-8 bytes -> proper UTF-8 string
+    // In Google Apps Script, we use Utilities for this
+    var bytes = [];
+    for (var i = 0; i < str.length; i++) {
+      bytes.push(str.charCodeAt(i) & 0xFF);
+    }
+    var decoded = Utilities.newBlob(bytes).getDataAsString('UTF-8');
+    Logger.log('Fixed garbled UTF-8: "' + str + '" -> "' + decoded + '"');
+    return decoded;
+  } catch (e) {
+    Logger.log('Could not fix garbled UTF-8: ' + e.toString());
+    return str; // Return original if decoding fails
+  }
+}
+
 function handleSendEmail(requestBody) {
   try {
     Logger.log('=== handleSendEmail START ===');
@@ -818,9 +847,9 @@ function handleSendEmail(requestBody) {
 
     const to      = emailData.to;
     const cc      = emailData.cc || '';
-    // The subject comes from frontend - use it directly 
-    // GmailApp handles UTF-8 natively
-    const subject = emailData.subject || '';
+    // Fix any garbled UTF-8 in subject line
+    const rawSubject = emailData.subject || '';
+    const subject = fixGarbledUtf8(rawSubject);
     const body    = emailData.body;
 
     Logger.log('Email TO: ' + to);
@@ -855,7 +884,9 @@ function handleSendEmail(requestBody) {
     // Priority 1: requesterEmailData.to from frontend
     if (requesterEmailData && requesterEmailData.to && requesterEmailData.to.trim() !== '') {
       requesterTo = requesterEmailData.to;
-      requesterSubject = requesterEmailData.subject || `[THÔNG BÁO] Phiếu ${voucher.voucherType || ''} ${voucher.voucherNumber || ''} đã được gửi phê duyệt`;
+      // Fix any garbled UTF-8 in requester subject too
+      const rawRequesterSubject = requesterEmailData.subject || `[THÔNG BÁO] Phiếu ${voucher.voucherType || ''} ${voucher.voucherNumber || ''} đã được gửi phê duyệt`;
+      requesterSubject = fixGarbledUtf8(rawRequesterSubject);
       requesterBody = requesterEmailData.body || body.replace(/<a href="[^"]*">.*?<\/a>/g, ''); // Remove buttons
       Logger.log('📧 Priority 1: Using requesterEmailData.to: ' + requesterTo);
     }
@@ -1197,16 +1228,18 @@ function handleApproveVoucher(requestBody) {
     }
 
     const voucherNumber  = voucher.voucherNumber || '';
-    const voucherType    = voucher.voucherType   || '';
-    const company        = voucher.company       || '';
-    const employee       = voucher.employee      || '';
+    // Fix garbled UTF-8 in voucherType (e.g., "CHI" might come as garbled)
+    const voucherType    = fixGarbledUtf8(voucher.voucherType || '');
+    const company        = fixGarbledUtf8(voucher.company || '');
+    const employee       = fixGarbledUtf8(voucher.employee || '');
     const amount         = voucher.amount        || '';
     const requestorEmail = voucher.requestorEmail|| '';
     const approverEmail  = voucher.approverEmail || '';
-    const approvedBy     = voucher.approvedBy    || approverEmail || 'Unknown';
+    const approvedBy     = fixGarbledUtf8(voucher.approvedBy || approverEmail || 'Unknown');
     const approverSignature = voucher.approverSignature || ''; // Approver signature data
 
     Logger.log('Voucher Number: ' + voucherNumber);
+    Logger.log('Voucher Type (fixed): ' + voucherType);
     Logger.log('Requestor Email: ' + requestorEmail);
     Logger.log('Approver Email: ' + approverEmail);
     Logger.log('Approved By: ' + approvedBy);
@@ -1305,20 +1338,22 @@ function handleRejectVoucher(requestBody) {
     }
 
     const voucherNumber  = voucher.voucherNumber || '';
-    const voucherType    = voucher.voucherType   || '';
-    const company        = voucher.company       || '';
-    const employee       = voucher.employee      || '';
+    // Fix garbled UTF-8 in text fields
+    const voucherType    = fixGarbledUtf8(voucher.voucherType || '');
+    const company        = fixGarbledUtf8(voucher.company || '');
+    const employee       = fixGarbledUtf8(voucher.employee || '');
     const amount         = voucher.amount        || '';
     const requestorEmail = voucher.requestorEmail|| '';
     const approverEmail  = voucher.approverEmail || '';
-    const rejectReason   = voucher.rejectReason  || '';
-    const rejectedBy     = voucher.rejectedBy    || approverEmail || 'Unknown';
+    const rejectReason   = fixGarbledUtf8(voucher.rejectReason || '');
+    const rejectedBy     = fixGarbledUtf8(voucher.rejectedBy || approverEmail || 'Unknown');
     const approverSignature = voucher.approverSignature || ''; // Approver signature data
 
     Logger.log('Voucher Number: ' + voucherNumber);
+    Logger.log('Voucher Type (fixed): ' + voucherType);
     Logger.log('Requestor Email: ' + requestorEmail);
     Logger.log('Approver Email: ' + approverEmail);
-    Logger.log('Reject Reason: ' + rejectReason);
+    Logger.log('Reject Reason (fixed): ' + rejectReason);
     Logger.log('Rejected By: ' + rejectedBy);
     Logger.log('Has Approver Signature: ' + (approverSignature ? 'Yes' : 'No'));
 
