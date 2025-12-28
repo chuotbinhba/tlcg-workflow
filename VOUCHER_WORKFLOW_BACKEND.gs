@@ -355,7 +355,8 @@ function appendHistory_(entry) {
         
         if (hasFileLinks) {
           // Build RichTextValue with multiple clickable links
-          let displayParts = [];
+          // Use simple text format to avoid emoji character position issues
+          let textParts = [];
           let linkRanges = [];
           let currentPos = 0;
           
@@ -365,18 +366,19 @@ function appendHistory_(entry) {
             Logger.log('Line ' + index + ' match: ' + (urlMatch ? 'YES' : 'NO'));
             
             if (urlMatch) {
-              const fileInfo = urlMatch[1]; // filename (size MB)
-              const fileUrl = urlMatch[2];
+              const fileInfo = urlMatch[1].trim(); // filename (size MB)
+              const fileUrl = urlMatch[2].trim();
               
               Logger.log('File info: ' + fileInfo);
               Logger.log('File URL: ' + fileUrl);
               
-              // Add emoji and file info
-              const displayLine = '📄 ' + fileInfo;
-              displayParts.push(displayLine);
+              // Use simple bullet instead of emoji to avoid character position issues
+              const prefix = '• ';
+              const displayLine = prefix + fileInfo;
+              textParts.push(displayLine);
               
-              // Track link position (for the file info part, not emoji)
-              const startPos = currentPos + 2; // After "📄 " (emoji is 2 chars in some encodings)
+              // Track link position - prefix is 2 ASCII chars
+              const startPos = currentPos + prefix.length;
               const endPos = startPos + fileInfo.length;
               linkRanges.push({ start: startPos, end: endPos, url: fileUrl });
               
@@ -384,14 +386,15 @@ function appendHistory_(entry) {
               
               // Add newline if not last
               if (index < lines.length - 1) {
-                displayParts.push('\n');
+                textParts.push('\n');
                 currentPos += 1;
               }
             }
           });
           
-          const fullText = displayParts.join('');
+          const fullText = textParts.join('');
           Logger.log('Full display text: ' + fullText);
+          Logger.log('Full text length: ' + fullText.length);
           Logger.log('Link ranges: ' + JSON.stringify(linkRanges));
           
           // Build RichTextValue with all links
@@ -525,8 +528,13 @@ function getVoucherHistory_(voucherNumber) {
             // Extract URLs and their display text from each run
             for (const run of runs) {
               const url = run.getLinkUrl();
-              const text = run.getText().trim();
+              let text = run.getText().trim();
               if (url && url.startsWith('http')) {
+                // Clean up display text - remove bullet prefix
+                if (text.startsWith('• ')) {
+                  text = text.substring(2);
+                }
+                // Format: filename (size MB)|url - frontend expects this format
                 urlsWithNames.push(text + '|' + url);
               }
             }
@@ -535,6 +543,30 @@ function getVoucherHistory_(voucherNumber) {
               // Return all URLs with their names, separated by newline
               attachments = urlsWithNames.join('\n');
               Logger.log('Row ' + i + ' - Got ' + urlsWithNames.length + ' attachment(s): ' + attachments);
+            }
+          }
+          
+          // Method 1b: If no URLs found in runs, try to get from cell note (new format)
+          if (!attachments) {
+            try {
+              const note = sheet.getRange(i + 1, 10).getNote();
+              // New format: filename (size MB) - URL\nfilename2 (size MB) - URL2
+              if (note && note.includes(' - https://')) {
+                const noteLines = note.split('\n').filter(l => l.includes(' - https://'));
+                const parsed = noteLines.map(line => {
+                  const match = line.match(/^(.+?) - (https?:\/\/.+)$/);
+                  if (match) {
+                    return match[1].trim() + '|' + match[2].trim();
+                  }
+                  return null;
+                }).filter(x => x);
+                if (parsed.length > 0) {
+                  attachments = parsed.join('\n');
+                  Logger.log('Row ' + i + ' - Got ' + parsed.length + ' attachment(s) from note: ' + attachments);
+                }
+              }
+            } catch (noteReadError) {
+              Logger.log('Could not read note for row ' + i + ': ' + noteReadError);
             }
           }
           
@@ -2359,14 +2391,14 @@ function uploadFilesToDrive_(files, voucherNumber) {
  */
 function fixExistingAttachments() {
   try {
-    Logger.log('=== FIX EXISTING ATTACHMENTS ===');
+    Logger.log('=== FIX EXISTING ATTACHMENTS - CONVERT TO INDIVIDUAL FILE LINKS ===');
     
     const sheet = getVoucherHistorySheet_();
     const lastRow = sheet.getLastRow();
     
     if (lastRow <= 1) {
       Logger.log('No data rows to fix');
-      return;
+      return 0;
     }
     
     const attachmentsColIndex = 10; // Column J
@@ -2375,34 +2407,122 @@ function fixExistingAttachments() {
     for (let row = 2; row <= lastRow; row++) {
       const cell = sheet.getRange(row, attachmentsColIndex);
       const richText = cell.getRichTextValue();
+      const existingNote = cell.getNote() || '';
+      
+      // Skip if already has individual file links in note
+      if (existingNote.includes(' - https://drive.google.com/file/')) {
+        Logger.log('Row ' + row + ': Already has individual file links, skipping');
+        continue;
+      }
       
       if (!richText) continue;
       
-      // Try to get URL from RichText runs
+      // Try to get folder URL from RichText runs
       const runs = richText.getRuns();
-      let foundUrl = null;
+      let folderUrl = null;
       
       for (const run of runs) {
         const url = run.getLinkUrl();
-        if (url && url.startsWith('http')) {
-          foundUrl = url;
+        if (url && url.includes('drive.google.com/drive/folders/')) {
+          folderUrl = url;
           break;
         }
       }
       
-      // If we found a URL, store it in the cell note
-      if (foundUrl) {
-        const existingNote = cell.getNote() || '';
-        if (!existingNote.includes('FOLDER_URL:')) {
-          const fileName = richText.getText() || 'Files';
-          cell.setNote('FOLDER_URL: ' + foundUrl + '\\nFILES: ' + fileName);
-          fixedCount++;
-          Logger.log('Row ' + row + ': Fixed attachment URL - ' + foundUrl);
+      // Also check if folderUrl is in note
+      if (!folderUrl && existingNote.includes('FOLDER_URL:')) {
+        const match = existingNote.match(/FOLDER_URL:\s*(https?:\/\/[^\s\n]+)/);
+        if (match) folderUrl = match[1];
+      }
+      
+      if (!folderUrl) {
+        Logger.log('Row ' + row + ': No folder URL found, skipping');
+        continue;
+      }
+      
+      // Extract folder ID from URL
+      const folderIdMatch = folderUrl.match(/folders\/([a-zA-Z0-9_-]+)/);
+      if (!folderIdMatch) {
+        Logger.log('Row ' + row + ': Could not extract folder ID from ' + folderUrl);
+        continue;
+      }
+      
+      const folderId = folderIdMatch[1];
+      Logger.log('Row ' + row + ': Processing folder ID: ' + folderId);
+      
+      try {
+        // List all files in the folder
+        const folder = DriveApp.getFolderById(folderId);
+        const files = folder.getFiles();
+        const fileLinks = [];
+        
+        while (files.hasNext()) {
+          const file = files.next();
+          const fileName = file.getName();
+          const fileSize = file.getSize();
+          const fileUrl = file.getUrl();
+          const sizeMB = (fileSize / (1024 * 1024)).toFixed(2);
+          
+          // Format: filename (size MB) - URL
+          fileLinks.push(fileName + ' (' + sizeMB + ' MB) - ' + fileUrl);
+          Logger.log('  File: ' + fileName + ' (' + sizeMB + ' MB)');
         }
+        
+        if (fileLinks.length === 0) {
+          Logger.log('Row ' + row + ': Folder is empty');
+          continue;
+        }
+        
+        // Store individual file links in note
+        const newNote = fileLinks.join('\n');
+        cell.setNote(newNote);
+        
+        // Update cell display with clickable individual links
+        let textParts = [];
+        let linkRanges = [];
+        let currentPos = 0;
+        
+        fileLinks.forEach((line, index) => {
+          const match = line.match(/^(.+?) - (https?:\/\/.+)$/);
+          if (match) {
+            const fileInfo = match[1].trim();
+            const fileUrl = match[2].trim();
+            const prefix = '• ';
+            const displayLine = prefix + fileInfo;
+            textParts.push(displayLine);
+            
+            const startPos = currentPos + prefix.length;
+            const endPos = startPos + fileInfo.length;
+            linkRanges.push({ start: startPos, end: endPos, url: fileUrl });
+            
+            currentPos += displayLine.length;
+            if (index < fileLinks.length - 1) {
+              textParts.push('\n');
+              currentPos += 1;
+            }
+          }
+        });
+        
+        const fullText = textParts.join('');
+        let richTextBuilder = SpreadsheetApp.newRichTextValue().setText(fullText);
+        linkRanges.forEach(range => {
+          try {
+            richTextBuilder = richTextBuilder.setLinkUrl(range.start, range.end, range.url);
+          } catch (e) {
+            Logger.log('Error setting link: ' + e);
+          }
+        });
+        
+        cell.setRichTextValue(richTextBuilder.build());
+        fixedCount++;
+        Logger.log('Row ' + row + ': ✅ Fixed with ' + fileLinks.length + ' individual file links');
+        
+      } catch (driveError) {
+        Logger.log('Row ' + row + ': ❌ Error accessing folder: ' + driveError.toString());
       }
     }
     
-    Logger.log('Fixed ' + fixedCount + ' rows with attachment URLs');
+    Logger.log('=== FIX COMPLETE: Fixed ' + fixedCount + ' rows ===');
     return fixedCount;
     
   } catch (error) {
@@ -2462,6 +2582,266 @@ function testBase64Decode() {
     Logger.log('Decoded text: ' + text);
     Logger.log('✅ Base64 decoding works');
     return 'SUCCESS: ' + text;
+  } catch (error) {
+    Logger.log('❌ ERROR: ' + error.toString());
+    return 'ERROR: ' + error.message;
+  }
+}
+
+/**
+ * TEST FUNCTION - Test individual file URL generation
+ * Run this to verify that file.getUrl() returns individual file URLs, not folder URLs
+ */
+function testFileUrlGeneration() {
+  const DRIVE_FOLDER_ID = '1RBBUUAQIrYTWeBONIgkMtELL0hxZhtqG';
+  
+  try {
+    Logger.log('=== TEST FILE URL GENERATION ===');
+    
+    const parentFolder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+    Logger.log('Parent folder: ' + parentFolder.getName());
+    Logger.log('Parent folder URL: ' + parentFolder.getUrl());
+    
+    // Create test folder
+    const testFolderName = 'TEST-URL-' + new Date().getTime();
+    const testFolder = parentFolder.createFolder(testFolderName);
+    Logger.log('Test folder URL: ' + testFolder.getUrl());
+    
+    // Create test file
+    const testBlob = Utilities.newBlob('Test content', 'text/plain', 'test-file.txt');
+    const testFile = testFolder.createFile(testBlob);
+    testFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+    
+    const fileUrl = testFile.getUrl();
+    const fileId = testFile.getId();
+    
+    Logger.log('=== RESULTS ===');
+    Logger.log('File ID: ' + fileId);
+    Logger.log('File URL from getUrl(): ' + fileUrl);
+    Logger.log('Is individual file URL: ' + fileUrl.includes('/file/d/'));
+    Logger.log('Is folder URL: ' + fileUrl.includes('/folders/'));
+    
+    // Cleanup
+    testFolder.setTrashed(true);
+    
+    if (fileUrl.includes('/file/d/')) {
+      Logger.log('✅ SUCCESS: getUrl() returns individual file URL');
+      return 'SUCCESS: File URL = ' + fileUrl;
+    } else {
+      Logger.log('❌ UNEXPECTED: getUrl() does not return expected format');
+      return 'UNEXPECTED: ' + fileUrl;
+    }
+    
+  } catch (error) {
+    Logger.log('❌ ERROR: ' + error.toString());
+    return 'ERROR: ' + error.message;
+  }
+}
+
+/**
+ * TEST FUNCTION - Check what's in Column J for recent vouchers
+ * This helps diagnose what data is actually being stored
+ */
+function checkColumnJData() {
+  try {
+    Logger.log('=== CHECK COLUMN J DATA ===');
+    
+    const sheet = getVoucherHistorySheet_();
+    const lastRow = sheet.getLastRow();
+    
+    if (lastRow <= 1) {
+      Logger.log('No data rows');
+      return 'No data';
+    }
+    
+    // Check last 5 rows
+    const startRow = Math.max(2, lastRow - 4);
+    Logger.log('Checking rows ' + startRow + ' to ' + lastRow);
+    
+    for (let row = startRow; row <= lastRow; row++) {
+      const voucherNum = sheet.getRange(row, 1).getValue();
+      const cell = sheet.getRange(row, 10);
+      const cellValue = cell.getValue();
+      const cellNote = cell.getNote();
+      const richText = cell.getRichTextValue();
+      
+      Logger.log('--- Row ' + row + ' (Voucher: ' + voucherNum + ') ---');
+      Logger.log('Cell value: ' + (cellValue ? cellValue.substring(0, 100) : 'EMPTY'));
+      Logger.log('Cell note: ' + (cellNote ? cellNote.substring(0, 200) : 'EMPTY'));
+      
+      if (richText) {
+        const runs = richText.getRuns();
+        Logger.log('RichText runs: ' + runs.length);
+        runs.forEach((run, i) => {
+          const url = run.getLinkUrl();
+          const text = run.getText();
+          if (url) {
+            Logger.log('  Run ' + i + ': "' + text.substring(0, 50) + '" -> ' + url);
+          }
+        });
+      }
+    }
+    
+    return 'Check complete - see logs';
+    
+  } catch (error) {
+    Logger.log('❌ ERROR: ' + error.toString());
+    return 'ERROR: ' + error.message;
+  }
+}
+
+/**
+ * MANUAL FIX - Convert a specific row's folder link to individual file links
+ * @param {number} rowNumber - The row number to fix (2 = first data row)
+ */
+function fixSingleRow(rowNumber) {
+  if (!rowNumber || rowNumber < 2) {
+    Logger.log('Please provide a valid row number (2 or higher)');
+    return 'Invalid row number';
+  }
+  
+  try {
+    Logger.log('=== FIX SINGLE ROW ' + rowNumber + ' ===');
+    
+    const sheet = getVoucherHistorySheet_();
+    const cell = sheet.getRange(rowNumber, 10);
+    const voucherNum = sheet.getRange(rowNumber, 1).getValue();
+    
+    Logger.log('Voucher: ' + voucherNum);
+    
+    // Try to find folder URL
+    let folderUrl = null;
+    
+    // Method 1: From RichText
+    const richText = cell.getRichTextValue();
+    if (richText) {
+      const runs = richText.getRuns();
+      for (const run of runs) {
+        const url = run.getLinkUrl();
+        if (url && url.includes('drive.google.com')) {
+          folderUrl = url;
+          Logger.log('Found URL in RichText: ' + url);
+          break;
+        }
+      }
+    }
+    
+    // Method 2: From cell note
+    if (!folderUrl) {
+      const note = cell.getNote();
+      if (note) {
+        const match = note.match(/(https?:\/\/drive\.google\.com\/[^\s\n]+)/);
+        if (match) {
+          folderUrl = match[1];
+          Logger.log('Found URL in note: ' + folderUrl);
+        }
+      }
+    }
+    
+    // Method 3: From cell value
+    if (!folderUrl) {
+      const value = cell.getValue().toString();
+      if (value.includes('drive.google.com')) {
+        const match = value.match(/(https?:\/\/drive\.google\.com\/[^\s\n]+)/);
+        if (match) {
+          folderUrl = match[1];
+          Logger.log('Found URL in value: ' + folderUrl);
+        }
+      }
+    }
+    
+    if (!folderUrl) {
+      Logger.log('No Drive URL found in row ' + rowNumber);
+      return 'No Drive URL found';
+    }
+    
+    // Determine if it's a folder or file URL
+    const isFolder = folderUrl.includes('/folders/');
+    const isFile = folderUrl.includes('/file/d/');
+    
+    Logger.log('URL type - isFolder: ' + isFolder + ', isFile: ' + isFile);
+    
+    if (isFile) {
+      Logger.log('This is already an individual file link');
+      return 'Already an individual file link';
+    }
+    
+    if (!isFolder) {
+      Logger.log('URL is neither folder nor file format: ' + folderUrl);
+      return 'Unknown URL format';
+    }
+    
+    // Extract folder ID and list files
+    const folderIdMatch = folderUrl.match(/folders\/([a-zA-Z0-9_-]+)/);
+    if (!folderIdMatch) {
+      Logger.log('Could not extract folder ID');
+      return 'Could not extract folder ID';
+    }
+    
+    const folderId = folderIdMatch[1];
+    Logger.log('Folder ID: ' + folderId);
+    
+    const folder = DriveApp.getFolderById(folderId);
+    const files = folder.getFiles();
+    const fileLinks = [];
+    
+    while (files.hasNext()) {
+      const file = files.next();
+      const fileName = file.getName();
+      const fileSize = file.getSize();
+      const fileUrl = file.getUrl();
+      const sizeMB = (fileSize / (1024 * 1024)).toFixed(2);
+      
+      fileLinks.push({
+        name: fileName,
+        size: sizeMB,
+        url: fileUrl
+      });
+      Logger.log('Found file: ' + fileName + ' (' + sizeMB + ' MB) -> ' + fileUrl);
+    }
+    
+    if (fileLinks.length === 0) {
+      Logger.log('Folder is empty');
+      return 'Folder is empty';
+    }
+    
+    // Build the new format
+    const noteText = fileLinks.map(f => f.name + ' (' + f.size + ' MB) - ' + f.url).join('\n');
+    cell.setNote(noteText);
+    
+    // Build RichText with clickable links
+    let textParts = [];
+    let linkRanges = [];
+    let currentPos = 0;
+    
+    fileLinks.forEach((f, index) => {
+      const fileInfo = f.name + ' (' + f.size + ' MB)';
+      const prefix = '• ';
+      const displayLine = prefix + fileInfo;
+      textParts.push(displayLine);
+      
+      const startPos = currentPos + prefix.length;
+      const endPos = startPos + fileInfo.length;
+      linkRanges.push({ start: startPos, end: endPos, url: f.url });
+      
+      currentPos += displayLine.length;
+      if (index < fileLinks.length - 1) {
+        textParts.push('\n');
+        currentPos += 1;
+      }
+    });
+    
+    const fullText = textParts.join('');
+    let richTextBuilder = SpreadsheetApp.newRichTextValue().setText(fullText);
+    linkRanges.forEach(range => {
+      richTextBuilder = richTextBuilder.setLinkUrl(range.start, range.end, range.url);
+    });
+    
+    cell.setRichTextValue(richTextBuilder.build());
+    
+    Logger.log('✅ Fixed row ' + rowNumber + ' with ' + fileLinks.length + ' individual file links');
+    return 'SUCCESS: Fixed with ' + fileLinks.length + ' files';
+    
   } catch (error) {
     Logger.log('❌ ERROR: ' + error.toString());
     return 'ERROR: ' + error.message;
