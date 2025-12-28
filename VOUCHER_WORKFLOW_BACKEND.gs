@@ -630,8 +630,28 @@ function doPost(e) {
       try {
         // Log the first 500 chars for debugging
         Logger.log('postData.contents preview: ' + e.postData.contents.substring(0, 500));
+        Logger.log('postData.type: ' + (e.postData.type || 'unknown'));
         
-        requestBody = JSON.parse(e.postData.contents);
+        // Try to fix encoding issues by re-encoding as UTF-8
+        var rawContents = e.postData.contents;
+        
+        // Check if the content looks garbled (contains Ã or Â patterns)
+        if (rawContents.indexOf('Ã') !== -1 || rawContents.indexOf('Â') !== -1) {
+          Logger.log('⚠️ Detected potentially garbled UTF-8 in POST data, attempting to fix...');
+          try {
+            // Convert Latin-1 interpreted bytes back to UTF-8
+            var bytes = [];
+            for (var i = 0; i < rawContents.length; i++) {
+              bytes.push(rawContents.charCodeAt(i) & 0xFF);
+            }
+            rawContents = Utilities.newBlob(bytes).getDataAsString('UTF-8');
+            Logger.log('✅ Fixed garbled POST data');
+          } catch (encErr) {
+            Logger.log('Could not fix encoding: ' + encErr.toString());
+          }
+        }
+        
+        requestBody = JSON.parse(rawContents);
         action = requestBody.action;
         Logger.log('Parsed from e.postData.contents');
         Logger.log('Parsed requestBody keys: ' + Object.keys(requestBody).join(', '));
