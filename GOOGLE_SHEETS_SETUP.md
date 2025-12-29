@@ -12,7 +12,7 @@ Workflow Phiếu Thu/Chi cần **2 Google Spreadsheets**:
 ## 📊 1. TLCG Master Data Spreadsheet
 
 ### Thông tin Spreadsheet
-- **Spreadsheet ID:** `1-1Q75iKeoRAGO4p7U-1IAOp9jqx77HrxF6WUxuUuT_c`
+- **Spreadsheet ID:** `1ujmPbtEdkGLgEshfhvV8gRB6R0GLI31jsZM5rDOJS0g`
 - **Đã cấu hình trong:** `VOUCHER_WORKFLOW_BACKEND.gs` (dòng 15)
 
 ### Sheets cần có:
@@ -141,7 +141,7 @@ linh.le@tl-c.com.vn                | [hash]        | Lê Thùy Linh     | Direct
 
 ### Bước 1: Tạo/Cấu hình TLCG Master Data
 
-1. **Mở spreadsheet:** `1-1Q75iKeoRAGO4p7U-1IAOp9jqx77HrxF6WUxuUuT_c`
+1. **Mở spreadsheet:** `1ujmPbtEdkGLgEshfhvV8gRB6R0GLI31jsZM5rDOJS0g`
 2. **Kiểm tra sheet "Nhân viên":**
    - Đảm bảo có đầy đủ cột: Email, Password Hash, Tên, Chức vụ, Phòng ban, Công ty, Điện thoại, Employee ID
    - Thêm dữ liệu nhân viên nếu chưa có

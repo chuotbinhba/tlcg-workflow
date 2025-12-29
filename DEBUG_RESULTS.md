@@ -191,7 +191,7 @@ Sheet "Voucher_History" not found, creating new sheet...
    - Copy logs nếu có lỗi
 
 2. **Kiểm tra Spreadsheet:**
-   - Mở: https://docs.google.com/spreadsheets/d/1-1Q75iKeoRAGO4p7U-1IAOp9jqx77HrxF6WUxuUuT_c/edit
+   - Mở: https://docs.google.com/spreadsheets/d/1ujmPbtEdkGLgEshfhvV8gRB6R0GLI31jsZM5rDOJS0g/edit
    - Vào sheet "Voucher_History"
    - Kiểm tra có dòng mới với voucher TL-202512-3753 không
 

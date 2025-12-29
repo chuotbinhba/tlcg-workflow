@@ -16,7 +16,7 @@ const USERS_SHEET_ID = '1-1Q75iKeoRAGO4p7U-1IAOp9jqx77HrxF6WUxuUuT_c'; // TLCG M
 const USERS_SHEET_NAME = 'Nhân viên'; // Sheet name: Nhân viên
 
 // ⚠️ IMPORTANT: Google Sheet ID for Voucher History (same as USERS_SHEET_ID or separate)
-const VOUCHER_HISTORY_SHEET_ID = '1-1Q75iKeoRAGO4p7U-1IAOp9jqx77HrxF6WUxuUuT_c'; // Use same spreadsheet as users
+const VOUCHER_HISTORY_SHEET_ID = '1ujmPbtEdkGLgEshfhvV8gRB6R0GLI31jsZM5rDOJS0g'; // Use same spreadsheet as users
 const VH_SHEET_NAME = 'Voucher_History';
 
 /**
