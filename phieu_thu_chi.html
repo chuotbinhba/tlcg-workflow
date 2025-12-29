@@ -5688,23 +5688,39 @@
             }
 
             try {
-                // Use Blob with UTF-8 encoding to properly handle Vietnamese characters
-                const payloadBlob = new Blob([payloadString], { type: 'application/json; charset=UTF-8' });
+                console.log('🚀 Sending request to backend...');
+                console.log('Payload keys:', Object.keys(payload));
+                console.log('Action:', payload.action);
                 
                 const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
                     method: 'POST',
-                    mode: 'no-cors',
-                    body: payloadBlob,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: payloadString,
                 });
                 
+                console.log('✅ Response received');
                 console.log('Response status:', response.status);
-                console.log('Response received (no-cors mode, cannot read body)');
-
-                // Since mode: 'no-cors' is used, response.ok will always be false.
-                // We rely on the Apps Script to actually send the email and assume success
-                // if no network error occurs. For a more robust solution, the Apps Script
-                // should return a JSON response and the client should handle CORS.
-                // For this example, we'll assume success if the fetch completes without error.
+                console.log('Response ok:', response.ok);
+                
+                let result;
+                try {
+                    const responseText = await response.text();
+                    console.log('Response text:', responseText);
+                    result = JSON.parse(responseText);
+                    console.log('Parsed result:', result);
+                } catch (parseError) {
+                    console.error('❌ Failed to parse response:', parseError);
+                    throw new Error('Invalid response from server');
+                }
+                
+                if (!result.success) {
+                    console.error('❌ Backend returned error:', result.message);
+                    throw new Error(result.message || 'Failed to send approval email');
+                }
+                
+                console.log('✅ Backend confirmed success:', result.message);
 
                 // Update UI status and history
                 // Update status display with proper status text
