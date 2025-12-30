@@ -1444,14 +1444,18 @@
             try {
                 console.log('Loading master data from Google Sheets...');
                 
-                const formData = new FormData();
-                formData.append('action', 'getMasterData');
+                // Use URL-encoded form data instead of FormData for better compatibility
+                const params = new URLSearchParams();
+                params.append('action', 'getMasterData');
                 
                 const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
                     method: 'POST',
                     mode: 'cors',
                     redirect: 'follow',
-                    body: formData
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: params.toString()
                 });
                 
                 const result = await response.json();
