@@ -5709,12 +5709,15 @@
                 console.log('Payload keys:', Object.keys(payload));
                 console.log('Action:', payload.action);
                 
+                // Use FormData to avoid CORS preflight issues
+                // FormData doesn't trigger OPTIONS preflight request
+                const formData = new FormData();
+                formData.append('data', payloadString); // Send JSON as FormData field
+                
                 const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: payloadString,
+                    body: formData
+                    // Don't set Content-Type header - browser sets it automatically with boundary
                 });
                 
                 console.log('✅ Response received');
