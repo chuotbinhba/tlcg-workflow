@@ -3882,8 +3882,36 @@
                 });
                 
                 console.log('Response status:', response.status);
-                const result = await response.json();
-                console.log('Response result:', result);
+                console.log('Response ok:', response.ok);
+                
+                // Check if response is ok before parsing
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ HTTP Error:', response.status, response.statusText);
+                    console.error('❌ Error response body:', errorText.substring(0, 500));
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                // Read response text first to check if it's JSON
+                const responseText = await response.text();
+                console.log('Response text (first 200 chars):', responseText.substring(0, 200));
+                
+                // Check if response is HTML (error page)
+                if (responseText.trim().toLowerCase().startsWith('<!doctype') || responseText.trim().toLowerCase().startsWith('<html')) {
+                    console.error('❌ Response is HTML (error page), not JSON');
+                    console.error('Full HTML response:', responseText.substring(0, 1000));
+                    throw new Error('Backend trả về trang lỗi HTML thay vì JSON. Có thể URL backend không đúng hoặc có lỗi server.');
+                }
+                
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                    console.log('Response result:', result);
+                } catch (parseError) {
+                    console.error('❌ Failed to parse response as JSON:', parseError);
+                    console.error('❌ Response was:', responseText.substring(0, 500));
+                    throw new Error(`Invalid JSON response: ${parseError.message}`);
+                }
                 
                 modalLoading.classList.remove('show');
                 modalContent.style.opacity = '1';
@@ -3901,7 +3929,7 @@
                 modalLoading.classList.remove('show');
                 modalContent.style.opacity = '1';
                 modalFooter.querySelectorAll('button').forEach(btn => btn.disabled = false);
-                showToast('Lỗi kết nối: ' + error.message, 'error');
+                showToast('Lỗi khi phê duyệt: ' + error.message, 'error');
             }
         }
         

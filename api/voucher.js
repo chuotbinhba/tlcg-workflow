@@ -286,11 +286,42 @@ export default async function handler(req, res) {
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`[Proxy POST Error] ${response.status}: ${errorText.substring(0, 200)}`);
+        // Check if error response is HTML
+        if (errorText.trim().toLowerCase().startsWith('<!doctype') || errorText.trim().toLowerCase().startsWith('<html')) {
+          console.error('[Proxy POST Error] GAS returned HTML error page instead of JSON');
+          return res.status(500).json({
+            success: false,
+            message: `Backend returned HTML error page (status ${response.status}). Check Google Apps Script logs.`
+          });
+        }
         throw new Error(`GAS returned ${response.status}: ${errorText.substring(0, 200)}`);
       }
       
-      const data = await response.json();
-      console.log(`[Proxy POST Success] action: ${finalAction}`);
+      // Read response text first to check format
+      const responseText = await response.text();
+      
+      // Check if response is HTML (error page)
+      if (responseText.trim().toLowerCase().startsWith('<!doctype') || responseText.trim().toLowerCase().startsWith('<html')) {
+        console.error('[Proxy POST Error] GAS returned HTML instead of JSON');
+        console.error('[Proxy POST Error] HTML response:', responseText.substring(0, 500));
+        return res.status(500).json({
+          success: false,
+          message: 'Backend returned HTML error page instead of JSON. Check Google Apps Script deployment and logs.'
+        });
+      }
+      
+      let data;
+      try {
+        data = await JSON.parse(responseText);
+        console.log(`[Proxy POST Success] action: ${finalAction}`);
+      } catch (parseError) {
+        console.error('[Proxy POST Error] Failed to parse GAS response as JSON:', parseError);
+        console.error('[Proxy POST Error] Response text:', responseText.substring(0, 500));
+        return res.status(500).json({
+          success: false,
+          message: 'Backend returned invalid JSON. Response: ' + responseText.substring(0, 200)
+        });
+      }
       
       return res.status(200).json(data);
     }
