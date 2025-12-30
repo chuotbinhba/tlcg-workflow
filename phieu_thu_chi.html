@@ -4837,20 +4837,50 @@
                         const controller = new AbortController();
                         const timeoutId = setTimeout(() => controller.abort(), 30000); // 30s timeout
 
-                        await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
+                        // Use FormData to avoid CORS preflight issues (same as sendForApproval)
+                        const payload = {
+                            action: 'syncToSheets',
+                            spreadsheetId: GOOGLE_SHEETS_CONFIG.spreadsheetId,
+                            sheetName: GOOGLE_SHEETS_CONFIG.sheetName,
+                            data: voucherData
+                        };
+                        const payloadString = JSON.stringify(payload);
+                        const formData = new FormData();
+                        formData.append('data', payloadString); // Send JSON as FormData field
+
+                        const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
                             method: 'POST',
-                            mode: 'no-cors',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                action: 'syncToSheets',
-                                spreadsheetId: GOOGLE_SHEETS_CONFIG.spreadsheetId,
-                                sheetName: GOOGLE_SHEETS_CONFIG.sheetName,
-                                data: voucherData
-                            }),
+                            body: formData,
                             signal: controller.signal
+                            // Don't set Content-Type header - browser sets it automatically with boundary
                         });
 
                         clearTimeout(timeoutId);
+
+                        // Check if response is ok
+                        if (!response.ok) {
+                            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        }
+
+                        // Read and parse response
+                        const responseText = await response.text();
+                        let result;
+                        try {
+                            if (!responseText || responseText.trim() === '') {
+                                throw new Error('Empty response from server');
+                            }
+                            result = JSON.parse(responseText);
+                        } catch (parseError) {
+                            console.error('❌ Failed to parse response:', parseError);
+                            console.error('❌ Response was:', responseText);
+                            throw new Error('Invalid response from server: ' + parseError.message);
+                        }
+
+                        if (!result.success) {
+                            throw new Error(result.message || 'Failed to sync with Google Sheets');
+                        }
+
+                        console.log('✅ Sync successful:', result.message);
                         success = true;
                         
                         // Store files info for later use in approval email

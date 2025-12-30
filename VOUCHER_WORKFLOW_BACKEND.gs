@@ -15,26 +15,10 @@
 const USERS_SHEET_ID = '1-1Q75iKeoRAGO4p7U-1IAOp9jqx77HrxF6WUxuUuT_c'; // TLCG Master Data
 const USERS_SHEET_NAME = 'Nhân viên'; // Sheet name: Nhân viên
 
-// ⚠️ IMPORTANT: Google Sheet ID for Voucher History (same as USERS_SHEET_ID or separate)
-const VOUCHER_HISTORY_SHEET_ID = '1ujmPbtEdkGLgEshfhvV8gRB6R0GLI31jsZM5rDOJS0g'; // Use same spreadsheet as users
+// ⚠️ IMPORTANT: Google Sheet ID for Voucher History
+// Sheet: https://docs.google.com/spreadsheets/d/1ujmPbtEdkGLgEshfhvV8gRB6R0GLI31jsZM5rDOJS0g/edit
+const VOUCHER_HISTORY_SHEET_ID = '1ujmPbtEdkGLgEshfhvV8gRB6R0GLI31jsZM5rDOJS0g';
 const VH_SHEET_NAME = 'Voucher_History';
-
-/**
- * Debug logging function - writes to a Debug_Log sheet
- */
-function debugLog_(message) {
-  try {
-    const ss = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID);
-    let debugSheet = ss.getSheetByName('Debug_Log');
-    if (!debugSheet) {
-      debugSheet = ss.insertSheet('Debug_Log');
-      debugSheet.appendRow(['Timestamp', 'Message']);
-    }
-    debugSheet.appendRow([new Date().toLocaleString('vi-VN'), message]);
-  } catch (e) {
-    // Ignore errors in debug logging
-  }
-}
 
 function getVoucherHistorySheet_() {
   try {
@@ -190,90 +174,6 @@ function setupVoucherHistorySheet() {
   }
 }
 
-/**
- * Test function to verify appendHistory_ works
- * Run this from Apps Script editor to test
- */
-function testAppendHistory() {
-  try {
-    Logger.log('=== TEST APPEND HISTORY START ===');
-    
-    const testEntry = {
-      voucherNumber: 'TEST-' + new Date().getTime(),
-      voucherType: 'Chi',
-      company: 'TEST COMPANY',
-      employee: 'Test Employee',
-      amount: '1000000',
-      status: 'Pending',
-      action: 'Submit',
-      by: 'Test Employee',
-      note: 'Test note from testAppendHistory function',
-      requestorEmail: 'test@example.com',
-      approverEmail: 'approver@example.com',
-      meta: {
-        voucherDate: new Date().toISOString().split('T')[0],
-        department: 'Test Department',
-        payeeName: 'Test Payee'
-      }
-    };
-    
-    Logger.log('Test entry: ' + JSON.stringify(testEntry));
-    
-    appendHistory_(testEntry);
-    
-    Logger.log('✅ TEST APPEND HISTORY SUCCESS');
-    return 'Test completed successfully! Check logs and sheet.';
-  } catch (error) {
-    Logger.log('❌ TEST APPEND HISTORY FAILED: ' + error.toString());
-    Logger.log('Error stack: ' + (error.stack || 'No stack'));
-    return 'Test failed: ' + error.message;
-  }
-}
-
-/**
- * Test function to check if sheet exists and is accessible
- * Run this from Apps Script editor to test
- */
-function testVoucherHistorySheet() {
-  try {
-    Logger.log('=== TEST VOUCHER HISTORY SHEET START ===');
-    Logger.log('VOUCHER_HISTORY_SHEET_ID: ' + VOUCHER_HISTORY_SHEET_ID);
-    Logger.log('VH_SHEET_NAME: ' + VH_SHEET_NAME);
-    
-    const ss = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID);
-    Logger.log('✅ Spreadsheet opened successfully');
-    Logger.log('Spreadsheet name: ' + ss.getName());
-    
-    let sheet = ss.getSheetByName(VH_SHEET_NAME);
-    if (!sheet) {
-      Logger.log('⚠️ Sheet "' + VH_SHEET_NAME + '" not found');
-      Logger.log('Available sheets: ' + ss.getSheets().map(s => s.getName()).join(', '));
-      return 'Sheet not found. Run setupVoucherHistorySheet() first.';
-    }
-    
-    Logger.log('✅ Sheet found: ' + sheet.getName());
-    Logger.log('Sheet last row: ' + sheet.getLastRow());
-    Logger.log('Sheet last column: ' + sheet.getLastColumn());
-    
-    if (sheet.getLastRow() > 0) {
-      const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
-      Logger.log('Headers: ' + headers.join(', '));
-      
-      if (sheet.getLastRow() > 1) {
-        const lastRow = sheet.getRange(sheet.getLastRow(), 1, 1, sheet.getLastColumn()).getValues()[0];
-        Logger.log('Last row data: ' + lastRow.join(' | '));
-      }
-    }
-    
-    Logger.log('✅ TEST VOUCHER HISTORY SHEET SUCCESS');
-    return 'Sheet is accessible. Last row: ' + sheet.getLastRow();
-  } catch (error) {
-    Logger.log('❌ TEST VOUCHER HISTORY SHEET FAILED: ' + error.toString());
-    Logger.log('Error stack: ' + (error.stack || 'No stack'));
-    return 'Test failed: ' + error.message;
-  }
-}
-
 function appendHistory_(entry) {
   try {
     Logger.log('=== appendHistory_ START ===');
@@ -336,99 +236,51 @@ function appendHistory_(entry) {
     const lastRow = sheet.getLastRow();
     Logger.log('✅ Last row in sheet: ' + lastRow);
     
-    // Set attachments in Column J - individual file links with clickable URLs
+    // Set clickable hyperlinks in Column J (Attachments) if present
     if (entry.attachments && entry.attachments.trim() !== '') {
-      Logger.log('=== SETTING COLUMN J ATTACHMENTS ===');
-      Logger.log('Raw attachments: ' + entry.attachments);
-      
       try {
         const attachmentsCell = sheet.getRange(lastRow, 10); // Column J
         
-        // NEW FORMAT: Individual file links
-        // Format: filename (size MB) - URL\nfilename2 (size MB) - URL2
-        const lines = entry.attachments.split('\n').filter(l => l.trim() !== '');
-        Logger.log('Lines count: ' + lines.length);
-        Logger.log('First line: ' + (lines[0] || 'EMPTY'));
+        // Parse attachments and create rich text with hyperlinks
+        const lines = entry.attachments.split('\n\n');
+        let richTextBuilder = SpreadsheetApp.newRichTextValue();
+        let fullText = '';
+        let linkRanges = [];
         
-        const hasFileLinks = lines.length > 0 && lines[0].includes(' - https://');
-        Logger.log('Has file links format: ' + hasFileLinks);
-        
-        if (hasFileLinks) {
-          // Build RichTextValue with multiple clickable links
-          // Use simple text format to avoid emoji character position issues
-          let textParts = [];
-          let linkRanges = [];
-          let currentPos = 0;
-          
-          lines.forEach((line, index) => {
-            // Parse: filename (size MB) - URL
-            const urlMatch = line.match(/(.*?) - (https?:\/\/[^\s]+)/);
-            Logger.log('Line ' + index + ' match: ' + (urlMatch ? 'YES' : 'NO'));
+        lines.forEach((block, index) => {
+          const parts = block.split('\n');
+          if (parts.length >= 2) {
+            const fileName = parts[0]; // e.g., "hinh22.png (0.35 MB)"
+            const url = parts[1];      // e.g., "https://drive.google.com/..."
             
-            if (urlMatch) {
-              const fileInfo = urlMatch[1].trim(); // filename (size MB)
-              const fileUrl = urlMatch[2].trim();
-              
-              Logger.log('File info: ' + fileInfo);
-              Logger.log('File URL: ' + fileUrl);
-              
-              // Use simple bullet instead of emoji to avoid character position issues
-              const prefix = '• ';
-              const displayLine = prefix + fileInfo;
-              textParts.push(displayLine);
-              
-              // Track link position - prefix is 2 ASCII chars
-              const startPos = currentPos + prefix.length;
-              const endPos = startPos + fileInfo.length;
-              linkRanges.push({ start: startPos, end: endPos, url: fileUrl });
-              
-              currentPos += displayLine.length;
-              
-              // Add newline if not last
-              if (index < lines.length - 1) {
-                textParts.push('\n');
-                currentPos += 1;
-              }
+            // Add to full text
+            if (index > 0) fullText += '\n\n';
+            const startPos = fullText.length;
+            fullText += fileName;
+            const endPos = fullText.length;
+            
+            // Save link range
+            if (url && url.startsWith('http')) {
+              linkRanges.push({ start: startPos, end: endPos, url: url });
             }
-          });
-          
-          const fullText = textParts.join('');
-          Logger.log('Full display text: ' + fullText);
-          Logger.log('Full text length: ' + fullText.length);
-          Logger.log('Link ranges: ' + JSON.stringify(linkRanges));
-          
-          // Build RichTextValue with all links
-          let richTextBuilder = SpreadsheetApp.newRichTextValue().setText(fullText);
-          linkRanges.forEach(range => {
-            try {
-              richTextBuilder = richTextBuilder.setLinkUrl(range.start, range.end, range.url);
-            } catch (rangeError) {
-              Logger.log('⚠️ Error setting link for range: ' + JSON.stringify(range) + ' - ' + rangeError.toString());
-            }
-          });
-          
-          attachmentsCell.setRichTextValue(richTextBuilder.build());
-          
-          // Store raw data in note for programmatic access
-          attachmentsCell.setNote(entry.attachments);
-          
-          Logger.log('✅ Set ' + lines.length + ' clickable file links in Column J');
-        } else if (entry.attachments.startsWith('http')) {
-          // Single URL - make it clickable
-          const displayText = 'Tài liệu đính kèm';
-          const richText = SpreadsheetApp.newRichTextValue()
-            .setText(displayText)
-            .setLinkUrl(0, displayText.length, entry.attachments)
-            .build();
-          attachmentsCell.setRichTextValue(richText);
-          Logger.log('✅ Set single clickable link in Column J');
-        } else {
-          // Plain text - just store as text
-          attachmentsCell.setValue(entry.attachments);
-          Logger.log('✅ Set plain text attachments in Column J');
-        }
+          } else {
+            // Single line (error or no URL)
+            if (index > 0) fullText += '\n\n';
+            fullText += block;
+          }
+        });
+        
+        // Build rich text with links
+        richTextBuilder = SpreadsheetApp.newRichTextValue().setText(fullText);
+        linkRanges.forEach(range => {
+          richTextBuilder.setLinkUrl(range.start, range.end, range.url);
+        });
+        
+        attachmentsCell.setRichTextValue(richTextBuilder.build());
+        Logger.log('✅ Set clickable hyperlinks in Column J');
       } catch (linkError) {
         Logger.log('⚠️ Could not set hyperlinks, falling back to plain text: ' + linkError.toString());
+        // Fallback to plain text
         sheet.getRange(lastRow, 10).setValue(entry.attachments);
       }
     }
@@ -470,23 +322,8 @@ function getLastActionForVoucher_(voucherNumber) {
 function getVoucherHistory_(voucherNumber) {
   try {
     const sheet = getVoucherHistorySheet_();
-    const lastRow = sheet.getLastRow();
-    const lastCol = sheet.getLastColumn();
-    
-    if (lastRow <= 1) return [];
-    
-    const data = sheet.getRange(1, 1, lastRow, lastCol).getValues();
-    
-    // Get RichTextValues for attachments column (Column J = index 9, but 1-based = 10)
-    const attachmentsColIndex = 10; // Column J (1-based)
-    let richTextValues = null;
-    try {
-      if (lastRow > 1) {
-        richTextValues = sheet.getRange(2, attachmentsColIndex, lastRow - 1, 1).getRichTextValues();
-      }
-    } catch (rtError) {
-      Logger.log('Could not get RichTextValues: ' + rtError);
-    }
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) return [];
     
     const header = data[0];
     const idxVoucherNumber = header.indexOf('VoucherNumber');
@@ -498,7 +335,6 @@ function getVoucherHistory_(voucherNumber) {
     const idxAction = header.indexOf('Action');
     const idxBy = header.indexOf('By');
     const idxNote = header.indexOf('Note');
-    const idxAttachments = header.indexOf('Attachments'); // Column J
     const idxRequestorEmail = header.indexOf('RequestorEmail');
     const idxApproverEmail = header.indexOf('ApproverEmail');
     const idxTimestamp = header.indexOf('Timestamp');
@@ -516,89 +352,6 @@ function getVoucherHistory_(voucherNumber) {
           Logger.log('Error parsing meta JSON: ' + e);
         }
         
-        // Get attachments URLs - extract ALL URLs from RichTextValue runs
-        let attachments = '';
-        if (idxAttachments >= 0) {
-          // Method 1: Try to get ALL URLs from RichTextValue runs (for multi-hyperlink cells)
-          if (richTextValues && richTextValues[i - 1] && richTextValues[i - 1][0]) {
-            const richText = richTextValues[i - 1][0];
-            const runs = richText.getRuns();
-            const urlsWithNames = [];
-            
-            // Extract URLs and their display text from each run
-            for (const run of runs) {
-              const url = run.getLinkUrl();
-              let text = run.getText().trim();
-              if (url && url.startsWith('http')) {
-                // Clean up display text - remove bullet prefix
-                if (text.startsWith('• ')) {
-                  text = text.substring(2);
-                }
-                // Format: filename (size MB)|url - frontend expects this format
-                urlsWithNames.push(text + '|' + url);
-              }
-            }
-            
-            if (urlsWithNames.length > 0) {
-              // Return all URLs with their names, separated by newline
-              attachments = urlsWithNames.join('\n');
-              Logger.log('Row ' + i + ' - Got ' + urlsWithNames.length + ' attachment(s): ' + attachments);
-            }
-          }
-          
-          // Method 1b: If no URLs found in runs, try to get from cell note (new format)
-          if (!attachments) {
-            try {
-              const note = sheet.getRange(i + 1, 10).getNote();
-              // New format: filename (size MB) - URL\nfilename2 (size MB) - URL2
-              if (note && note.includes(' - https://')) {
-                const noteLines = note.split('\n').filter(l => l.includes(' - https://'));
-                const parsed = noteLines.map(line => {
-                  const match = line.match(/^(.+?) - (https?:\/\/.+)$/);
-                  if (match) {
-                    return match[1].trim() + '|' + match[2].trim();
-                  }
-                  return null;
-                }).filter(x => x);
-                if (parsed.length > 0) {
-                  attachments = parsed.join('\n');
-                  Logger.log('Row ' + i + ' - Got ' + parsed.length + ' attachment(s) from note: ' + attachments);
-                }
-              }
-            } catch (noteReadError) {
-              Logger.log('Could not read note for row ' + i + ': ' + noteReadError);
-            }
-          }
-          
-          // Method 2: Try to get from cell note (we store FOLDER_URL there for new uploads)
-          if (!attachments) {
-            try {
-              const note = sheet.getRange(i + 1, 10).getNote();
-              if (note && note.includes('FOLDER_URL:')) {
-                const urlMatch = note.match(/FOLDER_URL:\s*(https?:\/\/[^\s\n]+)/);
-                if (urlMatch) {
-                  attachments = 'Tài liệu đính kèm|' + urlMatch[1];
-                  Logger.log('Row ' + i + ' - Got attachment URL from note: ' + attachments);
-                }
-              }
-            } catch (noteError) {
-              Logger.log('Could not read note: ' + noteError);
-            }
-          }
-          
-          // Method 3: Check if cell value is a URL or contains URL
-          if (!attachments && data[i][idxAttachments]) {
-            const cellValue = data[i][idxAttachments].toString();
-            if (cellValue.includes('|') && cellValue.startsWith('http')) {
-              attachments = 'Tài liệu đính kèm|' + cellValue.split('|')[0];
-              Logger.log('Row ' + i + ' - Got attachment URL from pipe format: ' + attachments);
-            } else if (cellValue.startsWith('http')) {
-              attachments = 'Tài liệu đính kèm|' + cellValue;
-              Logger.log('Row ' + i + ' - Got attachment URL from plain text: ' + attachments);
-            }
-          }
-        }
-        
         history.push({
           voucherNumber: data[i][idxVoucherNumber] || '',
           voucherType: data[i][idxVoucherType] || '',
@@ -609,7 +362,6 @@ function getVoucherHistory_(voucherNumber) {
           action: data[i][idxAction] || '',
           by: data[i][idxBy] || '',
           note: data[i][idxNote] || '',
-          attachments: attachments,
           requestorEmail: data[i][idxRequestorEmail] || '',
           approverEmail: data[i][idxApproverEmail] || '',
           timestamp: data[i][idxTimestamp] || '',
@@ -710,8 +462,6 @@ function getUserVouchers_(userEmail, employeeName) {
 function createResponse(success, message, data) {
   const response = { success, message };
   if (data) response.data = data;
-  // Note: Google Apps Script Web Apps automatically handle CORS when deployed with "Anyone" access
-  // You cannot manually set CORS headers using setHeaders()
   return ContentService.createTextOutput(JSON.stringify(response))
     .setMimeType(ContentService.MimeType.JSON);
 }
@@ -721,28 +471,9 @@ function createResponse(success, message, data) {
 function doPost(e) {
   try {
     Logger.log('=== doPost called ===');
-    debugLog_('=== doPost called ===');
-    
-    // Safety check - if called manually without event parameter
-    if (!e) {
-      debugLog_('❌ ERROR: e is null/undefined');
-      return createResponse(false, 'Invalid request - no event data');
-    }
-    
-    debugLog_('e keys: ' + Object.keys(e).join(', '));
-    
-    // Log all available properties of e
-    Logger.log('e keys: ' + Object.keys(e).join(', '));
-    Logger.log('e.postData exists: ' + (e.postData ? 'YES' : 'NO'));
-    Logger.log('e.parameter exists: ' + (e.parameter ? 'YES' : 'NO'));
-    
-    if (e.postData) {
-      Logger.log('e.postData type: ' + (e.postData.type || 'null'));
-      Logger.log('e.postData contents length: ' + (e.postData.contents ? e.postData.contents.length : 0));
-    }
-    if (e.parameter) {
-      Logger.log('e.parameter: ' + JSON.stringify(e.parameter));
-    }
+    Logger.log('e.postData type: ' + (e.postData ? e.postData.type : 'null'));
+    Logger.log('e.postData contents length: ' + (e.postData && e.postData.contents ? e.postData.contents.length : 0));
+    Logger.log('e.parameter: ' + JSON.stringify(e.parameter));
 
     let requestBody;
     let action;
@@ -759,28 +490,8 @@ function doPost(e) {
       try {
         // Log the first 500 chars for debugging
         Logger.log('postData.contents preview: ' + e.postData.contents.substring(0, 500));
-        Logger.log('postData.type: ' + (e.postData.type || 'unknown'));
         
-        var rawContents = e.postData.contents;
-        
-        // ALWAYS try to decode as UTF-8 first to handle Vietnamese properly
-        try {
-          var bytes = [];
-          for (var i = 0; i < rawContents.length; i++) {
-            bytes.push(rawContents.charCodeAt(i) & 0xFF);
-          }
-          var decodedContents = Utilities.newBlob(bytes).getDataAsString('UTF-8');
-          
-          // Only use decoded if it successfully parses as JSON
-          JSON.parse(decodedContents);
-          rawContents = decodedContents;
-          Logger.log('✅ Successfully decoded POST data as UTF-8');
-        } catch (encErr) {
-          // If decoding fails, use original content
-          Logger.log('Using original content (UTF-8 decode not needed or failed): ' + encErr.toString());
-        }
-        
-        requestBody = JSON.parse(rawContents);
+        requestBody = JSON.parse(e.postData.contents);
         action = requestBody.action;
         Logger.log('Parsed from e.postData.contents');
         Logger.log('Parsed requestBody keys: ' + Object.keys(requestBody).join(', '));
@@ -947,270 +658,149 @@ function doGet(e) {
 
 /** ===================== 1. GỬI EMAIL PHÊ DUYỆT ===================== */
 
-/**
- * Encode subject line for proper UTF-8 display in email
- * Uses RFC 2047 MIME encoded-word format: =?UTF-8?B?base64encodedtext?=
- */
-function encodeSubjectUtf8(subject) {
-  // GmailApp handles UTF-8 natively - just return the subject as-is
-  // The previous Base64 encoding was causing double-encoding issues
-  return subject || '';
-}
-
-/**
- * Fix garbled UTF-8 text that was misinterpreted as Latin-1
- * Example: "PHIÃ¡ÂºÂ¾U" should become "PHIẾU"
- */
-function fixGarbledUtf8(str) {
-  if (!str) return str;
-  
-  // Check if the string contains typical garbled patterns
-  // These patterns occur when UTF-8 bytes are interpreted as Latin-1
-  if (str.indexOf('Ã') === -1 && str.indexOf('Â') === -1) {
-    return str; // String looks fine, return as-is
-  }
-  
-  try {
-    // Convert the garbled string back: Latin-1 interpretation -> UTF-8 bytes -> proper UTF-8 string
-    // In Google Apps Script, we use Utilities for this
-    var bytes = [];
-    for (var i = 0; i < str.length; i++) {
-      bytes.push(str.charCodeAt(i) & 0xFF);
-    }
-    var decoded = Utilities.newBlob(bytes).getDataAsString('UTF-8');
-    Logger.log('Fixed garbled UTF-8: "' + str + '" -> "' + decoded + '"');
-    return decoded;
-  } catch (e) {
-    Logger.log('Could not fix garbled UTF-8: ' + e.toString());
-    return str; // Return original if decoding fails
-  }
-}
-
 function handleSendEmail(requestBody) {
   try {
     Logger.log('=== handleSendEmail START ===');
-    debugLog_('=== handleSendEmail START ===');
+    Logger.log('Full requestBody: ' + JSON.stringify(requestBody));
     
     const emailData = requestBody.email;
     const requesterEmailData = requestBody.requesterEmail || null;
     const voucher   = requestBody.voucher || {};
 
-    // Debug: Log full voucher object received
-    Logger.log('Voucher object received: ' + JSON.stringify(voucher));
-    debugLog_('Voucher object: ' + JSON.stringify(voucher));
+    Logger.log('emailData: ' + JSON.stringify(emailData));
+    Logger.log('requesterEmailData: ' + JSON.stringify(requesterEmailData));
+    Logger.log('voucher: ' + JSON.stringify(voucher));
 
     if (!emailData) {
-      debugLog_('❌ ERROR: emailData is missing');
+      Logger.log('❌ ERROR: emailData is missing');
       return createResponse(false, 'Email data is required');
     }
 
     const to      = emailData.to;
     const cc      = emailData.cc || '';
-    
-    // Extract voucherNumber and voucherType - try multiple sources
-    let voucherNumber = voucher.voucherNumber || '';
-    let voucherType = voucher.voucherType || '';
-    
-    // If voucher data missing, try to extract from frontend subject (as backup)
-    if (!voucherNumber || !voucherType) {
-      const frontendSubject = emailData.subject || '';
-      // Pattern: [PHIẾU CHI] or [PHIẾU THU] ... - TL-YYYYMM-XXXX
-      const typeMatch = frontendSubject.match(/\[PHI[^\]]*\s+(CHI|THU)\]/i);
-      const numMatch = frontendSubject.match(/(TL-\d{6}-\d+)/i);
-      if (typeMatch && !voucherType) voucherType = typeMatch[1];
-      if (numMatch && !voucherNumber) voucherNumber = numMatch[1];
-      Logger.log('Extracted from subject - Type: ' + voucherType + ', Number: ' + voucherNumber);
-    }
-    
-    // Build subject in backend with ASCII-safe Vietnamese
-    // ALWAYS construct in backend to avoid encoding issues
-    let subject;
-    if (voucherNumber && voucherType) {
-      const typeUpper = voucherType.toUpperCase();
-      // Use Vietnamese text directly - it works in approval emails
-      subject = '[PHIẾU ' + typeUpper + '] Yêu cầu phê duyệt - ' + voucherNumber;
-      Logger.log('📧 Subject constructed in backend: ' + subject);
-    } else {
-      // Ultimate fallback - use simple ASCII
-      subject = '[VOUCHER] Approval Request - ' + (voucherNumber || 'NEW');
-      Logger.log('📧 Using fallback ASCII subject: ' + subject);
-    }
-    
-    debugLog_('FINAL Subject: ' + subject);
+    const subject = emailData.subject;
+    const body    = emailData.body;
+
+    Logger.log('Email TO: ' + to);
+    Logger.log('Email CC: ' + cc);
+    Logger.log('Email Subject: ' + subject);
 
     if (!to) {
-      debugLog_('❌ ERROR: Recipient email (TO) is required');
+      Logger.log('❌ ERROR: Recipient email (TO) is required');
       return createResponse(false, 'Recipient email is required');
     }
 
-    // ========== UPLOAD FILES FIRST ==========
-    let uploadedFiles = [];
-    let attachmentsText = '';
-    let fileLinksHtml = '';
-    
-    const voucherNumberForHistory = voucher.voucherNumber || 'AUTO-' + new Date().getTime();
-    
-    Logger.log('=== CHECKING FILES FOR UPLOAD ===');
-    Logger.log('voucher.files exists: ' + (voucher.files ? 'YES' : 'NO'));
-    Logger.log('voucher.files length: ' + (voucher.files ? voucher.files.length : 0));
-    
-    if (voucher.files && voucher.files.length > 0) {
-      Logger.log('Uploading ' + voucher.files.length + ' files to Drive...');
-      try {
-        const uploadResult = uploadFilesToDrive_(voucher.files, voucherNumberForHistory);
-        uploadedFiles = uploadResult.files.filter(f => !f.error);
-        
-        Logger.log('Files uploaded successfully. Count: ' + uploadedFiles.length);
-        
-        // Generate individual file links for Column J (Option B)
-        // Format: filename (size MB) - URL\nfilename2 (size MB) - URL2
-        attachmentsText = uploadedFiles.map(f => {
-          const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '0.00';
-          return f.fileName + ' (' + sizeMB + ' MB) - ' + f.fileUrl;
-        }).join('\n');
-        
-        // Generate HTML links for email body
-        fileLinksHtml = generateFileLinksHtml_(uploadedFiles);
-        
-        Logger.log('Attachments text for history: ' + attachmentsText);
-        Logger.log('File links HTML generated: ' + (fileLinksHtml ? 'YES' : 'NO'));
-        
-      } catch (uploadError) {
-        Logger.log('⚠️ Warning: File upload failed: ' + uploadError.toString());
-        // Fallback to just file names if upload fails
-        attachmentsText = voucher.files.map(f => {
-          const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '?';
-          return f.fileName + ' (' + sizeMB + ' MB) - Upload failed';
-        }).join('\n');
-      }
-    }
-    
-    // ========== INJECT FILE LINKS INTO EMAIL BODY ==========
-    let body = emailData.body;
-    let requesterBodyBase = requesterEmailData && requesterEmailData.body ? requesterEmailData.body : body;
-    
-    Logger.log('=== INJECTING FILE LINKS INTO EMAIL ===');
-    Logger.log('fileLinksHtml exists: ' + (fileLinksHtml ? 'YES (' + fileLinksHtml.length + ' chars)' : 'NO'));
-    
-    if (fileLinksHtml && fileLinksHtml.length > 0) {
-      // Create the files section HTML
-      const filesSectionHtml = 
-        '<div style="margin: 20px 0; padding: 15px; background-color: #f8f9fa; border-radius: 8px; border: 1px solid #e9ecef;">' +
-          '<p style="margin: 0 0 10px 0; font-weight: bold; color: #495057;">📎 Tài liệu đính kèm:</p>' +
-          fileLinksHtml +
-        '</div>';
-      
-      Logger.log('Files section HTML created: ' + filesSectionHtml.substring(0, 200) + '...');
-      
-      // Try multiple injection points for approver email
-      let injected = false;
-      
-      // Method 1: Before "Vui lòng xem xét"
-      if (body.indexOf('Vui lòng xem xét') !== -1) {
-        body = body.replace(/(<p[^>]*><b>Vui lòng xem xét)/i, filesSectionHtml + '$1');
-        injected = true;
-        Logger.log('✅ Injected before "Vui lòng xem xét"');
-      }
-      // Method 2: Before approval buttons div
-      else if (body.indexOf('style="margin: 20px 0;"') !== -1 && body.indexOf('#34A853') !== -1) {
-        body = body.replace(/(<div style="margin: 20px 0;">[\s\S]*?#34A853)/i, filesSectionHtml + '$1');
-        injected = true;
-        Logger.log('✅ Injected before approval buttons');
-      }
-      // Method 3: Before "Trân trọng"
-      else if (body.indexOf('Trân trọng') !== -1) {
-        body = body.replace(/(<p[^>]*>Trân trọng)/i, filesSectionHtml + '$1');
-        injected = true;
-        Logger.log('✅ Injected before "Trân trọng"');
-      }
-      // Method 4: Append at end before closing tags
-      else {
-        body = body + filesSectionHtml;
-        injected = true;
-        Logger.log('✅ Appended at end of email body');
-      }
-      
-      Logger.log('Approver email injection success: ' + injected);
-      
-      // Also update requester body with same logic
-      let requesterInjected = false;
-      if (requesterBodyBase.indexOf('Email thông báo kết quả') !== -1) {
-        requesterBodyBase = requesterBodyBase.replace(/(<p[^>]*>Email thông báo kết quả)/i, filesSectionHtml + '$1');
-        requesterInjected = true;
-      } else if (requesterBodyBase.indexOf('Trân trọng') !== -1) {
-        requesterBodyBase = requesterBodyBase.replace(/(<p[^>]*>Trân trọng)/i, filesSectionHtml + '$1');
-        requesterInjected = true;
-      } else {
-        requesterBodyBase = requesterBodyBase + filesSectionHtml;
-        requesterInjected = true;
-      }
-      Logger.log('Requester email injection success: ' + requesterInjected);
-    } else {
-      Logger.log('⚠️ No file links HTML to inject');
-    }
-    
-    // Debug log the subject
-    debugLog_('Subject: ' + subject);
-    debugLog_('Email TO: ' + to);
-
-    // ========== SEND EMAIL TO APPROVERS ==========
+    // Send email to APPROVERS (with buttons)
     try {
-      const emailOptions = { 
-        to: to,
-        subject: subject,
-        htmlBody: body,
-        noReply: false
-      };
-      if (cc && cc.trim() !== '') {
-        emailOptions.cc = cc;
-      }
-      MailApp.sendEmail(emailOptions);
+      GmailApp.sendEmail(to, subject, '', { htmlBody: body, cc });
       Logger.log('✅ Email sent to approvers: ' + to);
     } catch (approverEmailError) {
       Logger.log('❌ ERROR sending email to approvers: ' + approverEmailError.toString());
       return createResponse(false, 'Failed to send email to approvers: ' + approverEmailError.message);
     }
     
-    // ========== SEND EMAIL TO REQUESTER ==========
+    // Send separate email to REQUESTER (info only, no buttons)
+    // Try multiple sources for requester email
     let requesterTo = null;
     let requesterSubject = null;
     let requesterBody = null;
     
     Logger.log('=== CHECKING REQUESTER EMAIL ===');
+    Logger.log('requesterEmailData: ' + JSON.stringify(requesterEmailData));
+    Logger.log('voucher.requestorEmail: ' + (voucher.requestorEmail || 'NOT FOUND'));
     
     // Priority 1: requesterEmailData.to from frontend
     if (requesterEmailData && requesterEmailData.to && requesterEmailData.to.trim() !== '') {
       requesterTo = requesterEmailData.to;
-      requesterSubject = '[THÔNG BÁO] Phiếu ' + (voucher.voucherType || '') + ' ' + (voucher.voucherNumber || '') + ' đã được gửi phê duyệt';
-      requesterBody = requesterBodyBase.replace(/<a href="[^"]*">.*?<\/a>/g, ''); // Remove buttons
+      requesterSubject = requesterEmailData.subject || `[THÔNG BÁO] Phiếu ${voucher.voucherType || ''} ${voucher.voucherNumber || ''} đã được gửi phê duyệt`;
+      requesterBody = requesterEmailData.body || body.replace(/<a href="[^"]*">.*?<\/a>/g, ''); // Remove buttons
       Logger.log('📧 Priority 1: Using requesterEmailData.to: ' + requesterTo);
     }
     // Priority 2: voucher.requestorEmail
     else if (voucher.requestorEmail && voucher.requestorEmail.trim() !== '') {
       requesterTo = voucher.requestorEmail;
-      requesterSubject = '[THÔNG BÁO] Phiếu ' + (voucher.voucherType || '') + ' ' + (voucher.voucherNumber || '') + ' đã được gửi phê duyệt';
-      requesterBody = requesterBodyBase.replace(/<a href="[^"]*">.*?<\/a>/g, ''); // Remove buttons
+      requesterSubject = `[THÔNG BÁO] Phiếu ${voucher.voucherType || ''} ${voucher.voucherNumber || ''} đã được gửi phê duyệt`;
+      requesterBody = requesterEmailData && requesterEmailData.body ? requesterEmailData.body : body.replace(/<a href="[^"]*">.*?<\/a>/g, ''); // Remove buttons
       Logger.log('📧 Priority 2: Using voucher.requestorEmail: ' + requesterTo);
     }
     
     if (requesterTo) {
       Logger.log('📧 Sending requester notification email to: ' + requesterTo);
+      Logger.log('📧 Subject: ' + requesterSubject);
       try {
-        MailApp.sendEmail({
-          to: requesterTo,
-          subject: requesterSubject,
-          htmlBody: requesterBody,
-          noReply: false
-        });
+        GmailApp.sendEmail(requesterTo, requesterSubject, '', { htmlBody: requesterBody });
         Logger.log('✅ Info email sent to requester: ' + requesterTo);
       } catch (emailError) {
         Logger.log('❌ ERROR sending requester email: ' + emailError.toString());
+        Logger.log('Error stack: ' + emailError.stack);
+        // Don't fail the whole request if requester email fails
       }
+    } else {
+      Logger.log('⚠️ WARNING: No requester email found. Requester will not receive notification.');
+      Logger.log('⚠️ requesterEmailData: ' + JSON.stringify(requesterEmailData));
+      Logger.log('⚠️ voucher.requestorEmail: ' + (voucher.requestorEmail || 'NOT SET'));
     }
 
-    // ========== APPEND HISTORY ==========
-    Logger.log('=== APPENDING HISTORY ===');
+    // Ghi lịch sử SUBMIT nếu có thông tin voucher
+    Logger.log('=== CHECKING VOUCHER DATA FOR HISTORY ===');
+    Logger.log('voucher object: ' + JSON.stringify(voucher));
+    Logger.log('voucher.voucherNumber: ' + (voucher.voucherNumber || 'NOT FOUND'));
+    Logger.log('voucher.voucherType: ' + (voucher.voucherType || 'NOT FOUND'));
+    Logger.log('voucher.employee: ' + (voucher.employee || 'NOT FOUND'));
+    Logger.log('voucher.requestorEmail: ' + (voucher.requestorEmail || 'NOT FOUND'));
+    
+    // Always try to append history, even if voucherNumber is missing (use fallback)
+    const voucherNumberForHistory = voucher.voucherNumber || 'AUTO-' + new Date().getTime();
+    
+    if (!voucher.voucherNumber) {
+      Logger.log('⚠️ WARNING: voucher.voucherNumber is missing! Using fallback: ' + voucherNumberForHistory);
+      Logger.log('⚠️ Full voucher object: ' + JSON.stringify(voucher));
+    } else {
+      Logger.log('✅ Voucher number found: ' + voucher.voucherNumber);
+    }
+    
+    Logger.log('✅ Attempting to append history with voucher number: ' + voucherNumberForHistory);
     try {
+      // Upload files to Drive if present
+      let attachmentsText = '';
+      
+      // Debug: Log file information
+      Logger.log('=== CHECKING FILES FOR UPLOAD ===');
+      Logger.log('voucher.files exists: ' + (voucher.files ? 'YES' : 'NO'));
+      Logger.log('voucher.files type: ' + (voucher.files ? typeof voucher.files : 'N/A'));
+      Logger.log('voucher.files is array: ' + (Array.isArray(voucher.files) ? 'YES' : 'NO'));
+      Logger.log('voucher.files length: ' + (voucher.files ? voucher.files.length : 0));
+      
+      if (voucher.files && voucher.files.length > 0) {
+        // Log each file info (without the actual data)
+        voucher.files.forEach((f, idx) => {
+          Logger.log('File ' + (idx + 1) + ': ' + f.fileName + ', mimeType: ' + f.mimeType + ', size: ' + f.fileSize + ', hasData: ' + (f.fileData ? 'YES' : 'NO') + ', dataLength: ' + (f.fileData ? f.fileData.length : 0));
+        });
+        
+        Logger.log('Uploading ' + voucher.files.length + ' files to Drive...');
+        try {
+          const uploadedFiles = uploadFilesToDrive_(voucher.files, voucherNumberForHistory);
+          // Format attachments with Drive links for Column J
+          attachmentsText = uploadedFiles.map(f => {
+            if (f.error) return `${f.fileName} (Upload failed)`;
+            const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '?';
+            return `${f.fileName} (${sizeMB} MB)\n${f.fileUrl}`;
+          }).join('\n\n');
+        Logger.log('Files uploaded successfully. Attachments text: ' + attachmentsText);
+        } catch (uploadError) {
+          Logger.log('⚠️ Warning: File upload failed: ' + uploadError.toString());
+          Logger.log('⚠️ Upload error stack: ' + (uploadError.stack || 'No stack'));
+          // Fallback to just file names and sizes if upload fails
+          attachmentsText = voucher.files.map(f => {
+            const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '?';
+            const dataStatus = f.fileData ? 'data present (' + f.fileData.length + ' chars)' : 'NO DATA';
+            return `${f.fileName} (${sizeMB} MB) - Upload failed [${dataStatus}]`;
+          }).join('\n');
+        }
+      } else if (voucher.attachments && voucher.attachments.length > 0) {
+        attachmentsText = voucher.attachments;
+      }
+      
       appendHistory_({
         voucherNumber : voucherNumberForHistory,
         voucherType   : voucher.voucherType || '',
@@ -1228,44 +818,24 @@ function handleSendEmail(requestBody) {
           voucherDate: voucher.voucherDate || '',
           department : voucher.department || '',
           payeeName  : voucher.payeeName || '',
-          requesterSignature: voucher.requesterSignature || '',
-          uploadedFiles: uploadedFiles // Store file details in meta
+          originalVoucherNumber: voucher.voucherNumber || null, // Track original if missing
+          requesterSignature: voucher.requesterSignature || '' // Requester's signature
         }
       });
       Logger.log('✅ History append completed successfully');
     } catch (historyError) {
       Logger.log('❌ ERROR appending history: ' + historyError.toString());
+      Logger.log('History error name: ' + historyError.name);
+      Logger.log('History error message: ' + historyError.message);
+      Logger.log('History error stack: ' + (historyError.stack || 'No stack'));
+      // Don't fail the whole request if history fails, but log it
     }
 
     return createResponse(true, 'Email sent successfully');
   } catch (error) {
-    Logger.log('Error in handleSendEmail: ' + error.toString());
-    debugLog_('❌ ERROR: ' + error.toString());
+    Logger.log('Error sending email: ' + error.toString());
     return createResponse(false, 'Error sending email: ' + error.message);
   }
-}
-
-/**
- * Generate HTML for file links to include in email body
- * @param {Array} uploadedFiles - Array of {fileName, fileUrl, fileSize}
- * @returns {string} HTML string with clickable file links
- */
-function generateFileLinksHtml_(uploadedFiles) {
-  if (!uploadedFiles || uploadedFiles.length === 0) {
-    return '';
-  }
-  
-  const fileLinks = uploadedFiles.map(f => {
-    const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) : '0.00';
-    return '<div style="margin: 5px 0;">' +
-      '<span style="margin-right: 8px;">📄</span>' +
-      '<a href="' + f.fileUrl + '" style="color: #1a73e8; text-decoration: none; font-weight: 500;">' + 
-      f.fileName + '</a>' +
-      '<span style="color: #666; margin-left: 8px;">(' + sizeMB + ' MB)</span>' +
-      '</div>';
-  }).join('');
-  
-  return fileLinks;
 }
 
 /** ===================== 2. SYNC TO SHEETS (GIỮ NGUYÊN) ===================== */
@@ -1481,18 +1051,16 @@ function handleApproveVoucher(requestBody) {
     }
 
     const voucherNumber  = voucher.voucherNumber || '';
-    // Fix garbled UTF-8 in voucherType (e.g., "CHI" might come as garbled)
-    const voucherType    = fixGarbledUtf8(voucher.voucherType || '');
-    const company        = fixGarbledUtf8(voucher.company || '');
-    const employee       = fixGarbledUtf8(voucher.employee || '');
+    const voucherType    = voucher.voucherType   || '';
+    const company        = voucher.company       || '';
+    const employee       = voucher.employee      || '';
     const amount         = voucher.amount        || '';
     const requestorEmail = voucher.requestorEmail|| '';
     const approverEmail  = voucher.approverEmail || '';
-    const approvedBy     = fixGarbledUtf8(voucher.approvedBy || approverEmail || 'Unknown');
+    const approvedBy     = voucher.approvedBy    || approverEmail || 'Unknown';
     const approverSignature = voucher.approverSignature || ''; // Approver signature data
 
     Logger.log('Voucher Number: ' + voucherNumber);
-    Logger.log('Voucher Type (fixed): ' + voucherType);
     Logger.log('Requestor Email: ' + requestorEmail);
     Logger.log('Approver Email: ' + approverEmail);
     Logger.log('Approved By: ' + approvedBy);
@@ -1542,7 +1110,7 @@ function handleApproveVoucher(requestBody) {
       signatureHtml = `<p><b>Chữ ký người phê duyệt:</b></p><img src="${approverSignature}" style="max-height: 80px; max-width: 200px;" alt="Chữ ký">`;
     }
 
-    const subject = encodeSubjectUtf8(`[ĐÃ PHÊ DUYỆT] Phiếu ${voucherType.toUpperCase()} - ${voucherNumber}`);
+    const subject = `[ĐÃ PHÊ DUYỆT] Phiếu ${voucherType.toUpperCase()} - ${voucherNumber}`;
     const emailBodyHtml = [
       `<p>Kính gửi <b>${employee}</b>,</p>`,
       `<p>Phiếu <b>${voucherType}</b> số <b>${voucherNumber}</b> của bạn đã được <b style="color:#34A853;">phê duyệt</b>.</p>`,
@@ -1591,22 +1159,20 @@ function handleRejectVoucher(requestBody) {
     }
 
     const voucherNumber  = voucher.voucherNumber || '';
-    // Fix garbled UTF-8 in text fields
-    const voucherType    = fixGarbledUtf8(voucher.voucherType || '');
-    const company        = fixGarbledUtf8(voucher.company || '');
-    const employee       = fixGarbledUtf8(voucher.employee || '');
+    const voucherType    = voucher.voucherType   || '';
+    const company        = voucher.company       || '';
+    const employee       = voucher.employee      || '';
     const amount         = voucher.amount        || '';
     const requestorEmail = voucher.requestorEmail|| '';
     const approverEmail  = voucher.approverEmail || '';
-    const rejectReason   = fixGarbledUtf8(voucher.rejectReason || '');
-    const rejectedBy     = fixGarbledUtf8(voucher.rejectedBy || approverEmail || 'Unknown');
+    const rejectReason   = voucher.rejectReason  || '';
+    const rejectedBy     = voucher.rejectedBy    || approverEmail || 'Unknown';
     const approverSignature = voucher.approverSignature || ''; // Approver signature data
 
     Logger.log('Voucher Number: ' + voucherNumber);
-    Logger.log('Voucher Type (fixed): ' + voucherType);
     Logger.log('Requestor Email: ' + requestorEmail);
     Logger.log('Approver Email: ' + approverEmail);
-    Logger.log('Reject Reason (fixed): ' + rejectReason);
+    Logger.log('Reject Reason: ' + rejectReason);
     Logger.log('Rejected By: ' + rejectedBy);
     Logger.log('Has Approver Signature: ' + (approverSignature ? 'Yes' : 'No'));
 
@@ -1658,7 +1224,7 @@ function handleRejectVoucher(requestBody) {
       signatureHtml = `<p><b>Chữ ký người từ chối:</b></p><img src="${approverSignature}" style="max-height: 80px; max-width: 200px;" alt="Chữ ký">`;
     }
 
-    const subject = encodeSubjectUtf8(`[TRẢ LẠI] Phiếu ${voucherType.toUpperCase()} - ${voucherNumber}`);
+    const subject = `[TRẢ LẠI] Phiếu ${voucherType.toUpperCase()} - ${voucherNumber}`;
     const emailBodyHtml = [
       `<p>Kính gửi <b>${employee}</b>,</p>`,
       `<p>Phiếu <b>${voucherType}</b> số <b>${voucherNumber}</b> của bạn đã bị <b style="color:#EA4335;">trả lại / từ chối</b>.</p>`,
@@ -1731,10 +1297,10 @@ function handleGetVoucherSummary(requestBody) {
     }
     
     Logger.log('Getting data range from sheet...');
-    const lastRow = sheet.getLastRow();
-    const lastCol = sheet.getLastColumn();
+    const data = sheet.getDataRange().getValues();
+    Logger.log('Data rows retrieved: ' + data.length);
     
-    if (lastRow <= 1) {
+    if (data.length <= 1) {
       // Only header row, no data
       return createResponse(true, 'No vouchers found', {
         total: 0,
@@ -1743,19 +1309,6 @@ function handleGetVoucherSummary(requestBody) {
         rejected: 0,
         recent: []
       });
-    }
-    
-    const data = sheet.getRange(1, 1, lastRow, lastCol).getValues();
-    Logger.log('Data rows retrieved: ' + data.length);
-    
-    // Get RichTextValues for attachments column (Column J = column 10, 1-based)
-    const attachmentsColIndex = 10; // Column J
-    let richTextValues = null;
-    try {
-      richTextValues = sheet.getRange(2, attachmentsColIndex, lastRow - 1, 1).getRichTextValues();
-      Logger.log('RichTextValues retrieved for attachments column');
-    } catch (rtError) {
-      Logger.log('Could not get RichTextValues: ' + rtError);
     }
     
     // Skip header row
@@ -1779,67 +1332,11 @@ function handleGetVoucherSummary(requestBody) {
     const idxApproverEmail = 11;
     const idxTimestamp = 12;
     
-    // Helper function to get attachment URLs for a row (returns all URLs with names)
-    function getAttachmentUrl(rowIndex) {
-      let attachments = '';
-      
-      // Method 1: Try to get ALL URLs from RichTextValue runs (for multi-hyperlink cells)
-      if (richTextValues && richTextValues[rowIndex] && richTextValues[rowIndex][0]) {
-        const richText = richTextValues[rowIndex][0];
-        const runs = richText.getRuns();
-        const urlsWithNames = [];
-        
-        // Extract URLs and their display text from each run
-        for (const run of runs) {
-          const url = run.getLinkUrl();
-          const text = run.getText().trim();
-          if (url && url.startsWith('http')) {
-            urlsWithNames.push(text + '|' + url);
-          }
-        }
-        
-        if (urlsWithNames.length > 0) {
-          attachments = urlsWithNames.join('\n');
-          Logger.log('Row ' + rowIndex + ' - Got ' + urlsWithNames.length + ' attachment(s)');
-          return attachments;
-        }
-      }
-      
-      // Method 2: Try to get from cell note (for new uploads with folder URL)
-      try {
-        const note = sheet.getRange(rowIndex + 2, attachmentsColIndex).getNote();
-        if (note && note.includes('FOLDER_URL:')) {
-          const urlMatch = note.match(/FOLDER_URL:\s*(https?:\/\/[^\s\n]+)/);
-          if (urlMatch) {
-            attachments = 'Tài liệu đính kèm|' + urlMatch[1];
-            return attachments;
-          }
-        }
-      } catch (noteError) {
-        // Ignore note read errors
-      }
-      
-      // Method 3: Fall back to plain text value
-      const cellValue = rows[rowIndex] && rows[rowIndex][idxAttachments];
-      if (cellValue) {
-        const textValue = cellValue.toString();
-        if (textValue.includes('|') && textValue.startsWith('http')) {
-          attachments = 'Tài liệu đính kèm|' + textValue.split('|')[0];
-          return attachments;
-        } else if (textValue.startsWith('http')) {
-          attachments = 'Tài liệu đính kèm|' + textValue;
-          return attachments;
-        }
-      }
-      
-      return attachments;
-    }
-    
     // Get unique vouchers (by voucher number)
     // Filter by user if provided
     const voucherMap = new Map();
     
-    rows.forEach((row, rowIndex) => {
+    rows.forEach(row => {
       // Safety check - skip rows with insufficient columns
       if (!row || row.length < 6) {
         Logger.log('⚠️ Skipping row with insufficient columns');
@@ -1865,8 +1362,8 @@ function handleGetVoucherSummary(requestBody) {
       
       // Keep the latest entry for each voucher
       if (!voucherMap.has(voucherNumber) || 
-          new Date(row[idxTimestamp] || 0) > new Date(voucherMap.get(voucherNumber).row[idxTimestamp] || 0)) {
-        voucherMap.set(voucherNumber, { row: row, rowIndex: rowIndex });
+          new Date(row[idxTimestamp] || 0) > new Date(voucherMap.get(voucherNumber)[idxTimestamp] || 0)) {
+        voucherMap.set(voucherNumber, row);
       }
     });
     
@@ -1876,28 +1373,23 @@ function handleGetVoucherSummary(requestBody) {
     let approved = 0;
     let rejected = 0;
     
-    voucherMap.forEach(item => {
-      const status = item.row[idxStatus];
+    voucherMap.forEach(row => {
+      const status = row[idxStatus];
       if (status === 'Pending') pending++;
       else if (status === 'Approved') approved++;
       else if (status === 'Rejected') rejected++;
     });
     
-    // Get recent vouchers (last 15 entries, sorted by timestamp - showing ALL actions)
-    // Create rows with their original index for RichText lookup
-    const rowsWithIndex = rows.map((row, index) => ({ row, index }));
-    
-    const recentRows = rowsWithIndex
-      .filter(item => item.row && item.row.length >= 6 && item.row[idxTimestamp])
+    // Get recent vouchers (last 10 entries, sorted by timestamp - showing ALL actions)
+    const recentRows = rows
+      .filter(row => row && row.length >= 6 && row[idxTimestamp])
       .sort((a, b) => {
-        const dateA = new Date(a.row[idxTimestamp] || 0);
-        const dateB = new Date(b.row[idxTimestamp] || 0);
+        const dateA = new Date(a[idxTimestamp] || 0);
+        const dateB = new Date(b[idxTimestamp] || 0);
         return dateB - dateA; // Descending order (newest first)
       })
       .slice(0, 15) // Show last 15 entries
-      .map(item => {
-        const row = item.row;
-        const rowIndex = item.index;
+      .map(row => {
         const voucherNumber = row[idxVoucherNumber];
         
         // Safety check - ensure row has enough columns
@@ -1916,9 +1408,6 @@ function handleGetVoucherSummary(requestBody) {
           amountValue = 0;
         }
         
-        // Get attachment URL (from RichText or plain text)
-        const attachmentUrl = getAttachmentUrl(rowIndex);
-        
         // Show actual status of THIS row (not latest status)
         return {
           voucherNumber: voucherNumber || '',
@@ -1930,9 +1419,6 @@ function handleGetVoucherSummary(requestBody) {
           action: row[idxAction] || '',          // THIS row's action
           by: row[idxBy] || '',
           note: row[idxNote] || '',
-          attachments: attachmentUrl,  // Column J - with proper URL extraction
-          requestorEmail: row[idxRequestorEmail] || '',
-          approverEmail: row[idxApproverEmail] || '',
           timestamp: formatTimestamp(row[idxTimestamp])
         };
       })
@@ -2368,484 +1854,11 @@ function uploadFilesToDrive_(files, voucherNumber) {
     }
     
     Logger.log('Upload complete. Successful: ' + uploadedFiles.filter(f => !f.error).length + '/' + files.length);
-    
-    // Return both files and folder URL
-    const folderUrl = voucherFolder.getUrl();
-    Logger.log('Voucher folder URL: ' + folderUrl);
-    
-    return {
-      files: uploadedFiles,
-      folderUrl: folderUrl,
-      folderName: voucherNumber
-    };
+    return uploadedFiles;
     
   } catch (error) {
     Logger.log('❌ ERROR in uploadFilesToDrive_: ' + error.toString());
     Logger.log('Stack: ' + error.stack);
     throw error;
-  }
-}
-
-/**
- * UTILITY FUNCTION - Fix existing attachments data
- * This extracts URLs from RichTextValue runs and stores them in cell notes
- * Run this ONCE to fix existing data in the sheet
- */
-function fixExistingAttachments() {
-  try {
-    Logger.log('=== FIX EXISTING ATTACHMENTS - CONVERT TO INDIVIDUAL FILE LINKS ===');
-    
-    const sheet = getVoucherHistorySheet_();
-    const lastRow = sheet.getLastRow();
-    
-    if (lastRow <= 1) {
-      Logger.log('No data rows to fix');
-      return 0;
-    }
-    
-    const attachmentsColIndex = 10; // Column J
-    let fixedCount = 0;
-    
-    for (let row = 2; row <= lastRow; row++) {
-      const cell = sheet.getRange(row, attachmentsColIndex);
-      const richText = cell.getRichTextValue();
-      const existingNote = cell.getNote() || '';
-      
-      // Skip if already has individual file links in note
-      if (existingNote.includes(' - https://drive.google.com/file/')) {
-        Logger.log('Row ' + row + ': Already has individual file links, skipping');
-        continue;
-      }
-      
-      if (!richText) continue;
-      
-      // Try to get folder URL from RichText runs
-      const runs = richText.getRuns();
-      let folderUrl = null;
-      
-      for (const run of runs) {
-        const url = run.getLinkUrl();
-        if (url && url.includes('drive.google.com/drive/folders/')) {
-          folderUrl = url;
-          break;
-        }
-      }
-      
-      // Also check if folderUrl is in note
-      if (!folderUrl && existingNote.includes('FOLDER_URL:')) {
-        const match = existingNote.match(/FOLDER_URL:\s*(https?:\/\/[^\s\n]+)/);
-        if (match) folderUrl = match[1];
-      }
-      
-      if (!folderUrl) {
-        Logger.log('Row ' + row + ': No folder URL found, skipping');
-        continue;
-      }
-      
-      // Extract folder ID from URL
-      const folderIdMatch = folderUrl.match(/folders\/([a-zA-Z0-9_-]+)/);
-      if (!folderIdMatch) {
-        Logger.log('Row ' + row + ': Could not extract folder ID from ' + folderUrl);
-        continue;
-      }
-      
-      const folderId = folderIdMatch[1];
-      Logger.log('Row ' + row + ': Processing folder ID: ' + folderId);
-      
-      try {
-        // List all files in the folder
-        const folder = DriveApp.getFolderById(folderId);
-        const files = folder.getFiles();
-        const fileLinks = [];
-        
-        while (files.hasNext()) {
-          const file = files.next();
-          const fileName = file.getName();
-          const fileSize = file.getSize();
-          const fileUrl = file.getUrl();
-          const sizeMB = (fileSize / (1024 * 1024)).toFixed(2);
-          
-          // Format: filename (size MB) - URL
-          fileLinks.push(fileName + ' (' + sizeMB + ' MB) - ' + fileUrl);
-          Logger.log('  File: ' + fileName + ' (' + sizeMB + ' MB)');
-        }
-        
-        if (fileLinks.length === 0) {
-          Logger.log('Row ' + row + ': Folder is empty');
-          continue;
-        }
-        
-        // Store individual file links in note
-        const newNote = fileLinks.join('\n');
-        cell.setNote(newNote);
-        
-        // Update cell display with clickable individual links
-        let textParts = [];
-        let linkRanges = [];
-        let currentPos = 0;
-        
-        fileLinks.forEach((line, index) => {
-          const match = line.match(/^(.+?) - (https?:\/\/.+)$/);
-          if (match) {
-            const fileInfo = match[1].trim();
-            const fileUrl = match[2].trim();
-            const prefix = '• ';
-            const displayLine = prefix + fileInfo;
-            textParts.push(displayLine);
-            
-            const startPos = currentPos + prefix.length;
-            const endPos = startPos + fileInfo.length;
-            linkRanges.push({ start: startPos, end: endPos, url: fileUrl });
-            
-            currentPos += displayLine.length;
-            if (index < fileLinks.length - 1) {
-              textParts.push('\n');
-              currentPos += 1;
-            }
-          }
-        });
-        
-        const fullText = textParts.join('');
-        let richTextBuilder = SpreadsheetApp.newRichTextValue().setText(fullText);
-        linkRanges.forEach(range => {
-          try {
-            richTextBuilder = richTextBuilder.setLinkUrl(range.start, range.end, range.url);
-          } catch (e) {
-            Logger.log('Error setting link: ' + e);
-          }
-        });
-        
-        cell.setRichTextValue(richTextBuilder.build());
-        fixedCount++;
-        Logger.log('Row ' + row + ': ✅ Fixed with ' + fileLinks.length + ' individual file links');
-        
-      } catch (driveError) {
-        Logger.log('Row ' + row + ': ❌ Error accessing folder: ' + driveError.toString());
-      }
-    }
-    
-    Logger.log('=== FIX COMPLETE: Fixed ' + fixedCount + ' rows ===');
-    return fixedCount;
-    
-  } catch (error) {
-    Logger.log('Error fixing attachments: ' + error.toString());
-    throw error;
-  }
-}
-
-/**
- * TEST FUNCTION - Run this to verify Drive access
- * Run from Apps Script Editor > Select this function > Run
- */
-function testDriveAccess() {
-  const DRIVE_FOLDER_ID = '1RBBUUAQIrYTWeBONIgkMtELL0hxZhtqG';
-  
-  try {
-    Logger.log('=== TESTING DRIVE ACCESS ===');
-    
-    // Test 1: Can we access the folder?
-    const parentFolder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-    Logger.log('✅ Parent folder accessed: ' + parentFolder.getName());
-    
-    // Test 2: Can we create a test subfolder?
-    const testFolderName = 'TEST-' + new Date().getTime();
-    const testFolder = parentFolder.createFolder(testFolderName);
-    Logger.log('✅ Created test folder: ' + testFolder.getName());
-    
-    // Test 3: Can we create a test file?
-    const testBlob = Utilities.newBlob('Hello World', 'text/plain', 'test.txt');
-    const testFile = testFolder.createFile(testBlob);
-    testFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    Logger.log('✅ Created test file: ' + testFile.getUrl());
-    
-    // Cleanup: Delete test folder
-    testFolder.setTrashed(true);
-    Logger.log('✅ Cleaned up test folder');
-    
-    Logger.log('=== ALL TESTS PASSED ===');
-    return 'SUCCESS: Drive access working properly. Folder: ' + parentFolder.getName();
-    
-  } catch (error) {
-    Logger.log('❌ DRIVE ACCESS ERROR: ' + error.toString());
-    Logger.log('Stack: ' + error.stack);
-    return 'ERROR: ' + error.message;
-  }
-}
-
-/**
- * TEST FUNCTION - Test base64 decoding
- */
-function testBase64Decode() {
-  try {
-    // Small test string in base64
-    const testBase64 = 'SGVsbG8gV29ybGQ='; // "Hello World"
-    const bytes = Utilities.base64Decode(testBase64);
-    const text = Utilities.newBlob(bytes).getDataAsString();
-    Logger.log('Decoded text: ' + text);
-    Logger.log('✅ Base64 decoding works');
-    return 'SUCCESS: ' + text;
-  } catch (error) {
-    Logger.log('❌ ERROR: ' + error.toString());
-    return 'ERROR: ' + error.message;
-  }
-}
-
-/**
- * TEST FUNCTION - Test individual file URL generation
- * Run this to verify that file.getUrl() returns individual file URLs, not folder URLs
- */
-function testFileUrlGeneration() {
-  const DRIVE_FOLDER_ID = '1RBBUUAQIrYTWeBONIgkMtELL0hxZhtqG';
-  
-  try {
-    Logger.log('=== TEST FILE URL GENERATION ===');
-    
-    const parentFolder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-    Logger.log('Parent folder: ' + parentFolder.getName());
-    Logger.log('Parent folder URL: ' + parentFolder.getUrl());
-    
-    // Create test folder
-    const testFolderName = 'TEST-URL-' + new Date().getTime();
-    const testFolder = parentFolder.createFolder(testFolderName);
-    Logger.log('Test folder URL: ' + testFolder.getUrl());
-    
-    // Create test file
-    const testBlob = Utilities.newBlob('Test content', 'text/plain', 'test-file.txt');
-    const testFile = testFolder.createFile(testBlob);
-    testFile.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-    
-    const fileUrl = testFile.getUrl();
-    const fileId = testFile.getId();
-    
-    Logger.log('=== RESULTS ===');
-    Logger.log('File ID: ' + fileId);
-    Logger.log('File URL from getUrl(): ' + fileUrl);
-    Logger.log('Is individual file URL: ' + fileUrl.includes('/file/d/'));
-    Logger.log('Is folder URL: ' + fileUrl.includes('/folders/'));
-    
-    // Cleanup
-    testFolder.setTrashed(true);
-    
-    if (fileUrl.includes('/file/d/')) {
-      Logger.log('✅ SUCCESS: getUrl() returns individual file URL');
-      return 'SUCCESS: File URL = ' + fileUrl;
-    } else {
-      Logger.log('❌ UNEXPECTED: getUrl() does not return expected format');
-      return 'UNEXPECTED: ' + fileUrl;
-    }
-    
-  } catch (error) {
-    Logger.log('❌ ERROR: ' + error.toString());
-    return 'ERROR: ' + error.message;
-  }
-}
-
-/**
- * TEST FUNCTION - Check what's in Column J for recent vouchers
- * This helps diagnose what data is actually being stored
- */
-function checkColumnJData() {
-  try {
-    Logger.log('=== CHECK COLUMN J DATA ===');
-    
-    const sheet = getVoucherHistorySheet_();
-    const lastRow = sheet.getLastRow();
-    
-    if (lastRow <= 1) {
-      Logger.log('No data rows');
-      return 'No data';
-    }
-    
-    // Check last 5 rows
-    const startRow = Math.max(2, lastRow - 4);
-    Logger.log('Checking rows ' + startRow + ' to ' + lastRow);
-    
-    for (let row = startRow; row <= lastRow; row++) {
-      const voucherNum = sheet.getRange(row, 1).getValue();
-      const cell = sheet.getRange(row, 10);
-      const cellValue = cell.getValue();
-      const cellNote = cell.getNote();
-      const richText = cell.getRichTextValue();
-      
-      Logger.log('--- Row ' + row + ' (Voucher: ' + voucherNum + ') ---');
-      Logger.log('Cell value: ' + (cellValue ? cellValue.substring(0, 100) : 'EMPTY'));
-      Logger.log('Cell note: ' + (cellNote ? cellNote.substring(0, 200) : 'EMPTY'));
-      
-      if (richText) {
-        const runs = richText.getRuns();
-        Logger.log('RichText runs: ' + runs.length);
-        runs.forEach((run, i) => {
-          const url = run.getLinkUrl();
-          const text = run.getText();
-          if (url) {
-            Logger.log('  Run ' + i + ': "' + text.substring(0, 50) + '" -> ' + url);
-          }
-        });
-      }
-    }
-    
-    return 'Check complete - see logs';
-    
-  } catch (error) {
-    Logger.log('❌ ERROR: ' + error.toString());
-    return 'ERROR: ' + error.message;
-  }
-}
-
-/**
- * MANUAL FIX - Convert a specific row's folder link to individual file links
- * @param {number} rowNumber - The row number to fix (2 = first data row)
- */
-function fixSingleRow(rowNumber) {
-  if (!rowNumber || rowNumber < 2) {
-    Logger.log('Please provide a valid row number (2 or higher)');
-    return 'Invalid row number';
-  }
-  
-  try {
-    Logger.log('=== FIX SINGLE ROW ' + rowNumber + ' ===');
-    
-    const sheet = getVoucherHistorySheet_();
-    const cell = sheet.getRange(rowNumber, 10);
-    const voucherNum = sheet.getRange(rowNumber, 1).getValue();
-    
-    Logger.log('Voucher: ' + voucherNum);
-    
-    // Try to find folder URL
-    let folderUrl = null;
-    
-    // Method 1: From RichText
-    const richText = cell.getRichTextValue();
-    if (richText) {
-      const runs = richText.getRuns();
-      for (const run of runs) {
-        const url = run.getLinkUrl();
-        if (url && url.includes('drive.google.com')) {
-          folderUrl = url;
-          Logger.log('Found URL in RichText: ' + url);
-          break;
-        }
-      }
-    }
-    
-    // Method 2: From cell note
-    if (!folderUrl) {
-      const note = cell.getNote();
-      if (note) {
-        const match = note.match(/(https?:\/\/drive\.google\.com\/[^\s\n]+)/);
-        if (match) {
-          folderUrl = match[1];
-          Logger.log('Found URL in note: ' + folderUrl);
-        }
-      }
-    }
-    
-    // Method 3: From cell value
-    if (!folderUrl) {
-      const value = cell.getValue().toString();
-      if (value.includes('drive.google.com')) {
-        const match = value.match(/(https?:\/\/drive\.google\.com\/[^\s\n]+)/);
-        if (match) {
-          folderUrl = match[1];
-          Logger.log('Found URL in value: ' + folderUrl);
-        }
-      }
-    }
-    
-    if (!folderUrl) {
-      Logger.log('No Drive URL found in row ' + rowNumber);
-      return 'No Drive URL found';
-    }
-    
-    // Determine if it's a folder or file URL
-    const isFolder = folderUrl.includes('/folders/');
-    const isFile = folderUrl.includes('/file/d/');
-    
-    Logger.log('URL type - isFolder: ' + isFolder + ', isFile: ' + isFile);
-    
-    if (isFile) {
-      Logger.log('This is already an individual file link');
-      return 'Already an individual file link';
-    }
-    
-    if (!isFolder) {
-      Logger.log('URL is neither folder nor file format: ' + folderUrl);
-      return 'Unknown URL format';
-    }
-    
-    // Extract folder ID and list files
-    const folderIdMatch = folderUrl.match(/folders\/([a-zA-Z0-9_-]+)/);
-    if (!folderIdMatch) {
-      Logger.log('Could not extract folder ID');
-      return 'Could not extract folder ID';
-    }
-    
-    const folderId = folderIdMatch[1];
-    Logger.log('Folder ID: ' + folderId);
-    
-    const folder = DriveApp.getFolderById(folderId);
-    const files = folder.getFiles();
-    const fileLinks = [];
-    
-    while (files.hasNext()) {
-      const file = files.next();
-      const fileName = file.getName();
-      const fileSize = file.getSize();
-      const fileUrl = file.getUrl();
-      const sizeMB = (fileSize / (1024 * 1024)).toFixed(2);
-      
-      fileLinks.push({
-        name: fileName,
-        size: sizeMB,
-        url: fileUrl
-      });
-      Logger.log('Found file: ' + fileName + ' (' + sizeMB + ' MB) -> ' + fileUrl);
-    }
-    
-    if (fileLinks.length === 0) {
-      Logger.log('Folder is empty');
-      return 'Folder is empty';
-    }
-    
-    // Build the new format
-    const noteText = fileLinks.map(f => f.name + ' (' + f.size + ' MB) - ' + f.url).join('\n');
-    cell.setNote(noteText);
-    
-    // Build RichText with clickable links
-    let textParts = [];
-    let linkRanges = [];
-    let currentPos = 0;
-    
-    fileLinks.forEach((f, index) => {
-      const fileInfo = f.name + ' (' + f.size + ' MB)';
-      const prefix = '• ';
-      const displayLine = prefix + fileInfo;
-      textParts.push(displayLine);
-      
-      const startPos = currentPos + prefix.length;
-      const endPos = startPos + fileInfo.length;
-      linkRanges.push({ start: startPos, end: endPos, url: f.url });
-      
-      currentPos += displayLine.length;
-      if (index < fileLinks.length - 1) {
-        textParts.push('\n');
-        currentPos += 1;
-      }
-    });
-    
-    const fullText = textParts.join('');
-    let richTextBuilder = SpreadsheetApp.newRichTextValue().setText(fullText);
-    linkRanges.forEach(range => {
-      richTextBuilder = richTextBuilder.setLinkUrl(range.start, range.end, range.url);
-    });
-    
-    cell.setRichTextValue(richTextBuilder.build());
-    
-    Logger.log('✅ Fixed row ' + rowNumber + ' with ' + fileLinks.length + ' individual file links');
-    return 'SUCCESS: Fixed with ' + fileLinks.length + ' files';
-    
-  } catch (error) {
-    Logger.log('❌ ERROR: ' + error.toString());
-    return 'ERROR: ' + error.message;
   }
 }
