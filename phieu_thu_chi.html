@@ -5180,6 +5180,19 @@
                 isValid = false;
             }
             
+            // Validate signature (required field)
+            const signature = getSignatureData();
+            if (!signature) {
+                showToast('Vui lòng tải lên chữ ký người đề nghị', 'error', 'Thiếu chữ ký');
+                isValid = false;
+                // Scroll to signature field
+                const signatureUpload = document.getElementById('signature-upload');
+                if (signatureUpload) {
+                    signatureUpload.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    setTimeout(() => signatureUpload.focus(), 500);
+                }
+            }
+            
             if (!isValid) {
                 showToast('Vui lòng điền đầy đủ thông tin bắt buộc và kiểm tra lại các trường có lỗi', 'error', 'Lỗi validation');
                 // Scroll to first error
