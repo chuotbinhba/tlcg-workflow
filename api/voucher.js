@@ -81,23 +81,38 @@ export default async function handler(req, res) {
       // Create FormData to forward to Google Apps Script
       const formData = new FormData();
       
-      // Check if data is in req.body (Vercel parses FormData automatically)
-      if (req.body && typeof req.body === 'object') {
-        // If req.body has action field, it's already parsed FormData
-        if (req.body.action) {
-          // Forward as individual form fields (GAS can handle this)
-          Object.keys(req.body).forEach(key => {
-            formData.append(key, req.body[key]);
-          });
-        } else {
-          // Convert object to JSON string in 'data' field
-          formData.append('data', JSON.stringify(req.body));
-        }
-      } else if (typeof req.body === 'string') {
+      // Vercel doesn't parse FormData automatically, so req.body might be undefined
+      // We need to read the raw body and parse it, or use a library
+      // For now, try to handle both parsed and unparsed cases
+      
+      let parsedBody = req.body;
+      
+      // If body is not parsed (FormData), we'll forward it directly
+      // Vercel serverless functions can forward FormData as-is to fetch()
+      if (!parsedBody || (typeof parsedBody === 'object' && Object.keys(parsedBody).length === 0)) {
+        // Body might not be parsed, try to reconstruct FormData from request
+        // Since we can't easily parse FormData without a library, we'll send it as URLSearchParams
+        // But Google Apps Script expects FormData, so we'll send it as FormData with fields
+        console.log('[Proxy POST] Body not parsed, checking raw request');
+      }
+      
+      // If we have parsed body (as object), forward individual fields
+      if (parsedBody && typeof parsedBody === 'object' && parsedBody.action) {
+        // Forward as individual form fields (GAS can handle this directly)
+        Object.keys(parsedBody).forEach(key => {
+          const value = parsedBody[key];
+          if (value !== undefined && value !== null) {
+            formData.append(key, String(value));
+          }
+        });
+      } else if (parsedBody && typeof parsedBody === 'object') {
+        // Convert object to JSON string in 'data' field
+        formData.append('data', JSON.stringify(parsedBody));
+      } else if (typeof parsedBody === 'string') {
         // If body is a string, wrap it in 'data' field
-        formData.append('data', req.body);
+        formData.append('data', parsedBody);
       } else {
-        // Empty body
+        // Empty or unparseable body - send empty object
         formData.append('data', JSON.stringify({}));
       }
       
