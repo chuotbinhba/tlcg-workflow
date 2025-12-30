@@ -1425,9 +1425,11 @@
 
     <script>
         const apiKey = "";
-        // ⚠️ IMPORTANT: Use proxy URL to avoid CORS issues
-        // For direct URL, use: 'https://script.google.com/macros/s/AKfycbxtJKuVxfWePJ0216BDmnmfgdaJhovY1ZlwLJB6kyAe0TpzcLrQbI9toFTV-g5bN_xU/exec'
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = '/api/voucher';
+        // ⚠️ IMPORTANT: Use proxy URL for voucher operations, or direct URL for intranet operations
+        // For voucher operations: '/api/voucher' (uses VOUCHER_WORKFLOW_BACKEND)
+        // For intranet operations (login, getMasterData): Use TLCG_INTRANET_BACKEND directly if needed
+        // TLCG_INTRANET_BACKEND: https://script.google.com/macros/s/AKfycbxtJKuVxfWePJ0216BDmnmfgdaJhovY1ZlwLJB6kyAe0TpzcLrQbI9toFTV-g5bN_xU/exec
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = '/api/voucher'; // Voucher operations proxy
 
         // Master data cache
         let masterData = {
