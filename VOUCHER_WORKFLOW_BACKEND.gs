@@ -101,6 +101,11 @@ function handleSendEmail(requestBody) {
     try {
       let options = { htmlBody: emailData.body };
       if (emailData.cc && emailData.cc.trim() !== "") options.cc = emailData.cc.trim();
+      // Use logged-in user's email as reply-to (instead of script owner's email)
+      if (emailData.replyTo && emailData.replyTo.trim() !== "") {
+        options.replyTo = emailData.replyTo.trim();
+        Logger.log('Setting reply-to to logged-in user email: ' + options.replyTo);
+      }
       GmailApp.sendEmail(emailData.to, emailData.subject, '', options);
     } catch (emailError) {
       return createResponse(false, 'Lỗi gửi email đến người phê duyệt: ' + emailError.message);
@@ -109,11 +114,17 @@ function handleSendEmail(requestBody) {
     // Gửi email thông báo cho requester
     if (requesterEmailData && requesterEmailData.to && requesterEmailData.to.trim() !== '') {
       try {
+        let requesterOptions = { htmlBody: requesterEmailData.body || '' };
+        // Use logged-in user's email as reply-to for requester email too
+        if (emailData.replyTo && emailData.replyTo.trim() !== "") {
+          requesterOptions.replyTo = emailData.replyTo.trim();
+          Logger.log('Setting reply-to for requester email: ' + requesterOptions.replyTo);
+        }
         GmailApp.sendEmail(
           requesterEmailData.to,
           requesterEmailData.subject || '[THÔNG BÁO] Phiếu đã được gửi phê duyệt',
           '',
-          { htmlBody: requesterEmailData.body || '' }
+          requesterOptions
         );
       } catch (requesterEmailError) {
         // Log but don't fail - requester email is secondary

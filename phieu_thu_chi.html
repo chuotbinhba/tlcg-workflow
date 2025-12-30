@@ -5405,6 +5405,23 @@
             const chiefAccountantEmail = selectedCompanyData ? (selectedCompanyData["Email Kế toán trưởng"] || '') : '';
             const requestorEmail = employeeEmailMap[requestorName] || '';
             
+            // Get logged-in user's email from localStorage (set after login from index.html)
+            let loggedInUserEmail = '';
+            try {
+                const storedUser = localStorage.getItem('tlc_current_user');
+                if (storedUser) {
+                    const parsedUser = JSON.parse(storedUser);
+                    loggedInUserEmail = parsedUser.email || '';
+                    console.log('Logged-in user email from localStorage:', loggedInUserEmail);
+                }
+            } catch (e) {
+                console.warn('Could not get logged-in user email from localStorage:', e);
+            }
+            
+            // Use logged-in user's email as reply-to if available, otherwise use requestorEmail
+            const replyToEmail = loggedInUserEmail || requestorEmail || '';
+            console.log('Reply-to email:', replyToEmail);
+            
             // Email regex for validation (declare early so it can be used in debug logs)
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             
@@ -5757,7 +5774,8 @@
                     to: validRecipients.join(','),
                     cc: '', // No CC - requester will get separate email
                     subject: subject,
-                    body: approverEmailBodyHtml // Email with buttons for approvers
+                    body: approverEmailBodyHtml, // Email with buttons for approvers
+                    replyTo: replyToEmail // Use logged-in user's email as reply-to
                 },
                 requesterEmail: {
                     to: requesterEmailTo, // Requester gets separate email (always set if requestorEmail is valid)
