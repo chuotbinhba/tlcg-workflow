@@ -3,17 +3,44 @@
 // Location: api/voucher.js
 
 export default async function handler(req, res) {
-  // Get GAS URL from environment variable
-  // ⚠️ IMPORTANT: This is a SERVER-SIDE variable (no prefix needed for Vercel Serverless Functions)
-  // If undefined, log warning and use fallback
-  // PHIEU_THU_CHI_BACKEND - For voucher operations (getVoucherSummary, getVoucherHistory, approveVoucher, rejectVoucher, sendApprovalEmail)
-  const GAS_URL = process.env.GOOGLE_APPS_SCRIPT_URL || 
+  // Smart routing: Route to appropriate backend based on action
+  // PHIEU_THU_CHI_BACKEND - For voucher operations
+  const PHIEU_THU_CHI_BACKEND = process.env.GOOGLE_APPS_SCRIPT_URL || 
     'https://script.google.com/macros/s/AKfycbyltkunEjTHhFSRH6evpwDAxZk74QouLTG-FSlCOQtLJGts8guLhFYuBq9n1h0fJvyd/exec';
   
-  // Log warning if using fallback (environment variable not set)
+  // TLCGROUP_BACKEND - For intranet operations (getMasterData, etc.)
+  const TLCGROUP_BACKEND = process.env.TLCGROUP_BACKEND_URL || 
+    'https://script.google.com/macros/s/AKfycbwQ9lisLCr2iATBF2NGOqdNlG_f8ygDKrIEYkiZYsaVbm_7gFI4P_EC0FC5Wq-TJdMYKw/exec';
+  
+  // Determine which backend to use based on action
+  let GAS_URL = PHIEU_THU_CHI_BACKEND; // Default to Phieu Thu Chi Backend
+  
+  // Get action from request
+  let action = null;
+  if (req.method === 'GET') {
+    action = req.query.action;
+  } else if (req.method === 'POST') {
+    // Try to get action from body (if parsed)
+    if (req.body && req.body.action) {
+      action = req.body.action;
+    } else if (req.query && req.query.action) {
+      action = req.query.action;
+    }
+  }
+  
+  // Route getMasterData to TLCGroup Backend
+  if (action === 'getMasterData') {
+    GAS_URL = TLCGROUP_BACKEND;
+    console.log('[Proxy] Routing getMasterData to TLCGroup Backend');
+  }
+  
+  // Log warnings if environment variables not set
   if (!process.env.GOOGLE_APPS_SCRIPT_URL) {
     console.warn('[Proxy Warning] GOOGLE_APPS_SCRIPT_URL environment variable not set. Using fallback URL.');
     console.warn('[Proxy Warning] Please set GOOGLE_APPS_SCRIPT_URL in Vercel Dashboard → Settings → Environment Variables');
+  }
+  if (!process.env.TLCGROUP_BACKEND_URL) {
+    console.warn('[Proxy Warning] TLCGROUP_BACKEND_URL environment variable not set. Using fallback URL for getMasterData.');
   }
   
   // CORS headers - allow your domain
@@ -64,40 +91,44 @@ export default async function handler(req, res) {
       }
       
       const data = await response.json();
-      const action = req.query.action || 'unknown';
-      console.log(`[Proxy GET Success] action: ${action}`);
+      const getAction = req.query.action || 'unknown';
+      console.log(`[Proxy GET Success] action: ${getAction}`);
       
       return res.status(200).json(data);
     }
     
     // Handle POST requests
     if (req.method === 'POST') {
-      // Vercel parses FormData automatically into req.body
+      // Vercel might parse FormData into req.body, or it might not
       // Frontend sends FormData with fields: action, email, password, etc.
-      // Google Apps Script expects either:
-      // 1. FormData with individual fields (action, email, password) - works directly
-      // 2. FormData with 'data' field containing JSON string
+      // Google Apps Script expects FormData with individual fields
+      
+      let parsedBody = req.body;
+      
+      // Check if body is FormData (multipart/form-data)
+      const isFormData = req.headers['content-type']?.includes('multipart/form-data');
+      
+      // If it's FormData and not parsed, we need to handle it differently
+      // For now, assume Vercel might parse it into req.body
+      if (isFormData && (!parsedBody || Object.keys(parsedBody || {}).length === 0)) {
+        console.warn('[Proxy POST] FormData detected but body not parsed - this might cause issues');
+      }
       
       // Create FormData to forward to Google Apps Script
       const formData = new FormData();
       
-      // Vercel doesn't parse FormData automatically, so req.body might be undefined
-      // We need to read the raw body and parse it, or use a library
-      // For now, try to handle both parsed and unparsed cases
-      
-      let parsedBody = req.body;
-      
-      // If body is not parsed (FormData), we'll forward it directly
-      // Vercel serverless functions can forward FormData as-is to fetch()
-      if (!parsedBody || (typeof parsedBody === 'object' && Object.keys(parsedBody).length === 0)) {
-        // Body might not be parsed, try to reconstruct FormData from request
-        // Since we can't easily parse FormData without a library, we'll send it as URLSearchParams
-        // But Google Apps Script expects FormData, so we'll send it as FormData with fields
-        console.log('[Proxy POST] Body not parsed, checking raw request');
-      }
-      
       // If we have parsed body (as object), forward individual fields
-      if (parsedBody && typeof parsedBody === 'object' && parsedBody.action) {
+      if (parsedBody && typeof parsedBody === 'object' && Object.keys(parsedBody).length > 0) {
+        // Update action if we found it in body (for routing decision)
+        if (parsedBody.action && !action) {
+          action = parsedBody.action;
+          // Re-route if we now know it's getMasterData
+          if (action === 'getMasterData' && GAS_URL !== TLCGROUP_BACKEND) {
+            GAS_URL = TLCGROUP_BACKEND;
+            console.log('[Proxy POST] Re-routing getMasterData to TLCGroup Backend (action found in body)');
+          }
+        }
+        
         // Forward as individual form fields (GAS can handle this directly)
         Object.keys(parsedBody).forEach(key => {
           const value = parsedBody[key];
@@ -116,16 +147,11 @@ export default async function handler(req, res) {
         formData.append('data', JSON.stringify({}));
       }
       
-      // Extract action for logging
-      let action = 'unknown';
-      if (req.body && req.body.action) {
-        action = req.body.action;
-      } else if (req.query && req.query.action) {
-        action = req.query.action;
-      }
-      
-      console.log(`[Proxy POST] ${GAS_URL.substring(0, 60)}... action: ${action}`);
-      console.log(`[Proxy POST] Body keys:`, req.body ? Object.keys(req.body) : 'no body');
+      // Use the action we extracted (for logging)
+      const finalAction = action || 'unknown';
+      console.log(`[Proxy POST] ${GAS_URL.substring(0, 60)}... action: ${finalAction}`);
+      console.log(`[Proxy POST] Body keys:`, parsedBody && typeof parsedBody === 'object' ? Object.keys(parsedBody) : 'no body or not object');
+      console.log(`[Proxy POST] Content-Type:`, req.headers['content-type']);
       
       const response = await fetch(GAS_URL, {
         method: 'POST',
@@ -142,7 +168,7 @@ export default async function handler(req, res) {
       }
       
       const data = await response.json();
-      console.log(`[Proxy POST Success] action: ${action}`);
+      console.log(`[Proxy POST Success] action: ${finalAction}`);
       
       return res.status(200).json(data);
     }
