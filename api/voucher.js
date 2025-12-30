@@ -283,36 +283,45 @@ export default async function handler(req, res) {
         headers: headers
       });
       
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error(`[Proxy POST Error] ${response.status}: ${errorText.substring(0, 200)}`);
-        // Check if error response is HTML
-        if (errorText.trim().toLowerCase().startsWith('<!doctype') || errorText.trim().toLowerCase().startsWith('<html')) {
-          console.error('[Proxy POST Error] GAS returned HTML error page instead of JSON');
-          return res.status(500).json({
-            success: false,
-            message: `Backend returned HTML error page (status ${response.status}). Check Google Apps Script logs.`
-          });
-        }
-        throw new Error(`GAS returned ${response.status}: ${errorText.substring(0, 200)}`);
-      }
-      
-      // Read response text first to check format
+      // Read response text first (can only be read once)
       const responseText = await response.text();
       
-      // Check if response is HTML (error page)
+      if (!response.ok) {
+        console.error(`[Proxy POST Error] ${response.status}: ${responseText.substring(0, 200)}`);
+        // Check if error response is HTML
+        if (responseText.trim().toLowerCase().startsWith('<!doctype') || responseText.trim().toLowerCase().startsWith('<html')) {
+          console.error('[Proxy POST Error] GAS returned HTML error page instead of JSON');
+          console.error('[Proxy POST Error] Full HTML response:', responseText.substring(0, 1000));
+          return res.status(500).json({
+            success: false,
+            message: `Backend returned HTML error page (status ${response.status}). Check Google Apps Script deployment and logs.`
+          });
+        }
+        // Try to parse as JSON error response
+        try {
+          const errorData = JSON.parse(responseText);
+          return res.status(response.status).json(errorData);
+        } catch (parseError) {
+          return res.status(500).json({
+            success: false,
+            message: `Backend error (status ${response.status}): ${responseText.substring(0, 200)}`
+          });
+        }
+      }
+      
+      // Check if response is HTML (error page) - responseText already read above
       if (responseText.trim().toLowerCase().startsWith('<!doctype') || responseText.trim().toLowerCase().startsWith('<html')) {
         console.error('[Proxy POST Error] GAS returned HTML instead of JSON');
-        console.error('[Proxy POST Error] HTML response:', responseText.substring(0, 500));
+        console.error('[Proxy POST Error] HTML response:', responseText.substring(0, 1000));
         return res.status(500).json({
           success: false,
-          message: 'Backend returned HTML error page instead of JSON. Check Google Apps Script deployment and logs.'
+          message: 'Backend returned HTML error page instead of JSON. Check Google Apps Script deployment and logs. HTML: ' + responseText.substring(0, 200)
         });
       }
       
       let data;
       try {
-        data = await JSON.parse(responseText);
+        data = JSON.parse(responseText); // JSON.parse is not async, no await needed
         console.log(`[Proxy POST Success] action: ${finalAction}`);
       } catch (parseError) {
         console.error('[Proxy POST Error] Failed to parse GAS response as JSON:', parseError);
