@@ -5,7 +5,7 @@
 **File:** `TLCG_INTRANET_BACKEND_COMPLETE.gs`
 
 **URL:**  
-`https://script.google.com/macros/s/AKfycbxtJKuVxfWePJ0216BDmnmfgdaJhovY1ZlwLJB6kyAe0TpzcLrQbI9toFTV-g5bN_xU/exec`
+`https://script.google.com/macros/s/AKfycbw05Cr7-Mm2TtgQgxVaVoobvdSUHtX2Y8vjTi0Fd-_UmL0ojojyLDOwXwyaMWDwGW06Iw/exec`
 
 ## ✅ Files Updated
 
@@ -27,7 +27,7 @@
 2. Find `GOOGLE_APPS_SCRIPT_URL`
 3. Update value to:
    ```
-   https://script.google.com/macros/s/AKfycbxtJKuVxfWePJ0216BDmnmfgdaJhovY1ZlwLJB6kyAe0TpzcLrQbI9toFTV-g5bN_xU/exec
+   https://script.google.com/macros/s/AKfycbw05Cr7-Mm2TtgQgxVaVoobvdSUHtX2Y8vjTi0Fd-_UmL0ojojyLDOwXwyaMWDwGW06Iw/exec
    ```
 4. Select all environments (Production, Preview, Development)
 5. Click **Save**
@@ -54,7 +54,7 @@ After Vercel redeploys, test the API:
 
 To test if the new URL works directly:
 ```
-https://script.google.com/macros/s/AKfycbxtJKuVxfWePJ0216BDmnmfgdaJhovY1ZlwLJB6kyAe0TpzcLrQbI9toFTV-g5bN_xU/exec
+https://script.google.com/macros/s/AKfycbw05Cr7-Mm2TtgQgxVaVoobvdSUHtX2Y8vjTi0Fd-_UmL0ojojyLDOwXwyaMWDwGW06Iw/exec
 ```
 
 Should return: `Google Apps Script is running!`
