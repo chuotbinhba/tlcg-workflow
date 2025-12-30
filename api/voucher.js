@@ -2,6 +2,47 @@
 // Handles requests to /api/voucher (without action in path)
 // Location: api/voucher.js
 
+import busboy from 'busboy';
+
+// Helper to parse FormData from request
+async function parseFormData(req) {
+  return new Promise((resolve, reject) => {
+    try {
+      const bb = busboy({ headers: req.headers });
+      const fields = {};
+      
+      bb.on('field', (name, value) => {
+        fields[name] = value;
+      });
+      
+      bb.on('file', (name, file, info) => {
+        // For file uploads, we'll handle later if needed
+        // For now, just consume the file stream
+        file.resume();
+      });
+      
+      bb.on('finish', () => {
+        resolve(fields);
+      });
+      
+      bb.on('error', (err) => {
+        reject(err);
+      });
+      
+      // Try to pipe the request if it's a stream
+      if (req.readable || typeof req.pipe === 'function') {
+        req.pipe(bb);
+      } else {
+        // If req is not a stream, try to write the body directly
+        // This might not work in Vercel, but we'll try
+        reject(new Error('Request is not a readable stream'));
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+}
+
 export default async function handler(req, res) {
   // Smart routing: Route to appropriate backend based on action
   // PHIEU_THU_CHI_BACKEND - For voucher operations
@@ -99,19 +140,45 @@ export default async function handler(req, res) {
     
     // Handle POST requests
     if (req.method === 'POST') {
-      // Vercel might parse FormData into req.body, or it might not
       // Frontend sends FormData with fields: action, email, password, etc.
-      // Google Apps Script expects FormData with individual fields
+      // Vercel doesn't parse FormData automatically, so we need to parse it manually
       
       let parsedBody = req.body;
-      
-      // Check if body is FormData (multipart/form-data)
       const isFormData = req.headers['content-type']?.includes('multipart/form-data');
       
-      // If it's FormData and not parsed, we need to handle it differently
-      // For now, assume Vercel might parse it into req.body
-      if (isFormData && (!parsedBody || Object.keys(parsedBody || {}).length === 0)) {
-        console.warn('[Proxy POST] FormData detected but body not parsed - this might cause issues');
+      // If it's FormData and body is not parsed (or empty), try to parse it manually
+      // Note: Vercel might not support streaming, so this might not work
+      // In that case, we'll need to rely on req.body or use a different approach
+      if (isFormData && (!parsedBody || typeof parsedBody !== 'object' || Object.keys(parsedBody || {}).length === 0)) {
+        try {
+          console.log('[Proxy POST] Attempting to parse FormData manually...');
+          // Check if we can access raw body (Vercel-specific)
+          if (req.body && typeof req.body === 'string') {
+            // If body is a string, it might be the raw FormData
+            // Try parsing with busboy
+            parsedBody = await parseFormData(req);
+            console.log('[Proxy POST] FormData parsed:', Object.keys(parsedBody));
+          } else {
+            console.log('[Proxy POST] Cannot parse FormData - req.body is not a string or stream');
+            // Try to extract from req.body anyway
+            parsedBody = req.body || {};
+          }
+        } catch (parseError) {
+          console.error('[Proxy POST] Error parsing FormData:', parseError.message);
+          // Fall back to req.body if parsing fails
+          parsedBody = req.body || {};
+          console.log('[Proxy POST] Using req.body as fallback:', typeof parsedBody, Object.keys(parsedBody || {}));
+        }
+      }
+      
+      // Update action if we found it in parsed body (for routing decision)
+      if (parsedBody && parsedBody.action && !action) {
+        action = parsedBody.action;
+        // Re-route if we now know it's getMasterData
+        if (action === 'getMasterData' && GAS_URL !== TLCGROUP_BACKEND) {
+          GAS_URL = TLCGROUP_BACKEND;
+          console.log('[Proxy POST] Re-routing getMasterData to TLCGroup Backend (action found in body)');
+        }
       }
       
       // Create FormData to forward to Google Apps Script
@@ -119,16 +186,6 @@ export default async function handler(req, res) {
       
       // If we have parsed body (as object), forward individual fields
       if (parsedBody && typeof parsedBody === 'object' && Object.keys(parsedBody).length > 0) {
-        // Update action if we found it in body (for routing decision)
-        if (parsedBody.action && !action) {
-          action = parsedBody.action;
-          // Re-route if we now know it's getMasterData
-          if (action === 'getMasterData' && GAS_URL !== TLCGROUP_BACKEND) {
-            GAS_URL = TLCGROUP_BACKEND;
-            console.log('[Proxy POST] Re-routing getMasterData to TLCGroup Backend (action found in body)');
-          }
-        }
-        
         // Forward as individual form fields (GAS can handle this directly)
         Object.keys(parsedBody).forEach(key => {
           const value = parsedBody[key];
