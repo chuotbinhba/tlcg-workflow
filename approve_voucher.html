@@ -212,8 +212,9 @@
             ${requestorEmail ? `<p><strong>Email người đề nghị:</strong> ${requestorEmail}</p>` : '<p style="color: red;"><strong>⚠️ Cảnh báo:</strong> Không tìm thấy email người đề nghị!</p>'}
         `;
 
-        // Google Apps Script URL
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbysXIIwCapkvlVgGg77oLAq4mxCF-LvpzyLEQP0wePlOhkkjDYT3CRKNEXai3fwBECq/exec';
+        // Use proxy URL to avoid CORS issues
+        // For direct URL, use: 'https://script.google.com/macros/s/AKfycbwcz8QPzcb7fCeTc7f7xjBHNamLq44bh-TTTH_1MCCOOwtw2bI9U_8yACfAr6SV_V3K/exec'
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = '/api/voucher';
 
         // Approve voucher
         async function approveVoucher() {

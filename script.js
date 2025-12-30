@@ -15,7 +15,9 @@
         // 8. Click "Deploy".
         // 9. Copy the "Web app URL" and paste it here.
         // 10. Ensure your Google account has permissions to send emails via Gmail (usually default).
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbysXIIwCapkvlVgGg77oLAq4mxCF-LvpzyLEQP0wePlOhkkjDYT3CRKNEXai3fwBECq/exec';
+        // Use proxy URL to avoid CORS issues
+        // For direct URL, use: 'https://script.google.com/macros/s/AKfycbwcz8QPzcb7fCeTc7f7xjBHNamLq44bh-TTTH_1MCCOOwtw2bI9U_8yACfAr6SV_V3K/exec'
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = '/api/voucher';
 
         // Initialize email mappings based on provided exact emails and company data
         const employeeEmailMap = {

@@ -118,7 +118,7 @@ export default async function handler(req, res) {
 export default async function handler(req, res) {
   const { action } = req.query;
   const GAS_URL = process.env.GOOGLE_APPS_SCRIPT_URL || 
-    'https://script.google.com/macros/s/AKfycbysXIIwCapkvlVgGg77oLAq4mxCF-LvpzyLEQP0wePlOhkkjDYT3CRKNEXai3fwBECq/exec';
+    'https://script.google.com/macros/s/AKfycbwcz8QPzcb7fCeTc7f7xjBHNamLq44bh-TTTH_1MCCOOwtw2bI9U_8yACfAr6SV_V3K/exec';
   
   // CORS headers
   res.setHeader('Access-Control-Allow-Origin', '*'); // Or specific domain
