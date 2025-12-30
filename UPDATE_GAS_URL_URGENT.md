@@ -7,7 +7,7 @@ Browser is still calling the old Google Apps Script URL directly instead of usin
 `https://script.google.com/macros/s/AKfycbysXIIwCapkvlVgGg77oLAq4mxCF-LvpzyLEQP0wePlOhkkjDYT3CRKNEXai3fwBECq/exec`
 
 **New URL:**  
-`https://script.google.com/macros/s/AKfycbwcz8QPzcb7fCeTc7f7xjBHNamLq44bh-TTTH_1MCCOOwtw2bI9U_8yACfAr6SV_V3K/exec`
+`https://script.google.com/macros/s/AKfycbxtJKuVxfWePJ0216BDmnmfgdaJhovY1ZlwLJB6kyAe0TpzcLrQbI9toFTV-g5bN_xU/exec`
 
 ## ✅ Solution
 
@@ -17,7 +17,7 @@ Browser is still calling the old Google Apps Script URL directly instead of usin
 2. Find `GOOGLE_APPS_SCRIPT_URL`
 3. Update value to:
    ```
-   https://script.google.com/macros/s/AKfycbwcz8QPzcb7fCeTc7f7xjBHNamLq44bh-TTTH_1MCCOOwtw2bI9U_8yACfAr6SV_V3K/exec
+   https://script.google.com/macros/s/AKfycbxtJKuVxfWePJ0216BDmnmfgdaJhovY1ZlwLJB6kyAe0TpzcLrQbI9toFTV-g5bN_xU/exec
    ```
 4. Click **Save**
 5. **Redeploy** your project (or wait for auto-redeploy)

@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   // ⚠️ IMPORTANT: This is a SERVER-SIDE variable (no prefix needed for Vercel Serverless Functions)
   // If undefined, log warning and use fallback
   const GAS_URL = process.env.GOOGLE_APPS_SCRIPT_URL || 
-    'https://script.google.com/macros/s/AKfycbwcz8QPzcb7fCeTc7f7xjBHNamLq44bh-TTTH_1MCCOOwtw2bI9U_8yACfAr6SV_V3K/exec';
+    'https://script.google.com/macros/s/AKfycbxtJKuVxfWePJ0216BDmnmfgdaJhovY1ZlwLJB6kyAe0TpzcLrQbI9toFTV-g5bN_xU/exec';
   
   // Log warning if using fallback (environment variable not set)
   if (!process.env.GOOGLE_APPS_SCRIPT_URL) {
