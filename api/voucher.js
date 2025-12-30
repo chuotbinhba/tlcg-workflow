@@ -213,13 +213,20 @@ export default async function handler(req, res) {
       console.log(`[Proxy POST] ${GAS_URL.substring(0, 60)}... action: ${finalAction}`);
       console.log(`[Proxy POST] Sending as: ${contentType}`);
       
+      // Build headers - don't set Content-Type for FormData (browser/Node will set boundary)
+      const headers = {
+        'User-Agent': 'TLCG-Workflow-Proxy/1.0'
+      };
+      
+      // Only set Content-Type for URL-encoded data, not FormData
+      if (contentType && contentType !== 'multipart/form-data') {
+        headers['Content-Type'] = contentType;
+      }
+      
       const response = await fetch(GAS_URL, {
         method: 'POST',
         body: bodyToSend,
-        headers: {
-          'Content-Type': contentType,
-          'User-Agent': 'TLCG-Workflow-Proxy/1.0'
-        }
+        headers: headers
       });
       
       if (!response.ok) {
