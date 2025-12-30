@@ -3251,6 +3251,8 @@
                 
                 const result = await response.json();
                 console.log('Voucher summary:', result);
+                console.log('Recent vouchers array:', result.data?.recent);
+                console.log('Recent vouchers count:', result.data?.recent?.length);
                 
                 if (result.success && result.data) {
                     // Update stats
@@ -3258,8 +3260,9 @@
                     document.getElementById('stat-approved').textContent = result.data.approved || 0;
                     document.getElementById('stat-rejected').textContent = result.data.rejected || 0;
                     
-                    // Render voucher list
+                    // Render voucher list - use all vouchers from recent array
                     const vouchers = result.data.recent || [];
+                    console.log('Rendering vouchers:', vouchers.length, 'items');
                     if (vouchers.length === 0) {
                         voucherList.innerHTML = `
                             <div class="no-vouchers">

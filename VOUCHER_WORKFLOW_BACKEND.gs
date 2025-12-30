@@ -241,11 +241,16 @@ function handleGetVoucherSummary(requestBody) {
     const voucherMap = new Map();
     rows.forEach(row => {
       const voucherNumber = row[0]; // Column A
-      const timestamp = row[12] || new Date(0); // Column M
+      if (!voucherNumber || voucherNumber.toString().trim() === '') return; // Skip empty voucher numbers
       
-      if (!voucherMap.has(voucherNumber) || timestamp > voucherMap.get(voucherNumber).timestamp) {
+      const timestamp = row[12] || new Date(0); // Column M
+      // Convert timestamp to Date for comparison
+      const timestampDate = timestamp instanceof Date ? timestamp : new Date(timestamp);
+      
+      if (!voucherMap.has(voucherNumber)) {
+        // First occurrence of this voucher number
         voucherMap.set(voucherNumber, {
-          voucherNumber: voucherNumber || '',
+          voucherNumber: voucherNumber.toString().trim(),
           voucherType: row[1] || '', // Column B
           company: row[2] || '', // Column C
           employee: row[3] || '', // Column D
@@ -257,12 +262,37 @@ function handleGetVoucherSummary(requestBody) {
           attachments: row[9] || '', // Column J
           requestorEmail: row[10] || '', // Column K
           approverEmail: row[11] || '', // Column L
-          timestamp: timestamp
+          timestamp: timestampDate
         });
+      } else {
+        // Compare timestamps to keep the latest one
+        const existingTimestamp = voucherMap.get(voucherNumber).timestamp;
+        const existingTimestampDate = existingTimestamp instanceof Date ? existingTimestamp : new Date(existingTimestamp);
+        
+        if (timestampDate.getTime() > existingTimestampDate.getTime()) {
+          // This row is newer, replace the existing entry
+          voucherMap.set(voucherNumber, {
+            voucherNumber: voucherNumber.toString().trim(),
+            voucherType: row[1] || '', // Column B
+            company: row[2] || '', // Column C
+            employee: row[3] || '', // Column D
+            amount: row[4] || 0, // Column E
+            status: row[5] || '', // Column F
+            action: row[6] || '', // Column G
+            by: row[7] || '', // Column H
+            note: row[8] || '', // Column I
+            attachments: row[9] || '', // Column J
+            requestorEmail: row[10] || '', // Column K
+            approverEmail: row[11] || '', // Column L
+            timestamp: timestampDate
+          });
+        }
       }
     });
     
     const vouchers = Array.from(voucherMap.values());
+    
+    Logger.log('Total unique vouchers found: ' + vouchers.length);
     
     // Sort by timestamp descending (newest first)
     vouchers.sort((a, b) => {
@@ -276,8 +306,10 @@ function handleGetVoucherSummary(requestBody) {
     const approved = vouchers.filter(v => v.status === 'Approved').length;
     const rejected = vouchers.filter(v => v.status === 'Rejected').length;
     
-    // Get recent 20 vouchers
-    const recent = vouchers.slice(0, 20).map(v => ({
+    Logger.log('Vouchers by status - Pending: ' + pending + ', Approved: ' + approved + ', Rejected: ' + rejected);
+    
+    // Get all vouchers (no limit)
+    const recent = vouchers.map(v => ({
       voucherNumber: v.voucherNumber,
       voucherType: v.voucherType,
       company: v.company,
