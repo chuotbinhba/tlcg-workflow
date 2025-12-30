@@ -5714,7 +5714,8 @@
 
             // Collect files for upload to Drive
             const filesToUpload = [];
-            const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB max per file
+            const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB max per file (reduced to prevent payload size issues)
+            const MAX_TOTAL_PAYLOAD_SIZE = 4 * 1024 * 1024; // 4MB max total payload (Vercel/GAS limits)
             
             for (let i = 0; i < expenseItems.length; i++) {
                 const item = expenseItems[i];
@@ -5723,13 +5724,29 @@
                         if (file instanceof File) {
                             // Check file size
                             if (file.size > MAX_FILE_SIZE) {
-                                console.warn(`File ${file.name} is too large (${(file.size / 1024 / 1024).toFixed(2)} MB). Max: 10MB. Skipping.`);
+                                showToast(`File "${file.name}" quá lớn (${(file.size / 1024 / 1024).toFixed(2)} MB). Kích thước tối đa là ${MAX_FILE_SIZE / 1024 / 1024}MB.`, 'error', 'File quá lớn');
+                                console.warn(`File ${file.name} is too large (${(file.size / 1024 / 1024).toFixed(2)} MB). Max: ${MAX_FILE_SIZE / 1024 / 1024}MB. Skipping.`);
                                 continue;
                             }
                             
                             try {
                                 // Convert file to base64
                                 const base64Data = await fileToBase64(file);
+                                
+                                // Base64 increases size by ~33%, estimate total size
+                                // Calculate estimated size: existing payload + this file's base64 size
+                                let estimatedSize = 50000; // Base payload size estimate (without files)
+                                filesToUpload.forEach(f => {
+                                    estimatedSize += (f.fileData ? f.fileData.length : 0);
+                                });
+                                estimatedSize += base64Data.length;
+                                
+                                if (estimatedSize > MAX_TOTAL_PAYLOAD_SIZE) {
+                                    const sizeMB = (estimatedSize / 1024 / 1024).toFixed(2);
+                                    showToast(`Tổng kích thước file quá lớn (ước tính ${sizeMB} MB). File "${file.name}" sẽ không được tải lên. Giới hạn: ${MAX_TOTAL_PAYLOAD_SIZE / 1024 / 1024}MB.`, 'error', 'Payload quá lớn');
+                                    console.warn(`Adding file ${file.name} would exceed max payload size. Estimated: ${sizeMB}MB. Skipping.`);
+                                    continue;
+                                }
                                 
                                 // Verify base64 data was generated
                                 if (!base64Data || base64Data.length < 100) {
@@ -5833,9 +5850,19 @@
                 console.log(`   File ${i+1}: ${f.fileName} - base64 length: ${f.fileData ? f.fileData.length : 0}`);
             });
             
-            // Check if payload is too large (> 5MB might fail)
-            if (payloadString.length > 5 * 1024 * 1024) {
-                console.warn('⚠️ Payload is very large (> 5MB), upload may fail');
+            // Check if payload is too large
+            const payloadSizeBytes = payloadString.length;
+            if (payloadSizeBytes > MAX_TOTAL_PAYLOAD_SIZE) {
+                const errorMsg = `Payload quá lớn (${(payloadSizeBytes / 1024 / 1024).toFixed(2)} MB). Giới hạn tối đa: ${MAX_TOTAL_PAYLOAD_SIZE / 1024 / 1024}MB. Vui lòng giảm số lượng hoặc kích thước file đính kèm.`;
+                console.error('❌ Payload size exceeded:', payloadSizeBytes, 'bytes');
+                showToast(errorMsg, 'error', 'Payload quá lớn');
+                loadingIndicator.classList.remove('show');
+                document.getElementById('send-approval-btn').disabled = false;
+                return;
+            }
+            
+            if (payloadSizeBytes > 2 * 1024 * 1024) {
+                console.warn('⚠️ Payload is large (' + Math.round(payloadSizeBytes / 1024 / 1024) + 'MB), may take longer to process');
             }
 
             try {

@@ -2,6 +2,15 @@
 // Handles requests to /api/voucher (without action in path)
 // Location: api/voucher.js
 
+// Export config to handle large request bodies (up to 10MB)
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '10mb',
+    },
+  },
+};
+
 import busboy from 'busboy';
 
 // Helper to parse FormData from request
@@ -173,9 +182,48 @@ export default async function handler(req, res) {
       console.log('[Proxy POST] Parsed body type:', typeof parsedBody);
       console.log('[Proxy POST] Parsed body keys:', parsedBody && typeof parsedBody === 'object' ? Object.keys(parsedBody) : 'N/A');
       
-      // Update action if we found it in parsed body (for routing decision)
-      if (parsedBody && typeof parsedBody === 'object' && parsedBody.action) {
-        action = parsedBody.action;
+      // Check if we have a 'data' field with a JSON string (from phieu_thu_chi.html)
+      // This is used for large payloads with file attachments
+      let hasDataField = false;
+      let dataFieldValue = null;
+      let actualPayload = parsedBody;
+      
+      if (parsedBody && typeof parsedBody === 'object' && parsedBody.data && typeof parsedBody.data === 'string') {
+        hasDataField = true;
+        dataFieldValue = parsedBody.data;
+        const dataLength = dataFieldValue.length;
+        console.log('[Proxy POST] Found data field with JSON string, length:', dataLength, 'chars (~' + Math.round(dataLength / 1024) + 'KB)');
+        
+        // Try to extract action from the JSON string for routing (without full parse for large payloads)
+        try {
+          // For small payloads, parse fully to get action
+          if (dataLength < 100000) {
+            actualPayload = JSON.parse(dataFieldValue);
+            console.log('[Proxy POST] Parsed data field, found action:', actualPayload.action);
+          } else {
+            // For large payloads, extract action using regex to avoid parsing the entire string
+            const actionMatch = dataFieldValue.match(/"action"\s*:\s*"([^"]+)"/);
+            if (actionMatch) {
+              actualPayload = { action: actionMatch[1] };
+              console.log('[Proxy POST] Extracted action from large payload:', actualPayload.action);
+            } else {
+              console.warn('[Proxy POST] Could not extract action from large payload, using default routing');
+            }
+          }
+        } catch (parseError) {
+          console.warn('[Proxy POST] Could not parse data field (may be too large):', parseError.message);
+          // Try regex extraction as fallback
+          const actionMatch = dataFieldValue.match(/"action"\s*:\s*"([^"]+)"/);
+          if (actionMatch) {
+            actualPayload = { action: actionMatch[1] };
+            console.log('[Proxy POST] Extracted action using regex:', actualPayload.action);
+          }
+        }
+      }
+      
+      // Update action if we found it (for routing decision)
+      if (actualPayload && typeof actualPayload === 'object' && actualPayload.action) {
+        action = actualPayload.action;
         // Re-route if we now know it's getMasterData
         if (action === 'getMasterData' && GAS_URL !== TLCGROUP_BACKEND) {
           GAS_URL = TLCGROUP_BACKEND;
@@ -183,15 +231,21 @@ export default async function handler(req, res) {
         }
       }
       
-      // Google Apps Script can receive FormData and parse fields from e.parameter
-      // We'll send as URL-encoded form data (application/x-www-form-urlencoded)
-      // This is simpler and more reliable than multipart/form-data
+      // Forward the request appropriately
       let bodyToSend;
-      let contentType = 'application/x-www-form-urlencoded';
+      let contentType;
       
-      if (parsedBody && typeof parsedBody === 'object' && Object.keys(parsedBody).length > 0) {
-        // Convert to URLSearchParams (application/x-www-form-urlencoded)
-        // This format is parsed by GAS into e.parameter
+      if (hasDataField && dataFieldValue) {
+        // For requests with 'data' field, forward as FormData to preserve large JSON strings
+        // This avoids URL encoding issues with large payloads
+        contentType = 'multipart/form-data';
+        const formData = new FormData();
+        formData.append('data', dataFieldValue); // Forward the raw JSON string as-is
+        bodyToSend = formData;
+        console.log('[Proxy POST] Forwarding large payload as FormData (data field preserved)');
+      } else if (parsedBody && typeof parsedBody === 'object' && Object.keys(parsedBody).length > 0) {
+        // For small requests, use URL-encoded form data
+        contentType = 'application/x-www-form-urlencoded';
         const params = new URLSearchParams();
         Object.keys(parsedBody).forEach(key => {
           const value = parsedBody[key];

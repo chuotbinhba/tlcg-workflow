@@ -31,10 +31,33 @@ function doPost(e) {
     // Parse FormData - frontend sends JSON in 'data' field as FormData
     if (e.parameter && e.parameter.data) {
       try {
+        const dataString = e.parameter.data;
+        // Check if data might be truncated (common issue with large payloads)
+        if (typeof dataString === 'string') {
+          Logger.log('Received data field length: ' + dataString.length + ' characters');
+          
+          // Check for unterminated strings (common JSON parse error with large payloads)
+          if (dataString.length > 1000000) {
+            Logger.log('⚠️ WARNING: Large payload detected (' + Math.round(dataString.length / 1024 / 1024) + 'MB). This may cause parsing issues.');
+          }
+          
+          // Check for common truncation signs
+          const openBraces = (dataString.match(/\{/g) || []).length;
+          const closeBraces = (dataString.match(/\}/g) || []).length;
+          if (Math.abs(openBraces - closeBraces) > 2) {
+            Logger.log('⚠️ WARNING: JSON structure may be malformed. Open braces: ' + openBraces + ', Close braces: ' + closeBraces);
+          }
+        }
+        
         requestBody = JSON.parse(e.parameter.data);
         action = requestBody.action;
       } catch (parseError) {
-        return createResponse(false, 'Lỗi parse dữ liệu: ' + parseError.message);
+        Logger.log('❌ JSON Parse Error: ' + parseError.toString());
+        Logger.log('❌ Data length: ' + (e.parameter.data ? e.parameter.data.length : 'N/A'));
+        Logger.log('❌ Error position: ' + parseError.message);
+        
+        // Return more detailed error message
+        return createResponse(false, 'Lỗi parse dữ liệu: ' + parseError.message + '. Payload size: ' + (e.parameter.data ? Math.round(e.parameter.data.length / 1024) : 'unknown') + 'KB. Có thể payload quá lớn hoặc bị cắt.');
       }
     } else if (e.parameter && e.parameter.action) {
       action = e.parameter.action;
