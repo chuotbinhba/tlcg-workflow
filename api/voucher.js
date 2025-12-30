@@ -72,37 +72,36 @@ export default async function handler(req, res) {
     
     // Handle POST requests
     if (req.method === 'POST') {
-      // For Vercel, req.body is already parsed if Content-Type is application/json
-      // But GAS expects FormData with 'data' field containing JSON string
+      // Vercel parses FormData automatically into req.body
+      // Frontend sends FormData with fields: action, email, password, etc.
+      // Google Apps Script expects either:
+      // 1. FormData with individual fields (action, email, password) - works directly
+      // 2. FormData with 'data' field containing JSON string
       
-      let bodyToSend;
+      // Create FormData to forward to Google Apps Script
+      const formData = new FormData();
       
-      // Check if body is already FormData (from client)
-      if (req.headers['content-type']?.includes('multipart/form-data')) {
-        // If it's FormData, we need to forward it as-is
-        // But Vercel doesn't parse FormData by default, so we'll need to handle it
-        // For now, assume it's JSON that was sent as FormData by frontend
-        bodyToSend = req.body;
-      } else {
-        // Create FormData for GAS
-        // Use native FormData (available in Node 18+ on Vercel)
-        const formData = new FormData();
-        
-        // Get JSON string from body
-        let dataString;
-        if (typeof req.body === 'string') {
-          dataString = req.body;
-        } else if (req.body) {
-          dataString = JSON.stringify(req.body);
+      // Check if data is in req.body (Vercel parses FormData automatically)
+      if (req.body && typeof req.body === 'object') {
+        // If req.body has action field, it's already parsed FormData
+        if (req.body.action) {
+          // Forward as individual form fields (GAS can handle this)
+          Object.keys(req.body).forEach(key => {
+            formData.append(key, req.body[key]);
+          });
         } else {
-          dataString = JSON.stringify({});
+          // Convert object to JSON string in 'data' field
+          formData.append('data', JSON.stringify(req.body));
         }
-        
-        formData.append('data', dataString);
-        bodyToSend = formData;
+      } else if (typeof req.body === 'string') {
+        // If body is a string, wrap it in 'data' field
+        formData.append('data', req.body);
+      } else {
+        // Empty body
+        formData.append('data', JSON.stringify({}));
       }
       
-      // Extract action from body for logging
+      // Extract action for logging
       let action = 'unknown';
       if (req.body && req.body.action) {
         action = req.body.action;
@@ -111,10 +110,11 @@ export default async function handler(req, res) {
       }
       
       console.log(`[Proxy POST] ${GAS_URL.substring(0, 60)}... action: ${action}`);
+      console.log(`[Proxy POST] Body keys:`, req.body ? Object.keys(req.body) : 'no body');
       
       const response = await fetch(GAS_URL, {
         method: 'POST',
-        body: bodyToSend,
+        body: formData,
         headers: {
           'User-Agent': 'TLCG-Workflow-Proxy/1.0'
         }
