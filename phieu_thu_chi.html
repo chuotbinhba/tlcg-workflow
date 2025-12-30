@@ -2250,7 +2250,7 @@
         // 8. Click "Deploy".
         // 9. Copy the "Web app URL" and paste it here.
         // 10. Ensure your Google account has permissions to send emails via Gmail (usually default).
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbymzvpxnbdqRF5Io8KTDQrE-DIcw-3XF4Jbp-ohgEx3mEy2vMsFztbskUJKml0OujT9/exec';
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyq8GOgOLzZYsIUBzv-NzziZnSuGvRrEXY68GzFSMA8eqIZGn66xNpVPf4m5BZAKWfN/exec';
 
         // Initialize email mappings based on provided exact emails and company data
         const employeeEmailMap = {
@@ -5704,15 +5704,30 @@
                 console.log('Response status:', response.status);
                 console.log('Response ok:', response.ok);
                 
+                // Read response text once (can only be read once)
+                const responseText = await response.text();
+                console.log('Response text (first 500 chars):', responseText.substring(0, 500));
+                
+                // Check if response is ok
+                if (!response.ok) {
+                    console.error('❌ HTTP Error:', response.status, response.statusText);
+                    console.error('❌ Error response body:', responseText);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}. ${responseText.substring(0, 200)}`);
+                }
+                
                 let result;
                 try {
-                    const responseText = await response.text();
-                    console.log('Response text:', responseText);
+                    // Try to parse as JSON
+                    if (!responseText || responseText.trim() === '') {
+                        throw new Error('Empty response from server');
+                    }
+                    
                     result = JSON.parse(responseText);
                     console.log('Parsed result:', result);
                 } catch (parseError) {
                     console.error('❌ Failed to parse response:', parseError);
-                    throw new Error('Invalid response from server');
+                    console.error('❌ Response was:', responseText);
+                    throw new Error(`Invalid response from server: ${parseError.message}`);
                 }
                 
                 if (!result.success) {
@@ -5748,8 +5763,26 @@
                 showToast(`Đã gửi yêu cầu phê duyệt cho ${validRecipients.join(', ')}${validCCRecipients.length > 0 ? ' (CC: ' + validCCRecipients.join(', ') + ')' : ''}`, 'success', 'Gửi thành công');
 
             } catch (error) {
-                console.error('Lỗi khi gửi yêu cầu phê duyệt qua Google Apps Script:', error);
-                showToast('Không thể gửi yêu cầu phê duyệt tự động. Đang chuyển sang gửi qua email client', 'warning', 'Cảnh báo');
+                console.error('❌ Lỗi khi gửi yêu cầu phê duyệt qua Google Apps Script:', error);
+                console.error('❌ Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    name: error.name,
+                    response: error.response
+                });
+                
+                // More detailed error message for user
+                let errorMessage = 'Không thể gửi yêu cầu phê duyệt tự động. ';
+                if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
+                    errorMessage += 'Lỗi kết nối đến server. Vui lòng kiểm tra kết nối internet hoặc URL Google Apps Script.';
+                } else if (error.message.includes('Invalid response')) {
+                    errorMessage += 'Server trả về phản hồi không hợp lệ. Vui lòng kiểm tra Google Apps Script.';
+                } else {
+                    errorMessage += `Lỗi: ${error.message || 'Không xác định'}`;
+                }
+                errorMessage += ' Đang chuyển sang gửi qua email client...';
+                
+                showToast(errorMessage, 'warning', 'Cảnh báo');
                 
                 // Fallback to mailto: if webhook fails
                 const mailtoLink = `mailto:${recipients.join(',')}?cc=${ccRecipients.join(',')}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBodyHtml.replace(/<[^>]*>?/gm, ''))}`; // Remove HTML for mailto body
