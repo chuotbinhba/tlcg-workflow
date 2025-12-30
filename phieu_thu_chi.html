@@ -3246,7 +3246,9 @@
             
             try {
                 const response = await fetch(`${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=getVoucherSummary`, {
-                    method: 'GET'
+                    method: 'GET',
+                    mode: 'cors',
+                    redirect: 'follow'
                 });
                 
                 const result = await response.json();
@@ -3358,7 +3360,11 @@
             
             try {
                 console.log('Fetching voucher history from:', `${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=getVoucherHistory&voucherNumber=${encodeURIComponent(voucherNumber)}`);
-                const response = await fetch(`${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=getVoucherHistory&voucherNumber=${encodeURIComponent(voucherNumber)}`);
+                const response = await fetch(`${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=getVoucherHistory&voucherNumber=${encodeURIComponent(voucherNumber)}`, {
+                    method: 'GET',
+                    mode: 'cors',
+                    redirect: 'follow'
+                });
                 const result = await response.json();
                 
                 console.log('Voucher history response:', result);
@@ -3864,11 +3870,15 @@
                 
                 console.log('Sending approve request:', JSON.stringify(requestData).substring(0, 500));
                 
+                // Use FormData to avoid CORS preflight issues
+                const formData = new FormData();
+                formData.append('data', JSON.stringify(requestData));
+                
                 const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
                     method: 'POST',
                     mode: 'cors',
                     redirect: 'follow',
-                    body: JSON.stringify(requestData)
+                    body: formData
                 });
                 
                 console.log('Response status:', response.status);
@@ -3935,11 +3945,15 @@
                 
                 console.log('Sending reject request:', JSON.stringify(requestData).substring(0, 500));
                 
+                // Use FormData to avoid CORS preflight issues
+                const formData = new FormData();
+                formData.append('data', JSON.stringify(requestData));
+                
                 const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
                     method: 'POST',
                     mode: 'cors',
                     redirect: 'follow',
-                    body: JSON.stringify(requestData)
+                    body: formData
                 });
                 
                 console.log('Response status:', response.status);
@@ -4911,9 +4925,10 @@
 
                         const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
                             method: 'POST',
+                            mode: 'cors',
+                            redirect: 'follow',
                             body: formData,
                             signal: controller.signal
-                            // Don't set Content-Type header - browser sets it automatically with boundary
                         });
 
                         clearTimeout(timeoutId);
@@ -5807,8 +5822,9 @@
                 
                 const response = await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
                     method: 'POST',
+                    mode: 'cors',
+                    redirect: 'follow',
                     body: formData
-                    // Don't set Content-Type header - browser sets it automatically with boundary
                 });
                 
                 console.log('✅ Response received');

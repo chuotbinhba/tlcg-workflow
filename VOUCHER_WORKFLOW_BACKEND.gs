@@ -217,13 +217,52 @@ function handleLogin_(requestBody) {
 
 function handleGetVoucherSummary(requestBody) {
   try {
-    const sheet = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID).getSheetByName(VH_SHEET_NAME);
-    if (!sheet) {
-      return createResponse(false, 'Sheet không tồn tại');
+    // Open spreadsheet with error handling
+    let ss;
+    try {
+      ss = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID);
+    } catch (ssError) {
+      Logger.log('Error opening spreadsheet: ' + ssError.toString());
+      return createResponse(false, 'Không thể truy cập Spreadsheet: ' + ssError.message);
     }
     
-    const data = sheet.getDataRange().getValues();
-    if (data.length <= 1) {
+    if (!ss) {
+      return createResponse(false, 'Không thể mở Spreadsheet với ID: ' + VOUCHER_HISTORY_SHEET_ID);
+    }
+    
+    // Get sheet with error handling
+    let sheet;
+    try {
+      sheet = ss.getSheetByName(VH_SHEET_NAME);
+    } catch (sheetError) {
+      Logger.log('Error getting sheet: ' + sheetError.toString());
+      return createResponse(false, 'Không thể truy cập sheet: ' + sheetError.message);
+    }
+    
+    if (!sheet) {
+      return createResponse(false, 'Sheet "' + VH_SHEET_NAME + '" không tồn tại');
+    }
+    
+    // Get data with error handling
+    let data;
+    try {
+      const range = sheet.getDataRange();
+      if (!range) {
+        return createResponse(true, 'Thành công', {
+          total: 0,
+          pending: 0,
+          approved: 0,
+          rejected: 0,
+          recent: []
+        });
+      }
+      data = range.getValues();
+    } catch (dataError) {
+      Logger.log('Error getting data: ' + dataError.toString());
+      return createResponse(false, 'Không thể đọc dữ liệu từ sheet: ' + dataError.message);
+    }
+    
+    if (!data || data.length <= 1) {
       return createResponse(true, 'Thành công', {
         total: 0,
         pending: 0,
