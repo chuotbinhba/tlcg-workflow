@@ -2250,7 +2250,7 @@
         // 8. Click "Deploy".
         // 9. Copy the "Web app URL" and paste it here.
         // 10. Ensure your Google account has permissions to send emails via Gmail (usually default).
-        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyq8GOgOLzZYsIUBzv-NzziZnSuGvRrEXY68GzFSMA8eqIZGn66xNpVPf4m5BZAKWfN/exec';
+        const GOOGLE_APPS_SCRIPT_WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbyWsXrR-2PzxvzsFBdowy6m10au5VSAwsq1Ayk-fZm5YfeiGjBbMNjjhr-itAV4SVOs/exec';
 
         // Initialize email mappings based on provided exact emails and company data
         const employeeEmailMap = {
@@ -5382,7 +5382,11 @@
             const formattedSubmitDateTime = `lúc ${currentDateTime}`;
 
             // Email body for APPROVERS (with buttons)
-            const approverEmailBodyHtml = `
+            // Declare outside try block so it's accessible in catch block
+            let approverEmailBodyHtml = '';
+            let requesterEmailBodyHtml = '';
+            
+            approverEmailBodyHtml = `
                 <p>Kính gửi các cấp quản lý,</p>
                 <p>Phiếu <b>${voucherType}</b> số <b>${voucherNumber}</b> đã được tạo và đang chờ phê duyệt.</p>
                 <p><b>Thông tin chi tiết phiếu:</b></p>
@@ -5456,7 +5460,7 @@
             `;
             
             // Email body for REQUESTER (info only, NO buttons)
-            const requesterEmailBodyHtml = `
+            requesterEmailBodyHtml = `
                 <p>Kính gửi ${requestorName},</p>
                 <p>Phiếu <b>${voucherType}</b> số <b>${voucherNumber}</b> đã được gửi để phê duyệt.</p>
                 <p><b>Thông tin chi tiết phiếu:</b></p>
@@ -5785,7 +5789,10 @@
                 showToast(errorMessage, 'warning', 'Cảnh báo');
                 
                 // Fallback to mailto: if webhook fails
-                const mailtoLink = `mailto:${recipients.join(',')}?cc=${ccRecipients.join(',')}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(emailBodyHtml.replace(/<[^>]*>?/gm, ''))}`; // Remove HTML for mailto body
+                // Use approverEmailBodyHtml (or requesterEmailBodyHtml) for the mailto body
+                const emailBodyForMailto = approverEmailBodyHtml || requesterEmailBodyHtml || 'Phiếu đã được gửi để phê duyệt';
+                const mailtoBody = emailBodyForMailto.replace(/<[^>]*>?/gm, '').substring(0, 2000); // Remove HTML and limit length
+                const mailtoLink = `mailto:${recipients.join(',')}?cc=${ccRecipients.join(',')}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(mailtoBody)}`;
                 window.open(mailtoLink, '_blank');
             } finally {
                 loadingIndicator.classList.remove('show');

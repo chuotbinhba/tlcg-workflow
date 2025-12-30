@@ -1,110 +1,110 @@
-# Fix: CORS Error khi mở file HTML trực tiếp
+# 🔧 Fix CORS Error - Google Apps Script Deployment
 
-## 🐛 Lỗi
-
+## ❌ Lỗi hiện tại:
 ```
-Access to fetch at '...' from origin 'null' has been blocked by CORS policy
-```
-
-**Nguyên nhân:** Bạn đang mở file HTML trực tiếp từ file system (`file://`), browser chặn CORS requests.
-
----
-
-## ✅ Giải pháp
-
-### Cách 1: Dùng Local Web Server (Nhanh nhất) ⭐
-
-#### Option A: Python (Mac/Linux thường có sẵn)
-
-```bash
-cd "/Volumes/MacEx01/TLCG Workflow"
-python3 -m http.server 8000
+Access to fetch at 'https://script.google.com/macros/s/.../exec' from origin 
+'https://workflow.egg-ventures.com' has been blocked by CORS policy: 
+Response to preflight request doesn't pass access control check: 
+No 'Access-Control-Allow-Origin' header is present on the requested resource.
 ```
 
-Sau đó mở: **http://localhost:8000/tlcgroup-intranet.html**
+## ✅ Giải pháp:
 
-#### Option B: Node.js (nếu đã cài)
+### Bước 1: Đảm bảo Deployment Settings đúng
 
-```bash
-# Cài http-server (chỉ cần 1 lần)
-npm install -g http-server
+1. **Mở Google Apps Script:** https://script.google.com
+2. **Click "Deploy"** → **"Manage deployments"**
+3. **Click icon ✏️ (Edit)** ở deployment hiện tại
+4. **Kiểm tra settings:**
+   - ✅ **Execute as:** `Me (your-email@gmail.com)`
+   - ✅ **Who has access:** `Anyone` ⚠️ QUAN TRỌNG!
+5. **Click "Save"**
 
-# Chạy server
-cd "/Volumes/MacEx01/TLCG Workflow"
-http-server -p 8000
-```
+### Bước 2: Deploy lại với version mới
 
-Sau đó mở: **http://localhost:8000/tlcgroup-intranet.html**
+1. **Click "Deploy"** → **"New deployment"**
+2. **Type:** Web app
+3. **Settings:**
+   - Description: `TLCG Voucher Workflow v1.1 (CORS fix)`
+   - Execute as: `Me`
+   - Who has access: `Anyone` ⚠️
+4. **Click "Deploy"**
+5. **Copy Web App URL mới**
 
-#### Option C: PHP (nếu có)
+### Bước 3: Cập nhật Code Backend (Đã được sửa)
 
-```bash
-cd "/Volumes/MacEx01/TLCG Workflow"
-php -S localhost:8000
-```
+Code đã được cập nhật để thêm CORS headers:
+- ✅ `createResponse()` function đã có CORS headers
+- ✅ `doGet()` function đã có CORS headers
 
----
+**Nếu bạn chưa copy code mới:**
+1. Mở file `VOUCHER_WORKFLOW_BACKEND.gs`
+2. Copy toàn bộ code
+3. Paste vào Google Apps Script
+4. **Save** và **Deploy lại**
 
-### Cách 2: Deploy lên Netlify (Production) ⭐⭐
+### Bước 4: Cập nhật URL trong Frontend
 
-**Đã có setup sẵn!**
-
-1. **Deploy lên Netlify:**
-   ```bash
-   cd "/Volumes/MacEx01/TLCG Workflow"
-   netlify deploy --prod
+1. Mở file `phieu_thu_chi.html`
+2. Tìm dòng 2253:
+   ```javascript
+   const GOOGLE_APPS_SCRIPT_WEB_APP_URL = '...';
    ```
+3. Cập nhật với Web App URL mới từ Bước 2
+4. **Lưu file**
 
-2. **Hoặc drag & drop:**
-   - Vào: https://app.netlify.com/drop
-   - Kéo thả folder vào
+### Bước 5: Clear Browser Cache
 
-3. **Mở URL từ Netlify** (không phải file://)
+1. **Clear cache:** Ctrl+Shift+Delete (hoặc Cmd+Shift+Delete)
+2. **Hoặc:** Hard refresh: Ctrl+F5 (hoặc Cmd+Shift+R)
+3. **Hoặc:** Mở trang ở Incognito/Private mode
 
----
+### Bước 6: Test lại
 
-## 🚀 Quick Fix: Tạo Script chạy Local Server
-
-Tạo file `start-server.sh`:
-
-```bash
-#!/bin/bash
-cd "/Volumes/MacEx01/TLCG Workflow"
-echo "🚀 Starting local server..."
-echo "📝 Open: http://localhost:8000/tlcgroup-intranet.html"
-python3 -m http.server 8000
-```
-
-**Cách dùng:**
-```bash
-chmod +x start-server.sh
-./start-server.sh
-```
+1. Mở `phieu_thu_chi.html`
+2. Submit form
+3. Mở **Developer Console** (F12)
+4. Kiểm tra:
+   - ✅ Không còn CORS error
+   - ✅ Response được nhận thành công
 
 ---
 
-## 🔧 Tại sao bị CORS?
+## 🔍 Troubleshooting
 
-- **File:// protocol:** Browser coi là không an toàn
-- **Google Apps Script:** Không cho phép CORS từ file://
-- **Security:** Browser chặn cross-origin requests từ local files
+### Vẫn gặp CORS error?
+
+1. **Kiểm tra deployment:**
+   - Đảm bảo "Who has access" = **"Anyone"** (KHÔNG phải "Only myself")
+   - Thử deploy lại với version mới
+
+2. **Kiểm tra URL:**
+   - URL phải có `/exec` ở cuối
+   - URL KHÔNG có `/u/9/` trong đường dẫn
+
+3. **Kiểm tra code backend:**
+   - Đảm bảo `createResponse()` có CORS headers
+   - Xem Execution logs trong Google Apps Script
+
+4. **Thử cách khác (nếu vẫn lỗi):**
+   - Deploy lại project hoàn toàn mới
+   - Hoặc contact Google support (CORS là vấn đề của Google Apps Script)
 
 ---
 
-## ✅ Sau khi fix
+## 📝 Notes
 
-1. **Chạy local server** hoặc **deploy lên Netlify**
-2. **Mở URL** (http://localhost:8000/... hoặc Netlify URL)
-3. **Test login** - CORS error sẽ biến mất!
-
----
-
-## 📝 Lưu ý
-
-- **Development:** Dùng local server (http://localhost:8000)
-- **Production:** Deploy lên Netlify (https://workflow.egg-ventures.com)
+- Google Apps Script Web Apps **nên tự động** handle CORS khi deploy với "Anyone"
+- CORS headers trong code là **backup** để đảm bảo
+- Nếu vẫn lỗi sau khi thử tất cả → Có thể là issue từ phía Google Apps Script
 
 ---
 
-**🎉 Sau khi chạy local server hoặc deploy, CORS error sẽ hết!**
+## ✅ Checklist
 
+- [ ] Deployment settings: "Anyone" access
+- [ ] Code backend đã có CORS headers
+- [ ] Đã deploy lại với version mới
+- [ ] URL đã được cập nhật trong frontend
+- [ ] Đã clear browser cache
+- [ ] Đã test lại và không còn CORS error
