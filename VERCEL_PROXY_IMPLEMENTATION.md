@@ -184,7 +184,14 @@ export default async function handler(req, res) {
    ```
    GOOGLE_APPS_SCRIPT_URL = https://script.google.com/macros/s/YOUR_ID/exec
    ```
-3. Redeploy your project
+   **⚠️ Important:** 
+   - This is a **server-side** variable (no prefix needed for Vercel Serverless Functions)
+   - If you use Next.js client-side, you'll need `NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL`
+   - If you use Vite client-side, you'll need `VITE_GOOGLE_APPS_SCRIPT_URL`
+   - See `ENVIRONMENT_VARIABLES.md` for details
+3. Select environments: Production, Preview, Development (all)
+4. Click **Save**
+5. **Redeploy your project**
 
 ### Step 4: Update Frontend Code
 
@@ -356,6 +363,10 @@ export default async function handler(req, res) {
 - Check Vercel dashboard → Settings → Environment Variables
 - Make sure variables are set for correct environment (Production, Preview, Development)
 - Redeploy after adding variables
+- **Important:** For Vercel Serverless Functions (server-side), use `GOOGLE_APPS_SCRIPT_URL` (no prefix needed)
+- If using Next.js client-side, use `NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL`
+- If using Vite client-side, use `VITE_GOOGLE_APPS_SCRIPT_URL`
+- See `ENVIRONMENT_VARIABLES.md` for detailed explanation
 
 ### 404 on API route
 - Check file structure matches: `api/voucher/[action].js`

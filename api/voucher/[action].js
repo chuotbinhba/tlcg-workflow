@@ -6,8 +6,16 @@ export default async function handler(req, res) {
   const { action } = req.query;
   
   // Get GAS URL from environment variable
+  // ⚠️ IMPORTANT: This is a SERVER-SIDE variable (no prefix needed for Vercel Serverless Functions)
+  // If undefined, log warning and use fallback
   const GAS_URL = process.env.GOOGLE_APPS_SCRIPT_URL || 
-    'https://script.google.com/macros/s/AKfycbysXIIwCapkvlVgGg77oLAq4mxCF-LvpzyLEQP0wePlOhkkjDYT3CRKNEXai3fwBECq/exec';
+    'https://script.google.com/macros/s/AKfycbwcz8QPzcb7fCeTc7f7xjBHNamLq44bh-TTTH_1MCCOOwtw2bI9U_8yACfAr6SV_V3K/exec';
+  
+  // Log warning if using fallback (environment variable not set)
+  if (!process.env.GOOGLE_APPS_SCRIPT_URL) {
+    console.warn('[Proxy Warning] GOOGLE_APPS_SCRIPT_URL environment variable not set. Using fallback URL.');
+    console.warn('[Proxy Warning] Please set GOOGLE_APPS_SCRIPT_URL in Vercel Dashboard → Settings → Environment Variables');
+  }
   
   // CORS headers - allow your domain
   const origin = req.headers.origin || '';
