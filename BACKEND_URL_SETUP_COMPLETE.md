@@ -2,8 +2,8 @@
 
 ## 📋 Two Backends Overview
 
-### 1. VOUCHER_WORKFLOW_BACKEND.gs (Primary for Vouchers)
-**URL:** `https://script.google.com/macros/s/AKfycbwcz8QPzcb7fCeTc7f7xjBHNamLq44bh-TTTH_1MCCOOwtw2bI9U_8yACfAr6SV_V3K/exec`
+### 1. Phieu Thu Chi Backend (Primary for Vouchers)
+**URL:** `https://script.google.com/macros/s/AKfycbyltkunEjTHhFSRH6evpwDAxZk74QouLTG-FSlCOQtLJGts8guLhFYuBq9n1h0fJvyd/exec`
 
 **Handles:**
 - ✅ `getVoucherSummary` - Get voucher summary list
@@ -20,8 +20,8 @@
 - `approve_voucher.html` - Voucher approval
 - `reject_voucher.html` - Voucher rejection
 
-### 2. TLCG_INTRANET_BACKEND_COMPLETE.gs (Intranet Backend)
-**URL:** `https://script.google.com/macros/s/AKfycbw05Cr7-Mm2TtgQgxVaVoobvdSUHtX2Y8vjTi0Fd-_UmL0ojojyLDOwXwyaMWDwGW06Iw/exec`
+### 2. TLCGroup Backend (Intranet Backend)
+**URL:** `https://script.google.com/macros/s/AKfycbwQ9lisLCr2iATBF2NGOqdNlG_f8ygDKrIEYkiZYsaVbm_7gFI4P_EC0FC5Wq-TJdMYKw/exec`
 
 **Handles:**
 - ✅ `login` - User authentication
@@ -55,7 +55,7 @@ All frontend files use `/api/voucher` (proxy) which routes to:
 2. Add/Update:
    ```
    Name: GOOGLE_APPS_SCRIPT_URL
-   Value: https://script.google.com/macros/s/AKfycbwcz8QPzcb7fCeTc7f7xjBHNamLq44bh-TTTH_1MCCOOwtw2bI9U_8yACfAr6SV_V3K/exec
+   Value: https://script.google.com/macros/s/AKfycbyltkunEjTHhFSRH6evpwDAxZk74QouLTG-FSlCOQtLJGts8guLhFYuBq9n1h0fJvyd/exec
    ```
 3. Select all environments (Production, Preview, Development)
 4. Click **Save**

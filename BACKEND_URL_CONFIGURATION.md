@@ -2,8 +2,8 @@
 
 ## 🔍 Two Backends Identified
 
-### 1. TLCG_INTRANET_BACKEND_COMPLETE.gs (COMPLETE BACKEND)
-**URL:** `https://script.google.com/macros/s/AKfycbw05Cr7-Mm2TtgQgxVaVoobvdSUHtX2Y8vjTi0Fd-_UmL0ojojyLDOwXwyaMWDwGW06Iw/exec`
+### 1. TLCGroup Backend (Intranet Operations)
+**URL:** `https://script.google.com/macros/s/AKfycbwQ9lisLCr2iATBF2NGOqdNlG_f8ygDKrIEYkiZYsaVbm_7gFI4P_EC0FC5Wq-TJdMYKw/exec`
 
 **Handles:**
 - ✅ `login` - Authentication
@@ -18,8 +18,8 @@
 - `phieu_thu_chi.html` - For all voucher operations
 - All voucher-related pages
 
-### 2. VOUCHER_WORKFLOW_BACKEND.gs (VOUCHER-ONLY BACKEND)
-**URL:** `https://script.google.com/macros/s/AKfycbwcz8QPzcb7fCeTc7f7xjBHNamLq44bh-TTTH_1MCCOOwtw2bI9U_8yACfAr6SV_V3K/exec`
+### 2. Phieu Thu Chi Backend (Voucher Operations)
+**URL:** `https://script.google.com/macros/s/AKfycbyltkunEjTHhFSRH6evpwDAxZk74QouLTG-FSlCOQtLJGts8guLhFYuBq9n1h0fJvyd/exec`
 
 **Handles:**
 - ✅ Voucher-specific operations only

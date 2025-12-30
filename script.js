@@ -16,7 +16,7 @@
         // 9. Copy the "Web app URL" and paste it here.
         // 10. Ensure your Google account has permissions to send emails via Gmail (usually default).
         // Use proxy URL to avoid CORS issues
-        // For direct URL, use: 'https://script.google.com/macros/s/AKfycbw05Cr7-Mm2TtgQgxVaVoobvdSUHtX2Y8vjTi0Fd-_UmL0ojojyLDOwXwyaMWDwGW06Iw/exec'
+        // For direct URL, use: 'https://script.google.com/macros/s/AKfycbwQ9lisLCr2iATBF2NGOqdNlG_f8ygDKrIEYkiZYsaVbm_7gFI4P_EC0FC5Wq-TJdMYKw/exec'
         const GOOGLE_APPS_SCRIPT_WEB_APP_URL = '/api/voucher';
 
         // Initialize email mappings based on provided exact emails and company data
