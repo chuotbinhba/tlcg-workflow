@@ -237,6 +237,8 @@ function handleGetVoucherSummary(requestBody) {
     const headers = data[0];
     const rows = data.slice(1);
     
+    Logger.log('Total rows in sheet (excluding header): ' + rows.length);
+    
     // Get latest entry for each voucher number
     const voucherMap = new Map();
     rows.forEach(row => {
@@ -293,6 +295,7 @@ function handleGetVoucherSummary(requestBody) {
     const vouchers = Array.from(voucherMap.values());
     
     Logger.log('Total unique vouchers found: ' + vouchers.length);
+    Logger.log('Voucher numbers: ' + Array.from(voucherMap.keys()).join(', '));
     
     // Sort by timestamp descending (newest first)
     vouchers.sort((a, b) => {

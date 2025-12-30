@@ -3386,6 +3386,16 @@
                         if (h.meta) {
                             currentModalMeta = { ...currentModalMeta, ...h.meta };
                         }
+                        // Try to parse signature from note field if it contains JSON
+                        if (h.note && h.note.includes('{')) {
+                            try {
+                                const noteMeta = JSON.parse(h.note);
+                                if (noteMeta.requesterSignature) currentModalMeta.requesterSignature = noteMeta.requesterSignature;
+                                if (noteMeta.approverSignature) currentModalMeta.approverSignature = noteMeta.approverSignature;
+                            } catch (e) {
+                                // Not JSON, ignore
+                            }
+                        }
                         // Get attachments from any history entry (usually the Submit entry has it)
                         if (h.attachments && !mergedAttachments) {
                             mergedAttachments = h.attachments;
@@ -3393,6 +3403,20 @@
                     });
                     if (voucher.meta) {
                         currentModalMeta = { ...currentModalMeta, ...voucher.meta };
+                    }
+                    
+                    // Fallback: Get signatures from localStorage if not in meta
+                    if (!currentModalMeta.requesterSignature) {
+                        const savedRequesterSig = localStorage.getItem(SIGNATURE_STORAGE_KEY);
+                        if (savedRequesterSig) {
+                            currentModalMeta.requesterSignature = savedRequesterSig;
+                        }
+                    }
+                    if (!currentModalMeta.approverSignature) {
+                        const savedApproverSig = localStorage.getItem(APPROVER_SIGNATURE_KEY);
+                        if (savedApproverSig) {
+                            currentModalMeta.approverSignature = savedApproverSig;
+                        }
                     }
                     
                     // Store merged attachments URL back to voucher object
@@ -3959,7 +3983,21 @@
             }
             
             const voucher = currentModalVoucher;
-            const meta = currentModalMeta || voucher.meta || {}; // Use merged meta
+            let meta = currentModalMeta || voucher.meta || {}; // Use merged meta
+            
+            // Fallback: Try to get signatures from localStorage if not in meta
+            if (!meta.requesterSignature) {
+                const savedRequesterSig = localStorage.getItem(SIGNATURE_STORAGE_KEY);
+                if (savedRequesterSig) {
+                    meta.requesterSignature = savedRequesterSig;
+                }
+            }
+            if (!meta.approverSignature) {
+                const savedApproverSig = localStorage.getItem(APPROVER_SIGNATURE_KEY);
+                if (savedApproverSig) {
+                    meta.approverSignature = savedApproverSig;
+                }
+            }
             
             // Determine voucher type title
             const voucherTypeUpper = (voucher.voucherType || '').toUpperCase();
