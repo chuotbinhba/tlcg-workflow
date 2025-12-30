@@ -3666,24 +3666,34 @@
                         </p>
                         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                             ${(function() {
-                                // Parse attachments: format is "filename|url\nfilename2|url2" or just "url"
-                                const lines = voucher.attachments.split('\n').filter(l => l.trim());
-                                return lines.map(line => {
-                                    const parts = line.split('|');
-                                    let fileName, fileUrl;
-                                    if (parts.length >= 2) {
-                                        fileName = parts[0].trim();
-                                        fileUrl = parts[1].trim();
-                                    } else {
-                                        fileUrl = parts[0].trim();
-                                        fileName = 'Tài liệu đính kèm';
-                                    }
+                                // Parse attachments: format from backend is "filename\nurl\n\nfilename2\nurl2"
+                                // Split by double newline to get each file block
+                                const fileBlocks = voucher.attachments.split('\n\n').filter(block => block.trim());
+                                return fileBlocks.map(block => {
+                                    const lines = block.split('\n').filter(l => l.trim());
+                                    if (lines.length < 2) return '';
+                                    
+                                    // First line is filename (may include size like "filename.pdf (2.45 MB)")
+                                    // Second line is URL
+                                    let fileName = lines[0].trim();
+                                    const fileUrl = lines[1].trim();
+                                    
                                     if (!fileUrl.startsWith('http')) return '';
+                                    
+                                    // Extract size from filename if present (format: "filename.pdf (2.45 MB)")
+                                    let displayName = fileName;
+                                    const sizeMatch = fileName.match(/^(.+?)\s*\((.+?)\)\s*$/);
+                                    if (sizeMatch) {
+                                        const baseName = sizeMatch[1].trim();
+                                        const size = sizeMatch[2].trim();
+                                        displayName = baseName + ' <span style="opacity: 0.7; font-size: 0.75rem;">(' + size + ')</span>';
+                                    }
+                                    
                                     return '<a href="' + fileUrl + '" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #3b82f6; color: white; padding: 0.5rem 0.75rem; border-radius: 6px; text-decoration: none; font-size: 0.8125rem; font-weight: 500; margin-right: 0.5rem;">' +
                                         '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>' +
-                                        fileName +
+                                        displayName +
                                     '</a>';
-                                }).join('');
+                                }).filter(l => l).join('');
                             })()}
                         </div>
                     </div>
@@ -4194,22 +4204,32 @@
                             <span class="info-label">Kèm theo</span>
                             <span class="info-colon">:</span>
                             <span class="info-value" style="font-style: italic;">${voucher.attachments ? (function() {
-                                // Parse attachments: format is "filename|url\nfilename2|url2"
-                                const lines = voucher.attachments.split(/\\n|\n/).filter(l => l.trim());
-                                if (lines.length === 0) return '(Không có tệp đính kèm)';
+                                // Parse attachments: format from backend is "filename\nurl\n\nfilename2\nurl2"
+                                // Split by double newline to get each file block
+                                const fileBlocks = voucher.attachments.split('\n\n').filter(block => block.trim());
+                                if (fileBlocks.length === 0) return '(Không có tệp đính kèm)';
                                 
-                                const linksList = lines.map((line, index) => {
-                                    const parts = line.split('|');
-                                    let fileName, fileUrl;
-                                    if (parts.length >= 2) {
-                                        fileName = parts[0].trim();
-                                        fileUrl = parts[1].trim();
-                                    } else {
-                                        fileUrl = parts[0].trim();
-                                        fileName = 'Tệp đính kèm ' + (index + 1);
-                                    }
+                                const linksList = fileBlocks.map(block => {
+                                    const lines = block.split('\n').filter(l => l.trim());
+                                    if (lines.length < 2) return '';
+                                    
+                                    // First line is filename (may include size like "filename.pdf (2.45 MB)")
+                                    // Second line is URL
+                                    let fileName = lines[0].trim();
+                                    const fileUrl = lines[1].trim();
+                                    
                                     if (!fileUrl.startsWith('http')) return '';
-                                    return '<div style="margin-bottom: 4px;"><a href="' + fileUrl + '" target="_blank" style="color: #2563eb; text-decoration: underline;">' + fileName + '</a></div>';
+                                    
+                                    // Extract size from filename if present (format: "filename.pdf (2.45 MB)")
+                                    let displayName = fileName;
+                                    const sizeMatch = fileName.match(/^(.+?)\s*\((.+?)\)\s*$/);
+                                    if (sizeMatch) {
+                                        const baseName = sizeMatch[1].trim();
+                                        const size = sizeMatch[2].trim();
+                                        displayName = baseName + ' <span style="font-size: 0.875rem; color: #64748b;">(' + size + ')</span>';
+                                    }
+                                    
+                                    return '<div style="margin-bottom: 4px;"><a href="' + fileUrl + '" target="_blank" style="color: #2563eb; text-decoration: underline;">' + displayName + '</a></div>';
                                 }).filter(l => l).join('');
                                 
                                 return '<div style="display: flex; flex-direction: column;">' + linksList + '</div>';

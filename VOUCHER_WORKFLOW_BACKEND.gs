@@ -7,6 +7,19 @@ const VOUCHER_HISTORY_SHEET_ID = '1ujmPbtEdkGLgEshfhvV8gRB6R0GLI31jsZM5rDOJS0g';
 const VH_SHEET_NAME = 'Voucher_History';
 
 function doGet(e) {
+  try {
+    const action = e.parameter.action;
+    
+    if (action === 'getVoucherSummary') {
+      return handleGetVoucherSummary(e.parameter);
+    } else if (action === 'getVoucherHistory') {
+      return handleGetVoucherHistory(e.parameter);
+    }
+    
+  } catch (error) {
+    return createResponse(false, 'Lỗi: ' + error.message);
+  }
+  
   return HtmlService.createHtmlOutput("<h2>Backend đang chạy!</h2><p>Vui lòng gửi dữ liệu từ giao diện chính.</p>");
 }
 
@@ -38,7 +51,8 @@ function doPost(e) {
       case 'sendApprovalEmail': return handleSendEmail(requestBody);
       case 'approveVoucher': return handleApproveVoucher(requestBody);
       case 'rejectVoucher': return handleRejectVoucher(requestBody);
-      case 'getVoucherSummary': return handleGetVoucherSummary();
+      case 'getVoucherSummary': return handleGetVoucherSummary(requestBody);
+      case 'getVoucherHistory': return handleGetVoucherHistory(requestBody);
       default: return createResponse(false, 'Action không hợp lệ');
     }
   } catch (error) {
@@ -50,21 +64,61 @@ function doPost(e) {
 function handleSendEmail(requestBody) {
   try {
     const emailData = requestBody.email;
+    const requesterEmailData = requestBody.requesterEmail || null;
     const voucher = requestBody.voucher || {};
     if (!emailData || !emailData.to) return createResponse(false, 'Thiếu người nhận');
-
-    // Gửi email bằng GmailApp
-    let options = { htmlBody: emailData.body };
-    if (emailData.cc && emailData.cc.trim() !== "") options.cc = emailData.cc.trim();
-    GmailApp.sendEmail(emailData.to, emailData.subject, '', options);
 
     const voucherNo = voucher.voucherNumber || 'AUTO-' + new Date().getTime();
     let fileLinks = "";
 
-    // Upload files
+    // Upload files - deduplicate by fileName before uploading
     if (voucher.files && voucher.files.length > 0) {
-      const uploaded = uploadFilesToDrive_(voucher.files, voucherNo);
-      fileLinks = uploaded.map(f => f.error ? f.fileName + " (Lỗi)" : f.fileName + "\n" + f.fileUrl).join('\n\n');
+      // Deduplicate files by fileName to prevent duplicate uploads
+      const uniqueFiles = [];
+      const seenFileNames = new Set();
+      for (const file of voucher.files) {
+        if (!seenFileNames.has(file.fileName)) {
+          seenFileNames.add(file.fileName);
+          uniqueFiles.push(file);
+        }
+      }
+      
+      if (uniqueFiles.length > 0) {
+        const uploaded = uploadFilesToDrive_(uniqueFiles, voucherNo);
+        fileLinks = uploaded.map(f => {
+          if (f.error) {
+            return f.fileName + " (Lỗi upload)";
+          }
+          // Format: "filename.pdf (2.45 MB)\nhttps://drive.google.com/file/..."
+          const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) + " MB" : '';
+          const fileNameWithSize = sizeMB ? f.fileName + " (" + sizeMB + ")" : f.fileName;
+          return fileNameWithSize + "\n" + f.fileUrl;
+        }).join('\n\n');
+      }
+    }
+
+    // Gửi email bằng GmailApp - to approvers
+    try {
+      let options = { htmlBody: emailData.body };
+      if (emailData.cc && emailData.cc.trim() !== "") options.cc = emailData.cc.trim();
+      GmailApp.sendEmail(emailData.to, emailData.subject, '', options);
+    } catch (emailError) {
+      return createResponse(false, 'Lỗi gửi email đến người phê duyệt: ' + emailError.message);
+    }
+
+    // Gửi email thông báo cho requester
+    if (requesterEmailData && requesterEmailData.to && requesterEmailData.to.trim() !== '') {
+      try {
+        GmailApp.sendEmail(
+          requesterEmailData.to,
+          requesterEmailData.subject || '[THÔNG BÁO] Phiếu đã được gửi phê duyệt',
+          '',
+          { htmlBody: requesterEmailData.body || '' }
+        );
+      } catch (requesterEmailError) {
+        // Log but don't fail - requester email is secondary
+        Logger.log('Warning: Failed to send requester email: ' + requesterEmailError.toString());
+      }
     }
 
     appendHistory_({
@@ -90,35 +144,216 @@ function handleSendEmail(requestBody) {
 
 /** 2. PHÊ DUYỆT / TỪ CHỐI */
 function handleApproveVoucher(requestBody) {
-  const v = requestBody.voucher;
-  appendHistory_({ ...v, status: 'Approved', action: 'Approved', by: v.approvedBy || v.approverEmail, note: 'Duyệt qua Email', attachments: "" });
-  GmailApp.sendEmail(v.requestorEmail, "[ĐÃ DUYỆT] " + v.voucherNumber, "Phiếu của bạn đã được duyệt.");
-  return createResponse(true, 'Đã duyệt thành công');
+  try {
+    const v = requestBody.voucher || {};
+    appendHistory_({ 
+      voucherNumber: v.voucherNumber || '',
+      voucherType: v.voucherType || '',
+      company: v.company || '',
+      employee: v.employee || '',
+      amount: v.amount || 0,
+      status: 'Approved', 
+      action: 'Approved', 
+      by: v.approvedBy || v.approverEmail || '', 
+      note: 'Duyệt qua Email', 
+      requestorEmail: v.requestorEmail || '',
+      approverEmail: v.approverEmail || '',
+      attachments: "" 
+    });
+    
+    if (v.requestorEmail) {
+      GmailApp.sendEmail(v.requestorEmail, "[ĐÃ DUYỆT] " + (v.voucherNumber || ''), "Phiếu của bạn đã được duyệt.");
+    }
+    
+    return createResponse(true, 'Đã duyệt thành công');
+  } catch (error) {
+    return createResponse(false, 'Lỗi: ' + error.message);
+  }
 }
 
 function handleRejectVoucher(requestBody) {
-  const v = requestBody.voucher;
-  appendHistory_({ ...v, status: 'Rejected', action: 'Rejected', by: v.rejectedBy || v.approverEmail, note: v.rejectReason, attachments: "" });
-  GmailApp.sendEmail(v.requestorEmail, "[TỪ CHỐI] " + v.voucherNumber, "Lý do: " + v.rejectReason);
-  return createResponse(true, 'Đã từ chối phiếu');
+  try {
+    const v = requestBody.voucher || {};
+    appendHistory_({ 
+      voucherNumber: v.voucherNumber || '',
+      voucherType: v.voucherType || '',
+      company: v.company || '',
+      employee: v.employee || '',
+      amount: v.amount || 0,
+      status: 'Rejected', 
+      action: 'Rejected', 
+      by: v.rejectedBy || v.approverEmail || '', 
+      note: v.rejectReason || 'Từ chối', 
+      requestorEmail: v.requestorEmail || '',
+      approverEmail: v.approverEmail || '',
+      attachments: "" 
+    });
+    
+    if (v.requestorEmail) {
+      GmailApp.sendEmail(v.requestorEmail, "[TỪ CHỐI] " + (v.voucherNumber || ''), "Lý do: " + (v.rejectReason || ''));
+    }
+    
+    return createResponse(true, 'Đã từ chối phiếu');
+  } catch (error) {
+    return createResponse(false, 'Lỗi: ' + error.message);
+  }
 }
 
 /** 3. LOGIN & THỐNG KÊ */
 function handleLogin_(requestBody) {
-  const ss = SpreadsheetApp.openById(USERS_SHEET_ID);
-  const data = ss.getSheetByName('Nhân viên').getDataRange().getValues();
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][4] == requestBody.email) {
-      return createResponse(true, 'Thành công', { name: data[i][0], email: data[i][4], role: data[i][1] });
+  try {
+    const ss = SpreadsheetApp.openById(USERS_SHEET_ID);
+    const data = ss.getSheetByName('Nhân viên').getDataRange().getValues();
+    for (let i = 1; i < data.length; i++) {
+      if (data[i][4] == requestBody.email) {
+        return createResponse(true, 'Thành công', { name: data[i][0], email: data[i][4], role: data[i][1] });
+      }
     }
+    return createResponse(false, 'Tài khoản không tồn tại');
+  } catch (error) {
+    return createResponse(false, 'Lỗi: ' + error.message);
   }
-  return createResponse(false, 'Tài khoản không tồn tại');
 }
 
-function handleGetVoucherSummary() {
-  const sheet = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID).getSheetByName(VH_SHEET_NAME);
-  const data = sheet.getDataRange().getValues();
-  return createResponse(true, 'Thành công', { total: data.length - 1 });
+function handleGetVoucherSummary(requestBody) {
+  try {
+    const sheet = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID).getSheetByName(VH_SHEET_NAME);
+    if (!sheet) {
+      return createResponse(false, 'Sheet không tồn tại');
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      return createResponse(true, 'Thành công', {
+        total: 0,
+        pending: 0,
+        approved: 0,
+        rejected: 0,
+        recent: []
+      });
+    }
+    
+    // Column structure: A=VoucherNumber, B=VoucherType, C=Company, D=Employee, E=Amount, F=Status, G=Action, H=By, I=Note, J=Attachments, K=RequestorEmail, L=ApproverEmail, M=Timestamp
+    const headers = data[0];
+    const rows = data.slice(1);
+    
+    // Get latest entry for each voucher number
+    const voucherMap = new Map();
+    rows.forEach(row => {
+      const voucherNumber = row[0]; // Column A
+      const timestamp = row[12] || new Date(0); // Column M
+      
+      if (!voucherMap.has(voucherNumber) || timestamp > voucherMap.get(voucherNumber).timestamp) {
+        voucherMap.set(voucherNumber, {
+          voucherNumber: voucherNumber || '',
+          voucherType: row[1] || '', // Column B
+          company: row[2] || '', // Column C
+          employee: row[3] || '', // Column D
+          amount: row[4] || 0, // Column E
+          status: row[5] || '', // Column F
+          action: row[6] || '', // Column G
+          by: row[7] || '', // Column H
+          note: row[8] || '', // Column I
+          attachments: row[9] || '', // Column J
+          requestorEmail: row[10] || '', // Column K
+          approverEmail: row[11] || '', // Column L
+          timestamp: timestamp
+        });
+      }
+    });
+    
+    const vouchers = Array.from(voucherMap.values());
+    
+    // Sort by timestamp descending (newest first)
+    vouchers.sort((a, b) => {
+      const timeA = a.timestamp instanceof Date ? a.timestamp.getTime() : new Date(a.timestamp).getTime();
+      const timeB = b.timestamp instanceof Date ? b.timestamp.getTime() : new Date(b.timestamp).getTime();
+      return timeB - timeA;
+    });
+    
+    // Count by status
+    const pending = vouchers.filter(v => v.status === 'Pending').length;
+    const approved = vouchers.filter(v => v.status === 'Approved').length;
+    const rejected = vouchers.filter(v => v.status === 'Rejected').length;
+    
+    // Get recent 20 vouchers
+    const recent = vouchers.slice(0, 20).map(v => ({
+      voucherNumber: v.voucherNumber,
+      voucherType: v.voucherType,
+      company: v.company,
+      employee: v.employee,
+      amount: v.amount,
+      status: v.status,
+      action: v.action,
+      by: v.by,
+      timestamp: v.timestamp instanceof Date ? v.timestamp.toISOString() : v.timestamp,
+      timestampFormatted: formatTimestamp(v.timestamp)
+    }));
+    
+    return createResponse(true, 'Thành công', {
+      total: vouchers.length,
+      pending: pending,
+      approved: approved,
+      rejected: rejected,
+      recent: recent
+    });
+  } catch (error) {
+    return createResponse(false, 'Lỗi: ' + error.message);
+  }
+}
+
+function handleGetVoucherHistory(requestBody) {
+  try {
+    const voucherNumber = (requestBody && requestBody.voucherNumber) || '';
+    if (!voucherNumber) {
+      return createResponse(false, 'Thiếu voucher number');
+    }
+    
+    const sheet = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID).getSheetByName(VH_SHEET_NAME);
+    if (!sheet) {
+      return createResponse(false, 'Sheet không tồn tại');
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    if (data.length <= 1) {
+      return createResponse(true, 'Thành công', []);
+    }
+    
+    const rows = data.slice(1);
+    const history = [];
+    
+    // Column structure: A=VoucherNumber, B=VoucherType, C=Company, D=Employee, E=Amount, F=Status, G=Action, H=By, I=Note, J=Attachments, K=RequestorEmail, L=ApproverEmail, M=Timestamp
+    rows.forEach(row => {
+      if (row[0] === voucherNumber) {
+        history.push({
+          voucherNumber: row[0] || '',
+          voucherType: row[1] || '',
+          company: row[2] || '',
+          employee: row[3] || '',
+          amount: row[4] || 0,
+          status: row[5] || '',
+          action: row[6] || '',
+          by: row[7] || '',
+          note: row[8] || '',
+          attachments: row[9] || '', // Column J
+          requestorEmail: row[10] || '',
+          approverEmail: row[11] || '',
+          timestamp: row[12] || new Date()
+        });
+      }
+    });
+    
+    // Sort by timestamp descending (newest first)
+    history.sort((a, b) => {
+      const timeA = a.timestamp instanceof Date ? a.timestamp.getTime() : new Date(a.timestamp).getTime();
+      const timeB = b.timestamp instanceof Date ? b.timestamp.getTime() : new Date(b.timestamp).getTime();
+      return timeB - timeA;
+    });
+    
+    return createResponse(true, 'Thành công', history);
+  } catch (error) {
+    return createResponse(false, 'Lỗi: ' + error.message);
+  }
 }
 
 /** HÀM PHỤ TRỢ */
@@ -132,8 +367,19 @@ function uploadFilesToDrive_(files, folderName) {
       const blob = Utilities.newBlob(Utilities.base64Decode(data), file.mimeType, file.fileName);
       const f = folder.createFile(blob);
       f.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
-      return { fileName: file.fileName, fileUrl: f.getUrl() };
-    } catch (e) { return { fileName: file.fileName, error: true }; }
+      // Return file info including size if available
+      return { 
+        fileName: file.fileName, 
+        fileUrl: f.getUrl(),
+        fileSize: file.fileSize || blob.getBytes().length // Use provided size or calculate from blob
+      };
+    } catch (e) { 
+      return { 
+        fileName: file.fileName, 
+        error: true,
+        fileSize: file.fileSize || 0
+      }; 
+    }
   });
 }
 
@@ -144,6 +390,17 @@ function appendHistory_(entry) {
     entry.amount, entry.status, entry.action, entry.by, entry.note,
     entry.attachments, entry.requestorEmail, entry.approverEmail, new Date()
   ]);
+}
+
+function formatTimestamp(timestamp) {
+  if (!timestamp) return '';
+  const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = date.getFullYear();
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
 }
 
 function createResponse(success, message, data) {
