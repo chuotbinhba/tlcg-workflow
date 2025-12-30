@@ -25,6 +25,10 @@ function doGet(e) {
 
 function doPost(e) {
   try {
+    Logger.log('=== doPost called ===');
+    Logger.log('e.parameter keys: ' + (e.parameter ? Object.keys(e.parameter).join(', ') : 'none'));
+    Logger.log('e.postData exists: ' + (e.postData ? 'yes' : 'no'));
+    
     let requestBody;
     let action;
 
@@ -51,10 +55,13 @@ function doPost(e) {
         
         requestBody = JSON.parse(e.parameter.data);
         action = requestBody.action;
+        Logger.log('Parsed action from data field: ' + action);
       } catch (parseError) {
         Logger.log('❌ JSON Parse Error: ' + parseError.toString());
         Logger.log('❌ Data length: ' + (e.parameter.data ? e.parameter.data.length : 'N/A'));
         Logger.log('❌ Error position: ' + parseError.message);
+        Logger.log('❌ First 200 chars of data: ' + (e.parameter.data ? e.parameter.data.substring(0, 200) : 'N/A'));
+        Logger.log('❌ Last 200 chars of data: ' + (e.parameter.data && e.parameter.data.length > 200 ? e.parameter.data.substring(e.parameter.data.length - 200) : 'N/A'));
         
         // Return more detailed error message
         return createResponse(false, 'Lỗi parse dữ liệu: ' + parseError.message + '. Payload size: ' + (e.parameter.data ? Math.round(e.parameter.data.length / 1024) : 'unknown') + 'KB. Có thể payload quá lớn hoặc bị cắt.');
@@ -62,13 +69,30 @@ function doPost(e) {
     } else if (e.parameter && e.parameter.action) {
       action = e.parameter.action;
       requestBody = e.parameter;
+      Logger.log('Using e.parameter directly, action: ' + action);
     } else if (e.postData && e.postData.contents) {
-      requestBody = JSON.parse(e.postData.contents);
-      action = requestBody.action;
+      try {
+        requestBody = JSON.parse(e.postData.contents);
+        action = requestBody.action;
+        Logger.log('Parsed from e.postData.contents, action: ' + action);
+      } catch (parseError) {
+        Logger.log('❌ Error parsing e.postData.contents: ' + parseError.toString());
+        return createResponse(false, 'Lỗi parse dữ liệu từ postData: ' + parseError.message);
+      }
+    } else {
+      Logger.log('⚠️ WARNING: No data found in e.parameter or e.postData');
+      Logger.log('e.parameter: ' + JSON.stringify(e.parameter));
+      Logger.log('e.postData: ' + JSON.stringify(e.postData));
+      return createResponse(false, 'Không tìm thấy dữ liệu trong request');
     }
 
-    if (!action) return createResponse(false, 'Không tìm thấy action');
+    if (!action) {
+      Logger.log('⚠️ WARNING: Action is null or undefined');
+      return createResponse(false, 'Không tìm thấy action');
+    }
 
+    Logger.log('Processing action: ' + action);
+    
     switch (action) {
       case 'login': return handleLogin_(requestBody);
       case 'sendApprovalEmail': return handleSendEmail(requestBody);
@@ -76,9 +100,14 @@ function doPost(e) {
       case 'rejectVoucher': return handleRejectVoucher(requestBody);
       case 'getVoucherSummary': return handleGetVoucherSummary(requestBody);
       case 'getVoucherHistory': return handleGetVoucherHistory(requestBody);
-      default: return createResponse(false, 'Action không hợp lệ');
+      default: 
+        Logger.log('⚠️ WARNING: Unknown action: ' + action);
+        return createResponse(false, 'Action không hợp lệ: ' + action);
     }
   } catch (error) {
+    Logger.log('❌ CRITICAL ERROR in doPost: ' + error.toString());
+    Logger.log('❌ Error stack: ' + error.stack);
+    // Always return JSON, never HTML
     return createResponse(false, 'Lỗi Server: ' + error.message);
   }
 }
