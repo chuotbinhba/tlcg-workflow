@@ -146,74 +146,78 @@ export default async function handler(req, res) {
       let parsedBody = req.body;
       const isFormData = req.headers['content-type']?.includes('multipart/form-data');
       
-      // If it's FormData and body is not parsed (or empty), try to parse it manually
-      // Note: Vercel might not support streaming, so this might not work
-      // In that case, we'll need to rely on req.body or use a different approach
-      if (isFormData && (!parsedBody || typeof parsedBody !== 'object' || Object.keys(parsedBody || {}).length === 0)) {
-        try {
-          console.log('[Proxy POST] Attempting to parse FormData manually...');
-          // Check if we can access raw body (Vercel-specific)
-          if (req.body && typeof req.body === 'string') {
-            // If body is a string, it might be the raw FormData
-            // Try parsing with busboy
+      // Try to extract action and other fields from body
+      // Vercel might parse FormData into req.body, or it might not
+      // We'll try multiple approaches
+      
+      // First, try req.body if it's already an object with fields
+      if (!parsedBody || typeof parsedBody !== 'object' || Object.keys(parsedBody || {}).length === 0) {
+        // Try parsing FormData if content-type suggests it
+        if (isFormData) {
+          try {
+            console.log('[Proxy POST] Attempting to parse FormData...');
+            // Note: In Vercel, req might not be a stream, so this might fail
+            // But we'll try anyway and fall back to req.body
             parsedBody = await parseFormData(req);
-            console.log('[Proxy POST] FormData parsed:', Object.keys(parsedBody));
-          } else {
-            console.log('[Proxy POST] Cannot parse FormData - req.body is not a string or stream');
-            // Try to extract from req.body anyway
+            console.log('[Proxy POST] FormData parsed successfully');
+          } catch (parseError) {
+            console.log('[Proxy POST] FormData parsing failed, using req.body:', parseError.message);
             parsedBody = req.body || {};
           }
-        } catch (parseError) {
-          console.error('[Proxy POST] Error parsing FormData:', parseError.message);
-          // Fall back to req.body if parsing fails
+        } else {
           parsedBody = req.body || {};
-          console.log('[Proxy POST] Using req.body as fallback:', typeof parsedBody, Object.keys(parsedBody || {}));
         }
       }
       
+      // Log what we have
+      console.log('[Proxy POST] Parsed body type:', typeof parsedBody);
+      console.log('[Proxy POST] Parsed body keys:', parsedBody && typeof parsedBody === 'object' ? Object.keys(parsedBody) : 'N/A');
+      
       // Update action if we found it in parsed body (for routing decision)
-      if (parsedBody && parsedBody.action && !action) {
+      if (parsedBody && typeof parsedBody === 'object' && parsedBody.action) {
         action = parsedBody.action;
         // Re-route if we now know it's getMasterData
         if (action === 'getMasterData' && GAS_URL !== TLCGROUP_BACKEND) {
           GAS_URL = TLCGROUP_BACKEND;
-          console.log('[Proxy POST] Re-routing getMasterData to TLCGroup Backend (action found in body)');
+          console.log('[Proxy POST] Re-routing getMasterData to TLCGroup Backend (action found: ' + action + ')');
         }
       }
       
-      // Create FormData to forward to Google Apps Script
-      const formData = new FormData();
+      // Google Apps Script can receive FormData and parse fields from e.parameter
+      // We'll send as URL-encoded form data (application/x-www-form-urlencoded)
+      // This is simpler and more reliable than multipart/form-data
+      let bodyToSend;
+      let contentType = 'application/x-www-form-urlencoded';
       
-      // If we have parsed body (as object), forward individual fields
       if (parsedBody && typeof parsedBody === 'object' && Object.keys(parsedBody).length > 0) {
-        // Forward as individual form fields (GAS can handle this directly)
+        // Convert to URLSearchParams (application/x-www-form-urlencoded)
+        // This format is parsed by GAS into e.parameter
+        const params = new URLSearchParams();
         Object.keys(parsedBody).forEach(key => {
           const value = parsedBody[key];
           if (value !== undefined && value !== null) {
-            formData.append(key, String(value));
+            params.append(key, String(value));
           }
         });
-      } else if (parsedBody && typeof parsedBody === 'object') {
-        // Convert object to JSON string in 'data' field
-        formData.append('data', JSON.stringify(parsedBody));
-      } else if (typeof parsedBody === 'string') {
-        // If body is a string, wrap it in 'data' field
-        formData.append('data', parsedBody);
+        bodyToSend = params.toString();
       } else {
-        // Empty or unparseable body - send empty object
-        formData.append('data', JSON.stringify({}));
+        // Fallback: send as JSON in 'data' field
+        contentType = 'application/x-www-form-urlencoded';
+        const params = new URLSearchParams();
+        params.append('data', JSON.stringify(parsedBody || {}));
+        bodyToSend = params.toString();
       }
       
       // Use the action we extracted (for logging)
-      const finalAction = action || 'unknown';
+      const finalAction = action || (parsedBody && parsedBody.action) || 'unknown';
       console.log(`[Proxy POST] ${GAS_URL.substring(0, 60)}... action: ${finalAction}`);
-      console.log(`[Proxy POST] Body keys:`, parsedBody && typeof parsedBody === 'object' ? Object.keys(parsedBody) : 'no body or not object');
-      console.log(`[Proxy POST] Content-Type:`, req.headers['content-type']);
+      console.log(`[Proxy POST] Sending as: ${contentType}`);
       
       const response = await fetch(GAS_URL, {
         method: 'POST',
-        body: formData,
+        body: bodyToSend,
         headers: {
+          'Content-Type': contentType,
           'User-Agent': 'TLCG-Workflow-Proxy/1.0'
         }
       });
