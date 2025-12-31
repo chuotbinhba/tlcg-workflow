@@ -4245,19 +4245,13 @@
             const voucher = currentModalVoucher;
             let meta = currentModalMeta || voucher.meta || {}; // Use merged meta
             
-            // Fallback: Try to get signatures from localStorage if not in meta
-            if (!meta.requesterSignature) {
-                const savedRequesterSig = localStorage.getItem(SIGNATURE_STORAGE_KEY);
-                if (savedRequesterSig) {
-                    meta.requesterSignature = savedRequesterSig;
-                }
-            }
-            if (!meta.approverSignature) {
-                const savedApproverSig = localStorage.getItem(APPROVER_SIGNATURE_KEY);
-                if (savedApproverSig) {
-                    meta.approverSignature = savedApproverSig;
-                }
-            }
+            // DO NOT use localStorage for signatures in print view
+            // Signatures should ONLY come from the backend (meta) to ensure we show
+            // the correct signature of the person who created/approved the voucher,
+            // not the signature of the current user viewing the voucher
+            console.log('Print voucher meta:', meta);
+            console.log('Requester signature available:', !!meta.requesterSignature);
+            console.log('Approver signature available:', !!meta.approverSignature);
             
             // Determine voucher type title
             const voucherTypeUpper = (voucher.voucherType || '').toUpperCase();
@@ -4481,10 +4475,31 @@
                             <span class="info-value"><strong>${meta.payeeName || voucher.employee || 'N/A'}</strong></span>
                         </div>
                         
-                        <div class="info-row">
+                        <div class="info-row" style="align-items: flex-start;">
                             <span class="info-label">Nội dung</span>
                             <span class="info-colon">:</span>
-                            <span class="info-value">${voucher.note || meta.reason || 'N/A'}</span>
+                            <span class="info-value">${(function() {
+                                // Try to get expense items from meta first, then from voucher.note
+                                let expenseItemsText = '';
+                                
+                                // Check if meta has expenseItems array
+                                if (meta.expenseItems && Array.isArray(meta.expenseItems) && meta.expenseItems.length > 0) {
+                                    expenseItemsText = meta.expenseItems.map((item, index) => {
+                                        const amount = item.amount ? parseFloat(item.amount).toLocaleString('vi-VN') + ' VNĐ' : '0 VNĐ';
+                                        return (index + 1) + '. ' + (item.content || 'N/A') + ' - ' + amount;
+                                    }).join('<br>');
+                                } else if (voucher.note) {
+                                    // Fallback to voucher.note
+                                    expenseItemsText = voucher.note;
+                                } else if (meta.reason) {
+                                    // Fallback to meta.reason
+                                    expenseItemsText = meta.reason;
+                                } else {
+                                    expenseItemsText = 'N/A';
+                                }
+                                
+                                return expenseItemsText;
+                            })()}</span>
                         </div>
                         
                         <div class="info-row">
