@@ -236,6 +236,18 @@ function handleSendEmail(requestBody) {
       }
     }
 
+    // Store requester signature and other metadata in note field as JSON
+    const submitMetaData = {
+      requesterSignature: voucher.requesterSignature || '',
+      reason: voucher.reason || '',
+      voucherDate: voucher.voucherDate || '',
+      department: voucher.department || '',
+      payeeName: voucher.payeeName || '',
+      amountInWords: voucher.amountInWords || '',
+      expenseItems: voucher.expenseItems || [],
+      submittedAt: new Date().toISOString()
+    };
+    
     appendHistory_({
       voucherNumber: voucherNo,
       voucherType: voucher.voucherType || '',
@@ -245,7 +257,7 @@ function handleSendEmail(requestBody) {
       status: 'Pending',
       action: 'Submit',
       by: voucher.employee || 'User',
-      note: voucher.reason || '',
+      note: 'Gửi phê duyệt\nMeta: ' + JSON.stringify(submitMetaData), // Store all metadata including signature
       requestorEmail: voucher.requestorEmail || '',
       approverEmail: emailData.to,
       attachments: fileLinks
