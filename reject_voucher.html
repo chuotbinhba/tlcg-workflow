@@ -273,28 +273,33 @@
             document.getElementById('reject-form').style.display = 'none';
 
             try {
-                // Use GET method as fallback since no-cors POST may not work
-                const params = new URLSearchParams({
+                // Use POST method for consistency and better error handling
+                const requestData = {
                     action: 'rejectVoucher',
-                    voucherNumber: voucherNumber,
-                    voucherType: voucherType,
-                    company: company,
-                    employee: employee,
-                    amount: amount,
-                    requestorEmail: requestorEmail,
-                    approverEmail: approverEmail,
-                    rejectReason: reason,
-                    rejectedBy: approverEmail
-                });
+                    voucher: {
+                        voucherNumber: voucherNumber,
+                        voucherType: voucherType,
+                        company: company,
+                        employee: employee,
+                        amount: amount,
+                        requestorEmail: requestorEmail,
+                        approverEmail: approverEmail,
+                        rejectReason: reason,
+                        rejectedBy: approverEmail
+                    }
+                };
 
-                const url = `${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?${params.toString()}`;
+                // Use FormData to avoid CORS preflight issues
+                const formData = new FormData();
+                formData.append('data', JSON.stringify(requestData));
+
+                const url = GOOGLE_APPS_SCRIPT_WEB_APP_URL;
                 
                 console.log('=== SENDING REJECTION REQUEST ===');
                 console.log('URL:', url);
                 console.log('Requestor Email:', requestorEmail);
                 console.log('Approver Email:', approverEmail);
                 console.log('Reject Reason:', reason);
-                console.log('All Parameters:', params.toString());
                 
                 // Validate again before sending
                 if (!requestorEmail || requestorEmail.trim() === '') {
@@ -306,7 +311,10 @@
                 }
 
                 const response = await fetch(url, {
-                    method: 'GET'
+                    method: 'POST',
+                    mode: 'cors',
+                    redirect: 'follow',
+                    body: formData
                 });
 
                 console.log('Response status:', response.status);
