@@ -3888,14 +3888,15 @@
         // Compress signature if it's too large (e.g., loaded from old localStorage)
         async function ensureSignatureCompressed(signatureData, maxSizeKB = 300) {
             // If signature is already small enough, return as is
-            if (!signatureData) {
-                return null;
+            if (!signatureData || signatureData.trim() === '') {
+                console.warn('⚠️ ensureSignatureCompressed: signatureData is empty');
+                return signatureData; // Return as-is (don't return null, might be empty string)
             }
             
             const currentSizeKB = signatureData.length / 1024;
             if (currentSizeKB < maxSizeKB) {
-                console.log('✅ Signature size OK:', currentSizeKB.toFixed(2), 'KB');
-                return signatureData;
+                console.log('✅ Signature size OK:', currentSizeKB.toFixed(2), 'KB, no compression needed');
+                return signatureData; // Return original - already small enough
             }
             
             console.log('⚠️ Signature is too large (' + currentSizeKB.toFixed(2) + 'KB), compressing to max ' + maxSizeKB + 'KB...');
@@ -3903,56 +3904,73 @@
             // Load image from base64
             return new Promise((resolve, reject) => {
                 const img = new Image();
+                
+                // Set timeout to prevent hanging
+                const timeout = setTimeout(() => {
+                    console.warn('⚠️ Compression timeout, returning original signature');
+                    resolve(signatureData); // Return original if timeout
+                }, 10000); // 10 second timeout
+                
                 img.onload = () => {
-                    // Calculate new dimensions (max 600x300 for smaller size)
-                    let width = img.width;
-                    let height = img.height;
-                    const maxWidth = 600;
-                    const maxHeight = 300;
+                    clearTimeout(timeout);
                     
-                    if (width > maxWidth || height > maxHeight) {
-                        const ratio = Math.min(maxWidth / width, maxHeight / height);
-                        width = Math.round(width * ratio);
-                        height = Math.round(height * ratio);
+                    try {
+                        // Calculate new dimensions (max 600x300 for smaller size)
+                        let width = img.width;
+                        let height = img.height;
+                        const maxWidth = 600;
+                        const maxHeight = 300;
+                        
+                        if (width > maxWidth || height > maxHeight) {
+                            const ratio = Math.min(maxWidth / width, maxHeight / height);
+                            width = Math.round(width * ratio);
+                            height = Math.round(height * ratio);
+                        }
+                        
+                        // Create canvas and resize
+                        const canvas = document.createElement('canvas');
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        
+                        // Use better quality settings for signature
+                        ctx.imageSmoothingEnabled = true;
+                        ctx.imageSmoothingQuality = 'high';
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Try different quality levels to get under maxSizeKB
+                        let quality = 0.6; // Start with lower quality
+                        let compressed = canvas.toDataURL('image/jpeg', quality);
+                        let attempts = 0;
+                        const maxAttempts = 5;
+                        
+                        while (compressed.length > maxSizeKB * 1024 && attempts < maxAttempts) {
+                            quality -= 0.1;
+                            if (quality < 0.3) quality = 0.3; // Don't go below 0.3
+                            compressed = canvas.toDataURL('image/jpeg', quality);
+                            attempts++;
+                        }
+                        
+                        const compressedSizeKB = compressed.length / 1024;
+                        console.log('✅ Signature compressed: ' + currentSizeKB.toFixed(2) + 'KB -> ' + compressedSizeKB.toFixed(2) + 'KB (quality: ' + quality.toFixed(2) + ')');
+                        
+                        // Update localStorage with compressed version
+                        localStorage.setItem(APPROVER_SIGNATURE_KEY, compressed);
+                        
+                        resolve(compressed);
+                    } catch (compressionError) {
+                        console.error('❌ Error during compression:', compressionError);
+                        resolve(signatureData); // Return original if compression fails
                     }
-                    
-                    // Create canvas and resize
-                    const canvas = document.createElement('canvas');
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    
-                    // Use better quality settings for signature
-                    ctx.imageSmoothingEnabled = true;
-                    ctx.imageSmoothingQuality = 'high';
-                    ctx.drawImage(img, 0, 0, width, height);
-                    
-                    // Try different quality levels to get under maxSizeKB
-                    let quality = 0.6; // Start with lower quality
-                    let compressed = canvas.toDataURL('image/jpeg', quality);
-                    let attempts = 0;
-                    const maxAttempts = 5;
-                    
-                    while (compressed.length > maxSizeKB * 1024 && attempts < maxAttempts) {
-                        quality -= 0.1;
-                        if (quality < 0.3) quality = 0.3; // Don't go below 0.3
-                        compressed = canvas.toDataURL('image/jpeg', quality);
-                        attempts++;
-                    }
-                    
-                    const compressedSizeKB = compressed.length / 1024;
-                    console.log('✅ Signature compressed: ' + currentSizeKB.toFixed(2) + 'KB -> ' + compressedSizeKB.toFixed(2) + 'KB (quality: ' + quality.toFixed(2) + ')');
-                    
-                    // Update localStorage with compressed version
-                    localStorage.setItem(APPROVER_SIGNATURE_KEY, compressed);
-                    
-                    resolve(compressed);
                 };
+                
                 img.onerror = (error) => {
+                    clearTimeout(timeout);
                     console.error('❌ Failed to load image for compression:', error);
-                    // If compression fails, try to return a smaller version anyway
+                    // If compression fails, return original signature (don't lose it!)
                     resolve(signatureData); // Return original if compression fails
                 };
+                
                 img.src = signatureData;
             });
         }
@@ -3981,8 +3999,25 @@
                 // Ensure signature is compressed before sending (in case it was loaded from old localStorage)
                 let finalSignature = await ensureSignatureCompressed(approverSignatureData);
                 
-                // Update the variable with compressed version
-                approverSignatureData = finalSignature;
+                // Validate compressed signature - if null or empty, keep original
+                if (!finalSignature || finalSignature.trim() === '') {
+                    console.error('❌ Signature compression returned empty, keeping original');
+                    // Don't clear the signature - keep the original
+                    // approverSignatureData stays as is
+                    finalSignature = approverSignatureData; // Use original
+                    
+                    // Check if original is also invalid
+                    if (!finalSignature || finalSignature.trim() === '') {
+                        showToast('Lỗi: Chữ ký không hợp lệ. Vui lòng upload lại chữ ký.', 'error');
+                        modalLoading.classList.remove('show');
+                        modalContent.style.opacity = '1';
+                        modalFooter.querySelectorAll('button').forEach(btn => btn.disabled = false);
+                        return;
+                    }
+                } else {
+                    // Update the variable with compressed version (only if compression succeeded)
+                    approverSignatureData = finalSignature;
+                }
                 
                 // Check signature size
                 const signatureSizeKB = finalSignature.length / 1024;
