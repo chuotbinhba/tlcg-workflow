@@ -162,9 +162,28 @@
             <!-- Voucher info will be populated from URL params -->
         </div>
 
+        <!-- Signature Upload Section -->
+        <div id="signature-section" style="margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #34A853;">
+            <h3 style="margin-bottom: 15px; color: #333; font-size: 16px;">✍️ Chữ ký người phê duyệt <span style="color: #EA4335;">*</span></h3>
+            <div id="signature-preview" style="margin-bottom: 15px; min-height: 100px; border: 2px dashed #ddd; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: white;">
+                <span id="signature-placeholder" style="color: #94a3b8; font-size: 14px;">Chưa có chữ ký</span>
+                <img id="signature-img" src="" alt="Chữ ký" style="max-width: 100%; max-height: 150px; display: none; border-radius: 4px;">
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <label for="signature-upload-input" style="flex: 1; padding: 10px 16px; background: #34A853; color: white; border-radius: 6px; cursor: pointer; text-align: center; font-size: 14px; display: inline-block;">
+                    📤 Tải lên chữ ký
+                </label>
+                <input type="file" id="signature-upload-input" accept="image/png,image/jpeg,image/jpg" style="display: none;">
+                <button type="button" id="clear-signature-btn" onclick="clearSignature()" style="padding: 10px 16px; background: #f0f0f0; color: #333; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; display: none;">
+                    🗑️ Xóa
+                </button>
+            </div>
+            <p id="signature-error" style="color: #EA4335; font-size: 12px; margin-top: 8px; display: none;"></p>
+        </div>
+
         <div class="button-group">
             <button type="button" class="btn-cancel" onclick="window.close()">Hủy</button>
-            <button type="button" class="btn-approve" onclick="approveVoucher()">Xác nhận phê duyệt</button>
+            <button type="button" class="btn-approve" onclick="approveVoucher()" id="approve-btn">Xác nhận phê duyệt</button>
         </div>
     </div>
 
@@ -216,6 +235,78 @@
         // For direct URL, use: 'https://script.google.com/macros/s/AKfycbyltkunEjTHhFSRH6evpwDAxZk74QouLTG-FSlCOQtLJGts8guLhFYuBq9n1h0fJvyd/exec'
         const GOOGLE_APPS_SCRIPT_WEB_APP_URL = '/api/voucher';
 
+        // Signature data
+        let approverSignatureData = null;
+
+        // Helper function to convert File to base64
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = error => reject(error);
+                reader.readAsDataURL(file);
+            });
+        }
+
+        // Handle signature upload
+        document.getElementById('signature-upload-input').addEventListener('change', async (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+            
+            const errorDiv = document.getElementById('signature-error');
+            errorDiv.style.display = 'none';
+            
+            // Validate file type
+            if (!file.type.match(/^image\/(png|jpeg|jpg)$/)) {
+                errorDiv.textContent = 'Chỉ hỗ trợ file PNG, JPG, JPEG';
+                errorDiv.style.display = 'block';
+                e.target.value = '';
+                return;
+            }
+            
+            // Validate file size (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+                errorDiv.textContent = 'File quá lớn. Tối đa 2MB';
+                errorDiv.style.display = 'block';
+                e.target.value = '';
+                return;
+            }
+            
+            try {
+                approverSignatureData = await fileToBase64(file);
+                
+                // Update preview
+                const placeholder = document.getElementById('signature-placeholder');
+                const img = document.getElementById('signature-img');
+                const clearBtn = document.getElementById('clear-signature-btn');
+                
+                placeholder.style.display = 'none';
+                img.src = approverSignatureData;
+                img.style.display = 'block';
+                clearBtn.style.display = 'block';
+                
+                console.log('✅ Signature uploaded successfully');
+            } catch (error) {
+                errorDiv.textContent = 'Lỗi tải file: ' + error.message;
+                errorDiv.style.display = 'block';
+                e.target.value = '';
+            }
+        });
+
+        // Clear signature
+        function clearSignature() {
+            approverSignatureData = null;
+            const placeholder = document.getElementById('signature-placeholder');
+            const img = document.getElementById('signature-img');
+            const clearBtn = document.getElementById('clear-signature-btn');
+            const input = document.getElementById('signature-upload-input');
+            
+            placeholder.style.display = 'block';
+            img.style.display = 'none';
+            clearBtn.style.display = 'none';
+            input.value = '';
+        }
+
         // Approve voucher
         async function approveVoucher() {
             // Validate requestor email
@@ -224,49 +315,62 @@
                 return;
             }
 
+            // Validate signature is uploaded
+            if (!approverSignatureData) {
+                const errorDiv = document.getElementById('signature-error');
+                errorDiv.textContent = 'Vui lòng tải lên chữ ký trước khi phê duyệt';
+                errorDiv.style.display = 'block';
+                
+                // Scroll to signature section
+                document.getElementById('signature-section').scrollIntoView({ behavior: 'smooth', block: 'center' });
+                return;
+            }
+
             // Show loading
             document.getElementById('loading').classList.add('show');
             document.querySelector('.button-group').style.display = 'none';
+            document.getElementById('approve-btn').disabled = true;
 
             // Debug logs
             console.log('=== APPROVING VOUCHER ===');
             console.log('Voucher Number:', voucherNumber);
             console.log('Requestor Email:', requestorEmail);
             console.log('Approver Email:', approverEmail);
+            console.log('Signature uploaded:', !!approverSignatureData);
 
             try {
-                // Use GET method as fallback since no-cors POST may not work
-                const params = new URLSearchParams({
+                // Use POST method to send signature (too large for URL)
+                const requestData = {
                     action: 'approveVoucher',
-                    voucherNumber: voucherNumber,
-                    voucherType: voucherType,
-                    company: company,
-                    employee: employee,
-                    amount: amount,
-                    requestorEmail: requestorEmail,
-                    approverEmail: approverEmail,
-                    approvedBy: approverEmail
-                });
+                    voucher: {
+                        voucherNumber: voucherNumber,
+                        voucherType: voucherType,
+                        company: company,
+                        employee: employee,
+                        amount: amount,
+                        requestorEmail: requestorEmail,
+                        approverEmail: approverEmail,
+                        approvedBy: approverEmail,
+                        approverSignature: approverSignatureData
+                    }
+                };
 
-                const url = `${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?${params.toString()}`;
+                // Use FormData to avoid CORS preflight issues
+                const formData = new FormData();
+                formData.append('data', JSON.stringify(requestData));
+
+                const url = GOOGLE_APPS_SCRIPT_WEB_APP_URL;
                 
                 console.log('=== SENDING APPROVAL REQUEST ===');
                 console.log('URL:', url);
                 console.log('Requestor Email:', requestorEmail);
                 console.log('Approver Email:', approverEmail);
-                console.log('All Parameters:', params.toString());
-                
-                // Validate again before sending
-                if (!requestorEmail || requestorEmail.trim() === '') {
-                    console.error('❌ CRITICAL ERROR: requestorEmail is empty! Cannot send approval email.');
-                    showMessage('Lỗi: Không tìm thấy email người đề nghị. Không thể gửi email thông báo.', 'error');
-                    document.getElementById('loading').classList.remove('show');
-                    document.querySelector('.button-group').style.display = 'flex';
-                    return;
-                }
 
                 const response = await fetch(url, {
-                    method: 'GET'
+                    method: 'POST',
+                    mode: 'cors',
+                    redirect: 'follow',
+                    body: formData
                 });
 
                 console.log('Response status:', response.status);
@@ -313,7 +417,7 @@
                     const errorMsg = result.message || 'Có lỗi xảy ra khi phê duyệt';
                     
                     // Check for already processed error
-                    if (errorMsg.includes('already processed')) {
+                    if (errorMsg.includes('already processed') || errorMsg.includes('đã được xử lý') || errorMsg.includes('đã duyệt') || errorMsg.includes('đã từ chối')) {
                         showMessage('⚠️ Phiếu này đã được xử lý trước đó. Không thể phê duyệt lại.', 'error');
                     } else {
                         showMessage('Lỗi: ' + errorMsg, 'error');
@@ -321,6 +425,7 @@
                     
                     document.getElementById('loading').classList.remove('show');
                     document.querySelector('.button-group').style.display = 'flex';
+                    document.getElementById('approve-btn').disabled = false;
                 }
 
             } catch (error) {
@@ -328,6 +433,7 @@
                 showMessage('Có lỗi xảy ra: ' + error.message + '. Vui lòng kiểm tra Google Apps Script logs hoặc liên hệ IT support.', 'error');
                 document.getElementById('loading').classList.remove('show');
                 document.querySelector('.button-group').style.display = 'flex';
+                document.getElementById('approve-btn').disabled = false;
             }
         }
 

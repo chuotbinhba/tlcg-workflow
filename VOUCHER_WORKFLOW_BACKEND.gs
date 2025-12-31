@@ -259,8 +259,54 @@ function handleSendEmail(requestBody) {
 function handleApproveVoucher(requestBody) {
   try {
     const v = requestBody.voucher || {};
+    const voucherNumber = v.voucherNumber || '';
+    
+    if (!voucherNumber) {
+      return createResponse(false, 'Thiếu số phiếu');
+    }
+    
+    // Check if voucher was already processed (prevent duplicate approval/rejection)
+    const sheet = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID).getSheetByName(VH_SHEET_NAME);
+    const data = sheet.getDataRange().getValues();
+    const rows = data.slice(1); // Skip header
+    
+    // Find latest status for this voucher
+    let latestStatus = null;
+    let latestAction = null;
+    for (let i = rows.length - 1; i >= 0; i--) {
+      if (rows[i][0] === voucherNumber) {
+        latestStatus = rows[i][5] || ''; // Column F = Status
+        latestAction = rows[i][6] || ''; // Column G = Action
+        break;
+      }
+    }
+    
+    // Check if already approved or rejected
+    if (latestStatus === 'Approved' || latestAction === 'Approved') {
+      Logger.log('⚠️ Voucher already approved: ' + voucherNumber);
+      return createResponse(false, 'Phiếu này đã được duyệt trước đó. Không thể duyệt lại.');
+    }
+    
+    if (latestStatus === 'Rejected' || latestAction === 'Rejected') {
+      Logger.log('⚠️ Voucher already rejected: ' + voucherNumber);
+      return createResponse(false, 'Phiếu này đã được từ chối trước đó. Không thể duyệt.');
+    }
+    
+    // Check if signature is provided
+    if (!v.approverSignature || v.approverSignature.trim() === '') {
+      return createResponse(false, 'Vui lòng tải lên chữ ký trước khi phê duyệt');
+    }
+    
+    // Store approver signature in meta field (JSON format)
+    const metaData = {
+      approverSignature: v.approverSignature || '',
+      approvedAt: new Date().toISOString(),
+      approvedBy: v.approvedBy || v.approverEmail || ''
+    };
+    
+    // Append history entry
     appendHistory_({ 
-      voucherNumber: v.voucherNumber || '',
+      voucherNumber: voucherNumber,
       voucherType: v.voucherType || '',
       company: v.company || '',
       employee: v.employee || '',
@@ -268,18 +314,32 @@ function handleApproveVoucher(requestBody) {
       status: 'Approved', 
       action: 'Approved', 
       by: v.approvedBy || v.approverEmail || '', 
-      note: 'Duyệt qua Email', 
+      note: 'Duyệt qua Email\nMeta: ' + JSON.stringify(metaData), // Store signature in note field as JSON
       requestorEmail: v.requestorEmail || '',
       approverEmail: v.approverEmail || '',
       attachments: "" 
     });
     
+    // Send notification email to requester
     if (v.requestorEmail) {
-      GmailApp.sendEmail(v.requestorEmail, "[ĐÃ DUYỆT] " + (v.voucherNumber || ''), "Phiếu của bạn đã được duyệt.");
+      try {
+        const emailSubject = "[ĐÃ DUYỆT] " + (voucherNumber || '');
+        const emailBody = `
+          <p>Phiếu <strong>${voucherNumber}</strong> của bạn đã được duyệt.</p>
+          <p>Được duyệt bởi: ${v.approvedBy || v.approverEmail || 'Người phê duyệt'}</p>
+          <p>Thời gian: ${new Date().toLocaleString('vi-VN')}</p>
+        `;
+        GmailApp.sendEmail(v.requestorEmail, emailSubject, '', { htmlBody: emailBody });
+      } catch (emailError) {
+        Logger.log('Warning: Failed to send approval email: ' + emailError.toString());
+        // Don't fail the approval if email fails
+      }
     }
     
+    Logger.log('✅ Voucher approved successfully: ' + voucherNumber);
     return createResponse(true, 'Đã duyệt thành công');
   } catch (error) {
+    Logger.log('❌ Error approving voucher: ' + error.toString());
     return createResponse(false, 'Lỗi: ' + error.message);
   }
 }
