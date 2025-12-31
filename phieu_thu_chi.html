@@ -4475,32 +4475,35 @@
                             <span class="info-value"><strong>${meta.payeeName || voucher.employee || 'N/A'}</strong></span>
                         </div>
                         
-                        <div class="info-row" style="align-items: flex-start;">
+                        <div class="info-row">
                             <span class="info-label">Nội dung</span>
                             <span class="info-colon">:</span>
-                            <span class="info-value">${(function() {
-                                // Try to get expense items from meta first, then from voucher.note
-                                let expenseItemsText = '';
-                                
-                                // Check if meta has expenseItems array
-                                if (meta.expenseItems && Array.isArray(meta.expenseItems) && meta.expenseItems.length > 0) {
-                                    expenseItemsText = meta.expenseItems.map((item, index) => {
-                                        const amount = item.amount ? parseFloat(item.amount).toLocaleString('vi-VN') + ' VNĐ' : '0 VNĐ';
-                                        return (index + 1) + '. ' + (item.content || 'N/A') + ' - ' + amount;
-                                    }).join('<br>');
-                                } else if (voucher.note) {
-                                    // Fallback to voucher.note
-                                    expenseItemsText = voucher.note;
-                                } else if (meta.reason) {
-                                    // Fallback to meta.reason
-                                    expenseItemsText = meta.reason;
-                                } else {
-                                    expenseItemsText = 'N/A';
-                                }
-                                
-                                return expenseItemsText;
-                            })()}</span>
+                            <span class="info-value">${meta.reason || voucher.note || 'N/A'}</span>
                         </div>
+                        
+                        ${meta.expenseItems && Array.isArray(meta.expenseItems) && meta.expenseItems.length > 0 ? `
+                        <div class="info-row" style="align-items: flex-start;">
+                            <span class="info-label">Chi tiết</span>
+                            <span class="info-colon">:</span>
+                            <span class="info-value">
+                                <table style="width: 100%; border-collapse: collapse; font-size: 11pt; margin-top: 8px;">
+                                    <thead>
+                                        <tr style="border-bottom: 1px solid #ddd;">
+                                            <th style="text-align: left; padding: 4px 8px; width: 40px;">STT</th>
+                                            <th style="text-align: left; padding: 4px 8px;">Nội dung chi tiết</th>
+                                            <th style="text-align: right; padding: 4px 8px; width: 150px;">Số tiền</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        ${meta.expenseItems.map((item, index) => {
+                                            const amount = item.amount ? parseFloat(item.amount).toLocaleString('vi-VN') : '0';
+                                            return '<tr><td style="padding: 4px 8px; border-bottom: 1px solid #eee;">' + (index + 1) + '</td><td style="padding: 4px 8px; border-bottom: 1px solid #eee;">' + (item.content || 'N/A') + '</td><td style="padding: 4px 8px; text-align: right; border-bottom: 1px solid #eee;">' + amount + ' VNĐ</td></tr>';
+                                        }).join('')}
+                                    </tbody>
+                                </table>
+                            </span>
+                        </div>
+                        ` : ''}
                         
                         <div class="info-row">
                             <span class="info-label">Số tiền (VNĐ)</span>
