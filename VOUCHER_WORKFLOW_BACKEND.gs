@@ -586,6 +586,23 @@ function handleGetVoucherHistory(requestBody) {
     // Column structure: A=VoucherNumber, B=VoucherType, C=Company, D=Employee, E=Amount, F=Status, G=Action, H=By, I=Note, J=Attachments, K=RequestorEmail, L=ApproverEmail, M=Timestamp
     rows.forEach(row => {
       if (row[0] === voucherNumber) {
+        const noteField = row[8] || '';
+        let meta = {};
+        
+        // Try to extract meta JSON from note field
+        // Format: "Some text\nMeta: {...json...}"
+        if (noteField && noteField.includes('Meta: ')) {
+          try {
+            const metaStart = noteField.indexOf('Meta: ') + 6;
+            const metaJsonString = noteField.substring(metaStart);
+            meta = JSON.parse(metaJsonString);
+            Logger.log('Parsed meta from note: ' + JSON.stringify(meta));
+          } catch (parseError) {
+            Logger.log('Warning: Failed to parse meta from note field: ' + parseError.toString());
+            // If parsing fails, meta remains empty object
+          }
+        }
+        
         history.push({
           voucherNumber: row[0] || '',
           voucherType: row[1] || '',
@@ -595,7 +612,8 @@ function handleGetVoucherHistory(requestBody) {
           status: row[5] || '',
           action: row[6] || '',
           by: row[7] || '',
-          note: row[8] || '',
+          note: noteField,
+          meta: meta, // Add parsed meta object
           attachments: row[9] || '', // Column J
           requestorEmail: row[10] || '',
           approverEmail: row[11] || '',
