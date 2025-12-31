@@ -361,7 +361,7 @@
                     const errorMsg = result.message || 'Có lỗi xảy ra khi từ chối';
                     
                     // Check for already processed error
-                    if (errorMsg.includes('already processed')) {
+                    if (errorMsg.includes('already processed') || errorMsg.includes('đã được xử lý') || errorMsg.includes('đã duyệt') || errorMsg.includes('đã từ chối') || errorMsg.includes('không thể từ chối')) {
                         showMessage('⚠️ Phiếu này đã được xử lý trước đó. Không thể từ chối lại.', 'error');
                     } else {
                         showMessage('Lỗi: ' + errorMsg, 'error');
