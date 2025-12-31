@@ -5989,16 +5989,22 @@
                                 
                                 // Base64 increases size by ~33%, estimate total size
                                 // Calculate estimated size: existing payload + this file's base64 size
-                                let estimatedSize = 50000; // Base payload size estimate (without files)
+                                let estimatedSize = 100000; // Base payload size estimate (signature + email body + metadata)
                                 filesToUpload.forEach(f => {
                                     estimatedSize += (f.fileData ? f.fileData.length : 0);
                                 });
                                 estimatedSize += base64Data.length;
                                 
+                                // Add signature size to estimate (will be added later)
+                                if (currentSignatureData) {
+                                    estimatedSize += currentSignatureData.length;
+                                }
+                                
                                 if (estimatedSize > MAX_TOTAL_PAYLOAD_SIZE) {
-                                    const sizeMB = (estimatedSize / 1024 / 1024).toFixed(2);
-                                    showToast(`Tổng kích thước file quá lớn (ước tính ${sizeMB} MB). File "${file.name}" sẽ không được tải lên. Giới hạn: ${MAX_TOTAL_PAYLOAD_SIZE / 1024 / 1024}MB.`, 'error', 'Payload quá lớn');
-                                    console.warn(`Adding file ${file.name} would exceed max payload size. Estimated: ${sizeMB}MB. Skipping.`);
+                                    const sizeKB = (estimatedSize / 1024).toFixed(2);
+                                    const limitKB = (MAX_TOTAL_PAYLOAD_SIZE / 1024).toFixed(0);
+                                    showToast(`Tổng kích thước quá lớn (ước tính ${sizeKB} KB). File "${file.name}" sẽ không được tải lên. Giới hạn: ${limitKB}KB.`, 'error', 'Payload quá lớn');
+                                    console.warn(`Adding file ${file.name} would exceed max payload size. Estimated: ${sizeKB}KB. Limit: ${limitKB}KB. Skipping.`);
                                     continue;
                                 }
                                 
