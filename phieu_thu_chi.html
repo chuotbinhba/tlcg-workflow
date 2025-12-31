@@ -5968,8 +5968,8 @@
 
             // Collect files for upload to Drive
             const filesToUpload = [];
-            const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB max per file (reduced to prevent payload size issues)
-            const MAX_TOTAL_PAYLOAD_SIZE = 4 * 1024 * 1024; // 4MB max total payload (Vercel/GAS limits)
+            const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB max per file (reduced further)
+            const MAX_TOTAL_PAYLOAD_SIZE = 900 * 1024; // 900KB max total payload (conservative limit to prevent truncation)
             
             for (let i = 0; i < expenseItems.length; i++) {
                 const item = expenseItems[i];
@@ -6039,14 +6039,15 @@
                 console.log('No files attached');
             }
 
-            // Compress requester signature if it's too large
+            // Compress requester signature MORE aggressively to reduce payload
             let finalRequesterSignature = currentSignatureData || '';
             if (finalRequesterSignature && finalRequesterSignature.trim() !== '') {
                 const signatureSizeKB = finalRequesterSignature.length / 1024;
-                if (signatureSizeKB > 300) {
-                    console.log('⚠️ Requester signature is large (' + signatureSizeKB.toFixed(2) + 'KB), compressing...');
+                // Always compress signature to max 200KB (more aggressive)
+                if (signatureSizeKB > 200) {
+                    console.log('⚠️ Requester signature is large (' + signatureSizeKB.toFixed(2) + 'KB), compressing to max 200KB...');
                     try {
-                        finalRequesterSignature = await ensureSignatureCompressed(finalRequesterSignature, 300);
+                        finalRequesterSignature = await ensureSignatureCompressed(finalRequesterSignature, 200);
                         if (finalRequesterSignature && finalRequesterSignature.trim() !== '') {
                             console.log('✅ Requester signature compressed to: ' + (finalRequesterSignature.length / 1024).toFixed(2) + 'KB');
                             // Update localStorage with compressed version
