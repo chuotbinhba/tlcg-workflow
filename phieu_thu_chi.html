@@ -3392,8 +3392,17 @@
             modalContent.innerHTML = '';
             modalFooter.innerHTML = '<button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>';
             
-            // Load approver signature from localStorage
-            approverSignatureData = localStorage.getItem(APPROVER_SIGNATURE_KEY);
+            // Load approver signature from localStorage and compress if needed
+            const rawSignature = localStorage.getItem(APPROVER_SIGNATURE_KEY);
+            if (rawSignature) {
+                // Check if signature is too large and compress if needed
+                if (rawSignature.length > 300 * 1024) { // If > 300KB, compress it
+                    console.log('⚠️ Signature from localStorage is large (' + (rawSignature.length / 1024).toFixed(2) + 'KB), will compress when needed');
+                }
+                approverSignatureData = rawSignature;
+            } else {
+                approverSignatureData = null;
+            }
             
             try {
                 console.log('Fetching voucher history from:', `${GOOGLE_APPS_SCRIPT_WEB_APP_URL}?action=getVoucherHistory&voucherNumber=${encodeURIComponent(voucherNumber)}`);
@@ -3876,6 +3885,78 @@
             }
         }
         
+        // Compress signature if it's too large (e.g., loaded from old localStorage)
+        async function ensureSignatureCompressed(signatureData, maxSizeKB = 300) {
+            // If signature is already small enough, return as is
+            if (!signatureData) {
+                return null;
+            }
+            
+            const currentSizeKB = signatureData.length / 1024;
+            if (currentSizeKB < maxSizeKB) {
+                console.log('✅ Signature size OK:', currentSizeKB.toFixed(2), 'KB');
+                return signatureData;
+            }
+            
+            console.log('⚠️ Signature is too large (' + currentSizeKB.toFixed(2) + 'KB), compressing to max ' + maxSizeKB + 'KB...');
+            
+            // Load image from base64
+            return new Promise((resolve, reject) => {
+                const img = new Image();
+                img.onload = () => {
+                    // Calculate new dimensions (max 600x300 for smaller size)
+                    let width = img.width;
+                    let height = img.height;
+                    const maxWidth = 600;
+                    const maxHeight = 300;
+                    
+                    if (width > maxWidth || height > maxHeight) {
+                        const ratio = Math.min(maxWidth / width, maxHeight / height);
+                        width = Math.round(width * ratio);
+                        height = Math.round(height * ratio);
+                    }
+                    
+                    // Create canvas and resize
+                    const canvas = document.createElement('canvas');
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    
+                    // Use better quality settings for signature
+                    ctx.imageSmoothingEnabled = true;
+                    ctx.imageSmoothingQuality = 'high';
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    // Try different quality levels to get under maxSizeKB
+                    let quality = 0.6; // Start with lower quality
+                    let compressed = canvas.toDataURL('image/jpeg', quality);
+                    let attempts = 0;
+                    const maxAttempts = 5;
+                    
+                    while (compressed.length > maxSizeKB * 1024 && attempts < maxAttempts) {
+                        quality -= 0.1;
+                        if (quality < 0.3) quality = 0.3; // Don't go below 0.3
+                        compressed = canvas.toDataURL('image/jpeg', quality);
+                        attempts++;
+                    }
+                    
+                    const compressedSizeKB = compressed.length / 1024;
+                    console.log('✅ Signature compressed: ' + currentSizeKB.toFixed(2) + 'KB -> ' + compressedSizeKB.toFixed(2) + 'KB (quality: ' + quality.toFixed(2) + ')');
+                    
+                    // Update localStorage with compressed version
+                    localStorage.setItem(APPROVER_SIGNATURE_KEY, compressed);
+                    
+                    resolve(compressed);
+                };
+                img.onerror = (error) => {
+                    console.error('❌ Failed to load image for compression:', error);
+                    // If compression fails, try to return a smaller version anyway
+                    resolve(signatureData); // Return original if compression fails
+                };
+                img.src = signatureData;
+            });
+        }
+
         // Approve voucher from modal
         async function approveFromModal() {
             if (!currentModalVoucher) return;
@@ -3897,6 +3978,24 @@
             modalFooter.querySelectorAll('button').forEach(btn => btn.disabled = true);
             
             try {
+                // Ensure signature is compressed before sending (in case it was loaded from old localStorage)
+                let finalSignature = await ensureSignatureCompressed(approverSignatureData);
+                
+                // Update the variable with compressed version
+                approverSignatureData = finalSignature;
+                
+                // Check signature size
+                const signatureSizeKB = finalSignature.length / 1024;
+                console.log('📏 Final signature size:', signatureSizeKB.toFixed(2), 'KB');
+                
+                if (signatureSizeKB > 400) { // Max 400KB for signature
+                    showToast('Chữ ký vẫn quá lớn sau khi nén (' + signatureSizeKB.toFixed(2) + 'KB). Vui lòng upload lại chữ ký nhỏ hơn.', 'error');
+                    modalLoading.classList.remove('show');
+                    modalContent.style.opacity = '1';
+                    modalFooter.querySelectorAll('button').forEach(btn => btn.disabled = false);
+                    return;
+                }
+                
                 // Use POST request because approverSignature is too long for URL
                 const requestData = {
                     action: 'approveVoucher',
@@ -3909,11 +4008,16 @@
                         requestorEmail: currentModalVoucher.requestorEmail || '',
                         approverEmail: currentModalVoucher.approverEmail || '',
                         approvedBy: 'Approver',
-                        approverSignature: approverSignatureData
+                        approverSignature: finalSignature
                     }
                 };
                 
-                console.log('Sending approve request:', JSON.stringify(requestData).substring(0, 500));
+                // Calculate total payload size
+                const payloadString = JSON.stringify(requestData);
+                const payloadSizeKB = (payloadString.length / 1024).toFixed(2);
+                console.log('📦 Total approve payload size:', payloadSizeKB, 'KB');
+                
+                console.log('Sending approve request (payload size:', payloadSizeKB, 'KB)');
                 
                 // Use FormData to avoid CORS preflight issues
                 const formData = new FormData();
