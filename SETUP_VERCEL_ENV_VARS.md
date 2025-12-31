@@ -80,12 +80,97 @@ After adding environment variables, you **MUST redeploy** for changes to take ef
 
 ## ✅ Verification
 
+### Method 1: Check Vercel Function Logs (Recommended)
+
 After redeploying, check Vercel function logs:
 1. Go to **Deployments** tab
 2. Click on the latest deployment
 3. Click **Functions** tab
 4. Click on `/api/voucher`
 5. Check **Logs** - you should **NOT** see warnings about environment variables anymore
+
+---
+
+### Method 2: Check Using Browser Developer Tools
+
+Environment variables are server-side, but you can verify they're working by checking the **Network requests**:
+
+#### Step 1: Open Developer Tools
+1. Open your website: `https://workflow.egg-ventures.com`
+2. Press `F12` (Windows/Linux) or `Cmd + Option + I` (Mac) to open Developer Tools
+3. Go to **Network** tab
+4. **Clear** existing requests (click 🚫 icon)
+
+#### Step 2: Trigger a Request
+1. Perform an action that calls the API:
+   - **Login** from homepage (tests `TLCGROUP_BACKEND_URL`)
+   - **Load master data** (tests `TLCGROUP_BACKEND_URL`)
+   - **Submit a voucher** (tests `GOOGLE_APPS_SCRIPT_URL`)
+   - **Approve/Reject voucher** (tests `GOOGLE_APPS_SCRIPT_URL`)
+
+#### Step 3: Check Network Requests
+1. Find the request to `/api/voucher` in the Network tab
+2. Click on the request
+3. Go to **Response** tab
+4. Look for the response - it should work normally
+
+#### Step 4: Check Console Logs
+1. Go to **Console** tab in Developer Tools
+2. Look for any error messages
+3. If environment variables are **NOT set**, you might see (harmless) info messages
+4. If environment variables **ARE set**, you won't see any warnings
+
+#### Step 5: Verify Request Success
+- ✅ **Success:** Request returns JSON with `success: true`
+- ❌ **Failure:** Request returns error (check if backend URL is correct)
+
+---
+
+### Method 3: Check Vercel Logs (Most Accurate)
+
+The most accurate way is to check Vercel's server-side logs:
+
+1. Go to **Vercel Dashboard** → Your Project
+2. Go to **Deployments** → Latest deployment
+3. Click **Functions** → `/api/voucher`
+4. Click **Logs** tab
+5. Look for these messages:
+
+**If environment variables are NOT set:**
+```
+[Proxy Info] GOOGLE_APPS_SCRIPT_URL environment variable not set. Using fallback URL.
+[Proxy Info] TLCGROUP_BACKEND_URL environment variable not set. Using fallback URL.
+```
+
+**If environment variables ARE set:**
+- ❌ **No warnings/info messages** about environment variables
+- ✅ Only normal operation logs
+
+---
+
+### Method 4: Test Endpoint (Advanced)
+
+You can create a test endpoint to check environment variables. Add this to `api/test-env.js`:
+
+```javascript
+export default async function handler(req, res) {
+  const envStatus = {
+    GOOGLE_APPS_SCRIPT_URL: process.env.GOOGLE_APPS_SCRIPT_URL ? '✅ Set' : '❌ Not set',
+    TLCGROUP_BACKEND_URL: process.env.TLCGROUP_BACKEND_URL ? '✅ Set' : '❌ Not set',
+    // Don't expose actual URLs for security
+    hasGoogleAppsScriptUrl: !!process.env.GOOGLE_APPS_SCRIPT_URL,
+    hasTlcGroupBackendUrl: !!process.env.TLCGROUP_BACKEND_URL
+  };
+  
+  return res.status(200).json({
+    success: true,
+    environment: envStatus,
+    message: 'Environment variables status'
+  });
+}
+```
+
+Then visit: `https://workflow.egg-ventures.com/api/test-env` to check status.
 
 ---
 
