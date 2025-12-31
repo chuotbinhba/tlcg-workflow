@@ -4759,16 +4759,9 @@
                 loadRecentVouchers();
                 startAutoRefresh();
             }, 1000);
-            
-            // Ensure signature upload button works
-            const signatureUploadBtn = document.querySelector('.signature-upload-btn');
-            const signatureUploadInput = document.getElementById('signature-upload');
-            if (signatureUploadBtn && signatureUploadInput) {
-                signatureUploadBtn.addEventListener('click', function(e) {
-                    e.preventDefault();
-                    signatureUploadInput.click();
-                });
-            }
+
+            // Note: Signature upload button already has onclick handler in HTML
+            // No need to add additional event listener to avoid double triggering
         });
         
         // Stop auto-refresh when page is hidden (tab switched), resume when visible
