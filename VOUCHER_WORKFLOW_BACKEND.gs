@@ -8,18 +8,68 @@ const VH_SHEET_NAME = 'Voucher_History';
 
 function doGet(e) {
   try {
-    const action = e.parameter.action;
+    Logger.log('=== doGet called ===');
+    Logger.log('e.parameter keys: ' + (e.parameter ? Object.keys(e.parameter).join(', ') : 'none'));
+    
+    const action = e.parameter ? e.parameter.action : null;
+    Logger.log('Action from GET: ' + action);
     
     if (action === 'getVoucherSummary') {
       return handleGetVoucherSummary(e.parameter);
     } else if (action === 'getVoucherHistory') {
       return handleGetVoucherHistory(e.parameter);
+    } else if (action === 'approveVoucher') {
+      // Handle approve via GET (from email links)
+      Logger.log('Handling approveVoucher via GET');
+      const requestBody = {
+        action: 'approveVoucher',
+        voucher: {
+          voucherNumber: e.parameter.voucherNumber || '',
+          voucherType: e.parameter.voucherType || '',
+          company: e.parameter.company || '',
+          employee: e.parameter.employee || '',
+          amount: e.parameter.amount || '',
+          requestorEmail: e.parameter.requestorEmail || '',
+          approverEmail: e.parameter.approverEmail || '',
+          approvedBy: e.parameter.approvedBy || e.parameter.approverEmail || ''
+        }
+      };
+      Logger.log('Request body for approveVoucher: ' + JSON.stringify(requestBody));
+      return handleApproveVoucher(requestBody);
+    } else if (action === 'rejectVoucher') {
+      // Handle reject via GET (from email links)
+      Logger.log('Handling rejectVoucher via GET');
+      const requestBody = {
+        action: 'rejectVoucher',
+        voucher: {
+          voucherNumber: e.parameter.voucherNumber || '',
+          voucherType: e.parameter.voucherType || '',
+          company: e.parameter.company || '',
+          employee: e.parameter.employee || '',
+          amount: e.parameter.amount || '',
+          requestorEmail: e.parameter.requestorEmail || '',
+          approverEmail: e.parameter.approverEmail || '',
+          rejectReason: e.parameter.rejectReason || '',
+          rejectedBy: e.parameter.rejectedBy || e.parameter.approverEmail || ''
+        }
+      };
+      Logger.log('Request body for rejectVoucher: ' + JSON.stringify(requestBody));
+      return handleRejectVoucher(requestBody);
+    }
+    
+    // If no action or unknown action, return JSON (not HTML) for API calls
+    if (action) {
+      Logger.log('⚠️ WARNING: Unknown action in GET: ' + action);
+      return createResponse(false, 'Action không hợp lệ trong GET: ' + action);
     }
     
   } catch (error) {
+    Logger.log('❌ ERROR in doGet: ' + error.toString());
+    Logger.log('❌ Error stack: ' + error.stack);
     return createResponse(false, 'Lỗi: ' + error.message);
   }
   
+  // Default response for direct browser access (not API call)
   return HtmlService.createHtmlOutput("<h2>Backend đang chạy!</h2><p>Vui lòng gửi dữ liệu từ giao diện chính.</p>");
 }
 
