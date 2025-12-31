@@ -84,13 +84,23 @@ export default async function handler(req, res) {
     console.log('[Proxy] Routing getMasterData to TLCGroup Backend');
   }
   
-  // Log warnings if environment variables not set
+  // Log warnings if environment variables not set (only in development or first request)
+  // These are warnings, not errors - fallback URLs are hardcoded and will work
   if (!process.env.GOOGLE_APPS_SCRIPT_URL) {
-    console.warn('[Proxy Warning] GOOGLE_APPS_SCRIPT_URL environment variable not set. Using fallback URL.');
-    console.warn('[Proxy Warning] Please set GOOGLE_APPS_SCRIPT_URL in Vercel Dashboard → Settings → Environment Variables');
+    // Only log once per instance to avoid spam
+    if (!global.__envWarningLogged) {
+      console.warn('[Proxy Info] GOOGLE_APPS_SCRIPT_URL environment variable not set. Using fallback URL.');
+      console.warn('[Proxy Info] Optional: Set GOOGLE_APPS_SCRIPT_URL in Vercel Dashboard → Settings → Environment Variables for easier management.');
+      global.__envWarningLogged = true;
+    }
   }
   if (!process.env.TLCGROUP_BACKEND_URL) {
-    console.warn('[Proxy Warning] TLCGROUP_BACKEND_URL environment variable not set. Using fallback URL for getMasterData.');
+    // Only log once per instance to avoid spam
+    if (!global.__tlcgroupWarningLogged) {
+      console.warn('[Proxy Info] TLCGROUP_BACKEND_URL environment variable not set. Using fallback URL.');
+      console.warn('[Proxy Info] Optional: Set TLCGROUP_BACKEND_URL in Vercel Dashboard → Settings → Environment Variables for easier management.');
+      global.__tlcgroupWarningLogged = true;
+    }
   }
   
   // CORS headers - allow your domain
