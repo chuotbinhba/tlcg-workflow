@@ -3966,7 +3966,7 @@
                         requestorEmail: currentModalVoucher.requestorEmail || '',
                         approverEmail: currentModalVoucher.approverEmail || '',
                         rejectedBy: 'Approver',
-                        reason: reason.trim(),
+                        rejectReason: reason.trim(),  // Backend expects 'rejectReason', not 'reason'
                         approverSignature: approverSignatureData || ''
                     }
                 };
