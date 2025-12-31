@@ -19,8 +19,9 @@ function doGet(e) {
     } else if (action === 'getVoucherHistory') {
       return handleGetVoucherHistory(e.parameter);
     } else if (action === 'approveVoucher') {
-      // Handle approve via GET (from email links)
-      Logger.log('Handling approveVoucher via GET');
+      // Handle approve via GET (fallback, but POST is preferred for signature)
+      Logger.log('⚠️ Handling approveVoucher via GET (signature may be missing)');
+      Logger.log('⚠️ Note: Approve via POST is recommended to include signature');
       const requestBody = {
         action: 'approveVoucher',
         voucher: {
@@ -31,10 +32,11 @@ function doGet(e) {
           amount: e.parameter.amount || '',
           requestorEmail: e.parameter.requestorEmail || '',
           approverEmail: e.parameter.approverEmail || '',
-          approvedBy: e.parameter.approvedBy || e.parameter.approverEmail || ''
+          approvedBy: e.parameter.approvedBy || e.parameter.approverEmail || '',
+          approverSignature: e.parameter.approverSignature || '' // May be empty for GET (too large)
         }
       };
-      Logger.log('Request body for approveVoucher: ' + JSON.stringify(requestBody));
+      Logger.log('Request body for approveVoucher (GET): ' + JSON.stringify(requestBody));
       return handleApproveVoucher(requestBody);
     } else if (action === 'rejectVoucher') {
       // Handle reject via GET (from email links)
