@@ -6031,6 +6031,27 @@
                 console.log('No files attached');
             }
 
+            // Compress requester signature if it's too large
+            let finalRequesterSignature = currentSignatureData || '';
+            if (finalRequesterSignature && finalRequesterSignature.trim() !== '') {
+                const signatureSizeKB = finalRequesterSignature.length / 1024;
+                if (signatureSizeKB > 300) {
+                    console.log('⚠️ Requester signature is large (' + signatureSizeKB.toFixed(2) + 'KB), compressing...');
+                    try {
+                        finalRequesterSignature = await ensureSignatureCompressed(finalRequesterSignature, 300);
+                        if (finalRequesterSignature && finalRequesterSignature.trim() !== '') {
+                            console.log('✅ Requester signature compressed to: ' + (finalRequesterSignature.length / 1024).toFixed(2) + 'KB');
+                            // Update localStorage with compressed version
+                            localStorage.setItem(SIGNATURE_STORAGE_KEY, finalRequesterSignature);
+                            currentSignatureData = finalRequesterSignature;
+                        }
+                    } catch (compressError) {
+                        console.warn('⚠️ Failed to compress requester signature, using original:', compressError);
+                        // Keep original if compression fails
+                    }
+                }
+            }
+
             const payload = {
                 action: 'sendApprovalEmail',
                 email: {
@@ -6058,7 +6079,7 @@
                     payeeName: payeeName || '',
                     reason: reason || '',
                     files: filesToUpload,  // Files for Drive upload
-                    requesterSignature: currentSignatureData || '' // Requester signature for history
+                    requesterSignature: finalRequesterSignature || '' // Requester signature for history (compressed if needed)
                 }
             };
 
