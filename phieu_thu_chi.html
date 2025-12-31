@@ -6109,18 +6109,27 @@
             
             // Calculate total payload size
             const payloadString = JSON.stringify(payload);
-            const payloadSizeKB = (payloadString.length / 1024).toFixed(2);
-            const payloadSizeMB = (payloadString.length / 1024 / 1024).toFixed(2);
+            const payloadSizeBytes = payloadString.length;
+            const payloadSizeKB = (payloadSizeBytes / 1024).toFixed(2);
+            const payloadSizeMB = (payloadSizeBytes / 1024 / 1024).toFixed(2);
+            
             console.log(`📦 Total payload size: ${payloadSizeKB} KB (${payloadSizeMB} MB)`);
             console.log(`📁 Files in payload: ${filesToUpload.length}`);
-            filesToUpload.forEach((f, i) => {
-                console.log(`   File ${i+1}: ${f.fileName} - base64 length: ${f.fileData ? f.fileData.length : 0}`);
-            });
+            if (filesToUpload.length > 0) {
+                filesToUpload.forEach((f, i) => {
+                    const fileSizeKB = (f.fileData ? f.fileData.length : 0) / 1024;
+                    console.log(`   File ${i+1}: ${f.fileName} - ${fileSizeKB.toFixed(2)} KB`);
+                });
+                const totalFilesSize = filesToUpload.reduce((sum, f) => sum + (f.fileData ? f.fileData.length : 0), 0);
+                console.log(`   Total files size: ${(totalFilesSize / 1024 / 1024).toFixed(2)} MB`);
+            }
+            if (finalRequesterSignature) {
+                console.log(`   Requester signature: ${(finalRequesterSignature.length / 1024).toFixed(2)} KB`);
+            }
             
             // Check if payload is too large
-            const payloadSizeBytes = payloadString.length;
             if (payloadSizeBytes > MAX_TOTAL_PAYLOAD_SIZE) {
-                const errorMsg = `Payload quá lớn (${(payloadSizeBytes / 1024 / 1024).toFixed(2)} MB). Giới hạn tối đa: ${MAX_TOTAL_PAYLOAD_SIZE / 1024 / 1024}MB. Vui lòng giảm số lượng hoặc kích thước file đính kèm.`;
+                const errorMsg = `Payload quá lớn (${payloadSizeMB} MB). Giới hạn tối đa: ${MAX_TOTAL_PAYLOAD_SIZE / 1024 / 1024}MB. Vui lòng giảm số lượng hoặc kích thước file đính kèm.`;
                 console.error('❌ Payload size exceeded:', payloadSizeBytes, 'bytes');
                 showToast(errorMsg, 'error', 'Payload quá lớn');
                 loadingIndicator.classList.remove('show');
@@ -6128,8 +6137,8 @@
                 return;
             }
             
-            if (payloadSizeBytes > 2 * 1024 * 1024) {
-                console.warn('⚠️ Payload is large (' + Math.round(payloadSizeBytes / 1024 / 1024) + 'MB), may take longer to process');
+            if (payloadSizeBytes > 900 * 1024) { // Warn if > 900KB (close to 1MB limit)
+                console.warn('⚠️ Payload is large (' + payloadSizeMB + 'MB), close to limit. Consider reducing file sizes.');
             }
 
             try {
