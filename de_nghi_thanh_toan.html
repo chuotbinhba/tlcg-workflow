@@ -1,0 +1,2522 @@
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đề nghị mua hàng</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <style>
+        :root {
+            --primary-color: #4285F4;
+            --secondary-color: #34A853;
+            --accent-color: #FBBC05;
+            --text-color: #202124;
+            --light-gray: #f5f5f5;
+            --border-color: #dadce0;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+            --success-color: #34A853;
+            --error-color: #EA4335;
+            --section-border: 1px solid #e0e0e0;
+            --section-bg: #ffffff;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Roboto', sans-serif;
+            font-weight: 400;
+            line-height: 1.6;
+            color: var(--text-color);
+            background-color: #f8f9fa; /* Lighter background for airy feel */
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background-color: var(--section-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 12px var(--shadow-color); /* Subtle shadow */
+            padding: 30px;
+            border: var(--section-border); /* Thin frame */
+        }
+        
+        h1 {
+            font-weight: 700;
+            color: var(--primary-color);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 32px; /* Larger heading */
+            letter-spacing: 0.5px;
+        }
+
+        h2 {
+            font-weight: 700; /* Bold headings */
+            color: var(--primary-color);
+            font-size: 24px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--primary-color); /* Clear separation */
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        h2 .tooltip-icon {
+            cursor: help;
+            font-size: 18px;
+            color: var(--primary-color);
+            position: relative;
+        }
+
+        h2 .tooltip-icon .tooltip-text {
+            visibility: hidden;
+            width: 300px;
+            background-color: var(--text-color);
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 10px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -150px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.4;
+        }
+
+        h2 .tooltip-icon .tooltip-text::after {
+            content: "";
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: var(--text-color) transparent transparent transparent;
+        }
+
+        h2 .tooltip-icon:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+        
+        .form-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            border: var(--section-border);
+        }
+        
+        .company-info, .general-voucher-info {
+            flex: 1;
+            min-width: 300px;
+        }
+        
+        .form-row {
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        
+        .form-group {
+            flex: 1;
+            min-width: 250px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: 4px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 16px;
+            transition: border-color 0.3s, box-shadow 0.3s;
+            background-color: white; /* Ensure white background */
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+        
+        select {
+            cursor: pointer;
+            height: 42px;
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .button-row {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background-color: #3367d6;
+        }
+        
+        .btn-secondary {
+            background-color: white;
+            color: var(--primary-color);
+            border: 1px solid var(--primary-color);
+        }
+        
+        .btn-secondary:hover {
+            background-color: #f1f5fe;
+        }
+        
+        .btn-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background-color: #2d9047;
+        }
+
+        .btn-danger {
+            background-color: #EA4335;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #d62c1c;
+        }
+        
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+            margin-top: 15px;
+            max-width: fit-content;
+        }
+        
+        .status-pending {
+            background-color: #fff8e1;
+            color: #ff9800;
+            border: 1px solid #ffe0b2;
+        }
+        
+        .status-approved {
+            background-color: #e8f5e9;
+            color: #4caf50;
+            border: 1px solid #c8e6c9;
+        }
+
+        .status-rejected {
+            background-color: #ffebee;
+            color: #f44336;
+            border: 1px solid #ffcdd2;
+        }
+        
+        .amounts {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--light-gray);
+            border-radius: 8px;
+        }
+        
+        .amount-row {
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .amount-row.total {
+            font-weight: 700;
+            font-size: 18px;
+            padding-top: 10px;
+            border-top: 1px dashed var(--border-color);
+            margin-top: 10px;
+        }
+        
+        .upload-container {
+            border: 2px dashed var(--border-color);
+            padding: 20px;
+            text-align: center;
+            border-radius: 6px;
+            background-color: var(--light-gray);
+            transition: background-color 0.3s;
+            cursor: pointer;
+        }
+        
+        .upload-container:hover {
+            background-color: #ebebeb;
+        }
+        
+        .hidden {
+            display: none;
+        }
+        
+        .company-details {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .company-details.show {
+            display: block;
+        }
+        
+        .approval-section {
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .approval-history {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .approval-history h3 {
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: var(--primary-color);
+        }
+
+        .approval-history ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .approval-history li {
+            margin-bottom: 5px;
+            padding-left: 10px;
+            border-left: 3px solid var(--border-color);
+        }
+
+        /* Table styles */
+        .product-table-container, .payment-table-container {
+            margin-top: 30px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+
+        .product-table, .payment-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1000px; /* Increased min-width for more columns */
+        }
+
+        .product-table th, .product-table td,
+        .payment-table th, .payment-table td {
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            text-align: left;
+            vertical-align: top;
+        }
+
+        .product-table th, .payment-table th {
+            background-color: var(--light-gray);
+            font-weight: 500;
+            color: var(--primary-color);
+        }
+
+        .product-table td input[type="text"],
+        .product-table td input[type="number"],
+        .payment-table td input[type="text"],
+        .payment-table td input[type="number"] {
+            border: none;
+            padding: 5px;
+            width: 100%;
+            background-color: transparent;
+        }
+
+        .product-table td input[type="number"],
+        .payment-table td input[type="number"] {
+            text-align: right;
+        }
+
+        .product-table td .remove-row-btn,
+        .payment-table td .remove-row-btn {
+            background-color: transparent;
+            color: var(--error-color);
+            border: none;
+            padding: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            line-height: 1;
+            transition: color 0.2s;
+        }
+
+        .product-table td .remove-row-btn:hover,
+        .payment-table td .remove-row-btn:hover {
+            color: #a00;
+            transform: none;
+        }
+
+        .product-table-footer, .payment-table-footer {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 15px;
+            background-color: var(--light-gray);
+            border-top: 1px solid var(--border-color);
+            border-radius: 0 0 8px 8px;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .product-table-footer span, .payment-table-footer span {
+            margin-left: 10px;
+            color: var(--primary-color);
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .attachment-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            min-width: 150px;
+        }
+
+        .attachment-cell .attachment-button {
+            padding: 6px 10px;
+            font-size: 14px;
+            background-color: var(--primary-color);
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            max-width: fit-content;
+        }
+
+        .attachment-cell .attachment-button:hover {
+            background-color: #3367d6;
+        }
+
+        .attachment-cell .file-list {
+            font-size: 12px;
+            color: #555;
+            max-height: 60px;
+            overflow-y: auto;
+            border: 1px solid var(--border-color);
+            padding: 5px;
+            border-radius: 4px;
+            background-color: #fcfcfc;
+        }
+
+        .attachment-cell .file-list p {
+            margin: 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .loading-indicator {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            margin-left: 15px;
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .loading-indicator.show {
+            display: flex;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary-color);
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .section-divider {
+            margin-top: 50px;
+            margin-bottom: 50px;
+            border: none;
+            border-top: 3px dashed var(--border-color);
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1000; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 30px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 600px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .close-button {
+            color: #aaa;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-button:hover,
+        .close-button:focus {
+            color: #000;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .modal h3 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 22px;
+        }
+
+        .modal .form-group {
+            margin-bottom: 15px;
+        }
+
+        .modal .button-row {
+            justify-content: flex-end;
+            margin-top: 20px;
+        }
+
+        .supplier-dropdown-group {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .supplier-dropdown-group > div {
+            flex: 1;
+        }
+
+        .supplier-dropdown-group button {
+            margin-bottom: 1px; /* Align with input baseline */
+            padding: 10px 15px;
+            height: 42px;
+        }
+
+        .comment-section {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: var(--light-gray);
+            border-radius: 8px;
+            border: var(--section-border);
+        }
+
+        .comment-section h3 {
+            font-size: 18px;
+            color: var(--primary-color);
+            margin-bottom: 15px;
+        }
+
+        .comment-section .form-group {
+            margin-bottom: 15px;
+        }
+
+        .comment-section .form-group:last-child {
+            margin-bottom: 0;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px 15px;
+            }
+            
+            .form-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .form-group {
+                min-width: 100%;
+            }
+            
+            .button-row, .table-actions {
+                flex-direction: column;
+            }
+            
+            button {
+                width: 100%;
+            }
+
+            .form-header {
+                flex-direction: column;
+            }
+            h1 {
+                font-size: 26px;
+            }
+            h2 {
+                font-size: 20px;
+            }
+            .product-table, .payment-table {
+                min-width: 600px; /* Adjust for smaller screens */
+            }
+            .supplier-dropdown-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .supplier-dropdown-group button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="voucher-form">
+        <h1 id="form-title">Đề nghị mua hàng</h1>
+        
+        <div class="form-header">
+            <div class="company-info">
+                <div class="form-group">
+                    <label for="company">Công ty:</label>
+                    <select id="company" name="company" required onchange="updateCompanyDetails(); generatePrRequestNo(); updateCompanyApprovers();">
+                        <option value="">-- Chọn công ty --</option>
+                    </select>
+                    <div id="company-details" class="company-details">
+                        <p id="company-address"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="general-voucher-info">
+                <div class="form-group">
+                    <label for="voucher-number">Số đề nghị:</label>
+                    <input type="text" id="voucher-number" name="voucher-number" value="TL-2023-" required readonly>
+                </div>
+                <div class="form-group">
+                    <label for="voucher-date">Ngày lập đề nghị:</label>
+                    <input type="date" id="voucher-date" name="voucher-date" required>
+                </div>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="employee">Người đề nghị:</label>
+                <select id="employee" name="employee" required onchange="updateEmployeeDepartment()">
+                    <option value="">-- Chọn nhân viên --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="department">Bộ phận:</label>
+                <input type="text" id="department" name="department" readonly>
+            </div>
+        </div>
+
+        <!-- PHẦN 1: ĐỀ NGHỊ MUA HÀNG -->
+        <h2>PHẦN 1: ĐỀ NGHỊ MUA HÀNG</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="purchase-voucher-type">Loại đề nghị mua hàng:</label>
+                <select id="purchase-voucher-type" name="purchase-voucher-type" required>
+                    <option value="">-- Chọn loại đề nghị mua hàng --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="pr-request-no">Số đề nghị mua hàng (PR Request No):</label>
+                <input type="text" id="pr-request-no" name="pr-request-no" placeholder="Tự động tạo" readonly>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="purchase-purpose-reason">Mục đích và lý do mua hàng:</label>
+                <textarea id="purchase-purpose-reason" name="purchase-purpose-reason" required placeholder="Mô tả chi tiết mục đích và lý do cần mua hàng"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="recipient-name">Người nhận hàng:</label>
+                <select id="recipient-name" name="recipient-name" required>
+                    <option value="">-- Chọn người nhận hàng --</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group supplier-dropdown-group">
+                <div>
+                    <label for="supplier-dropdown">Nhà cung cấp:</label>
+                    <select id="supplier-dropdown" name="supplier-dropdown" required onchange="handleSupplierChange()">
+                        <option value="">-- Chọn nhà cung cấp --</option>
+                    </select>
+                </div>
+                <button type="button" class="btn-secondary" onclick="openNewSupplierModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="12" y1="18" x2="12" y2="12"></line><line x1="9" y1="15" x2="15" y2="15"></line></svg>
+                    Tạo mới
+                </button>
+            </div>
+            <div class="form-group">
+                <label for="implementation-time-general">Thời gian thực hiện chung:</label>
+                <input type="text" id="implementation-time-general" name="implementation-time-general" placeholder="Ví dụ: Trong vòng 1 tuần, Tháng 12/2023">
+            </div>
+        </div>
+
+        <h2>
+            Bảng kê chi tiết hàng hóa/dịch vụ
+            <span class="tooltip-icon">
+                ℹ️
+                <span class="tooltip-text">
+                    HƯỚNG DẪN BẢNG KÊ CHI PHÍ: <br>
+                    • STT: Tự động tăng, không cần nhập <br>
+                    • Mô tả hàng hóa: Mô tả chi tiết sản phẩm/dịch vụ <br>
+                    • Thời gian thực hiện: Thời gian dự kiến hoàn thành <br>
+                    • Số lượng: Nhập số lượng <br>
+                    • Đơn giá: Nhập số, tự động format tiền Việt Nam <br>
+                    • Thành tiền: Tự động tính (Số lượng x Đơn giá) <br>
+                    • File đính kèm: Tải lên các tài liệu liên quan đến khoản chi này
+                </span>
+            </span>
+        </h2>
+        <div class="table-actions">
+            <button type="button" class="btn-secondary" id="add-product-row-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Thêm dòng
+            </button>
+            <button type="button" class="btn-secondary" id="copy-excel-product-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                Dán từ Excel
+            </button>
+            <button type="button" class="btn-secondary" id="import-product-excel-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Nhập file Excel
+            </button>
+        </div>
+
+        <div class="product-table-container">
+            <table class="product-table">
+                <thead>
+                    <tr>
+                        <th>STT</th>
+                        <th>Mô tả hàng hóa</th>
+                        <th>Thời gian thực hiện</th>
+                        <th>Số lượng</th>
+                        <th>Đơn giá</th>
+                        <th>Thành tiền</th>
+                        <th>File đính kèm</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="product-table-body">
+                </tbody>
+            </table>
+            <div class="product-table-footer">
+                <span>Tổng cộng:</span> <span id="grand-total">0 VNĐ</span>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
+
+        <!-- PHÊ DUYỆT NGÂN SÁCH -->
+        <h2>PHÊ DUYỆT NGÂN SÁCH</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="budget-approver">Người phê duyệt ngân sách:</label>
+                <select id="budget-approver" name="budget-approver" required>
+                    <option value="">-- Chọn người phê duyệt --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="budget-approval-status">Trạng thái phê duyệt ngân sách:</label>
+                <div class="status-indicator status-pending" id="budget-approval-status">
+                    Chờ phê duyệt
+                </div>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="budget-approval-date">Ngày phê duyệt:</label>
+                <input type="date" id="budget-approval-date" name="budget-approval-date" readonly>
+            </div>
+            <div class="form-group">
+                <label for="budget-approver-signature-upload">Chữ ký (Upload):</label>
+                <input type="file" id="budget-approver-signature-upload" accept="image/*" onchange="handleSignatureUpload(event, 'budget')" style="margin-bottom: 10px;">
+                <img id="budget-signature-preview" style="max-width: 200px; display: none; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
+            </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- PHÊ DUYỆT NHÀ CUNG CẤP -->
+        <h2>PHÊ DUYỆT NHÀ CUNG CẤP</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="supplier-approver">Người phê duyệt nhà cung cấp:</label>
+                <select id="supplier-approver" name="supplier-approver" required>
+                    <option value="">-- Chọn người phê duyệt --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="supplier-approval-status">Trạng thái phê duyệt nhà cung cấp:</label>
+                <div class="status-indicator status-pending" id="supplier-approval-status">
+                    Chờ phê duyệt
+                </div>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="supplier-approval-date">Ngày phê duyệt:</label>
+                <input type="date" id="supplier-approval-date" name="supplier-approval-date" readonly>
+            </div>
+            <div class="form-group">
+                <label for="supplier-approver-signature-upload">Chữ ký (Upload):</label>
+                <input type="file" id="supplier-approver-signature-upload" accept="image/*" onchange="handleSignatureUpload(event, 'supplier')" style="margin-bottom: 10px;">
+                <img id="supplier-signature-preview" style="max-width: 200px; display: none; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
+            </div>
+        </div>
+
+        <!-- Hợp đồng với nhà cung cấp -->
+        <div class="comment-section">
+            <h3>Hợp đồng với nhà cung cấp</h3>
+            <div class="form-group">
+                <label for="contract-attachment">File đính kèm hợp đồng:</label>
+                <input type="file" id="contract-attachment" name="contract-attachment" multiple onchange="handleContractFileSelect(event)">
+                <div class="file-list" id="contract-file-list">
+                    <p>Chưa có file nào được đính kèm.</p>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="legal-approver-select">Người phê duyệt pháp chế:</label>
+                <select id="legal-approver-select" name="legal-approver-select">
+                    <option value="">-- Chọn người phê duyệt pháp chế --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="legal-comment">Ý kiến bộ phận pháp chế:</label>
+                <textarea id="legal-comment" name="legal-comment" placeholder="Nhập ý kiến của bộ phận pháp chế"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="legal-signature-upload">Chữ ký pháp chế (Upload):</label>
+                <input type="file" id="legal-signature-upload" accept="image/*" onchange="handleSignatureUpload(event, 'legal')" style="margin-bottom: 10px;">
+                <img id="legal-signature-preview" style="max-width: 200px; display: none; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
+            </div>
+            <div class="form-group">
+                <label for="accounting-approver-signature">Người phê duyệt kế toán:</label>
+                <input type="text" id="accounting-approver-signature" name="accounting-approver-signature" placeholder="Tên người phê duyệt kế toán" readonly>
+            </div>
+            <div class="form-group">
+                <label for="accounting-comment">Ý kiến bộ phận kế toán:</label>
+                <textarea id="accounting-comment" name="accounting-comment" placeholder="Nhập ý kiến của bộ phận kế toán"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="accounting-signature-upload">Chữ ký kế toán (Upload):</label>
+                <input type="file" id="accounting-signature-upload" accept="image/*" onchange="handleSignatureUpload(event, 'accounting')" style="margin-bottom: 10px;">
+                <img id="accounting-signature-preview" style="max-width: 200px; display: none; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
+            </div>
+            <div class="form-group">
+                <label for="director-approver-signature">Người phê duyệt giám đốc:</label>
+                <input type="text" id="director-approver-signature" name="director-approver-signature" placeholder="Tên giám đốc" readonly>
+            </div>
+            <div class="form-group">
+                <label for="director-comment">Ý kiến giám đốc:</label>
+                <textarea id="director-comment" name="director-comment" placeholder="Nhập ý kiến của giám đốc"></textarea>
+            </div>
+            <div class="form-group">
+                <label for="director-signature-upload">Chữ ký giám đốc (Upload):</label>
+                <input type="file" id="director-signature-upload" accept="image/*" onchange="handleSignatureUpload(event, 'director')" style="margin-bottom: 10px;">
+                <img id="director-signature-preview" style="max-width: 200px; display: none; border: 1px solid #ddd; padding: 5px; border-radius: 4px;">
+            </div>
+        </div>
+
+        <hr class="section-divider">
+
+        <!-- PHẦN 2: ĐỀ NGHỊ THANH TOÁN -->
+        <h2>PHẦN 2: ĐỀ NGHỊ THANH TOÁN</h2>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="payment-voucher-type">Loại đề nghị thanh toán:</label>
+                <select id="payment-voucher-type" name="payment-voucher-type" required>
+                    <option value="">-- Chọn loại đề nghị thanh toán --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="payment-type">Loại thanh toán:</label>
+                <select id="payment-type" name="payment-type" required>
+                    <option value="">-- Chọn loại thanh toán --</option>
+                    <option value="Chuyển khoản">Chuyển khoản</option>
+                    <option value="Tiền mặt">Tiền mặt</option>
+                    <option value="Thẻ tín dụng">Thẻ tín dụng</option>
+                </select>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="po-request-no">Số đơn hàng (PO Request No):</label>
+                <input type="text" id="po-request-no" name="po-request-no" placeholder="Nếu có">
+            </div>
+            <div class="form-group">
+                <label for="due-date">Ngày đáo hạn:</label>
+                <input type="date" id="due-date" name="due-date">
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group">
+                <label for="currency">Loại tiền:</label>
+                <select id="currency" name="currency" required>
+                        <option value="">-- Chọn loại tiền --</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="payment-info">Thông tin thanh toán:</label>
+                <textarea id="payment-info" name="payment-info" placeholder="Số tài khoản, tên ngân hàng, chi nhánh, v.v."></textarea>
+            </div>
+        </div>
+        
+        <div class="form-row">
+            <div class="form-group">
+                <label for="amount">Tổng số tiền thanh toán:</label>
+                <input type="text" id="amount" name="amount" required readonly>
+            </div>
+            <div class="form-group">
+                <label for="amount-in-words">Số tiền bằng chữ:</label>
+                <input type="text" id="amount-in-words" name="amount-in-words" readonly>
+            </div>
+        </div>
+
+        <h3>Bảng kê chi tiết đợt thanh toán</h3>
+        <div class="table-actions">
+            <button type="button" class="btn-secondary" id="add-payment-row-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                Thêm đợt thanh toán
+            </button>
+        </div>
+        <div class="payment-table-container">
+            <table class="payment-table">
+                <thead>
+                    <tr>
+                        <th>Đợt thanh toán</th>
+                        <th>Số tiền</th>
+                        <th>% so với ngân sách</th>
+                        <th>Hợp đồng đã ký</th>
+                        <th>Biên bản nghiệm thu</th>
+                        <th>Đề nghị thanh toán của NCC</th>
+                        <th>Hóa đơn</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="payment-table-body">
+                </tbody>
+            </table>
+            <div class="payment-table-footer">
+                <span>Tổng % so với ngân sách:</span> <span id="total-payment-percentage">0%</span>
+            </div>
+        </div>
+        
+        <div class="approval-section">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="final-approver">Người phê duyệt cuối cùng:</label>
+                    <select id="final-approver" name="final-approver" required>
+                        <option value="">-- Chọn người phê duyệt --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="final-approval-status-display">Trạng thái phê duyệt cuối cùng:</label>
+                    <div class="status-indicator status-pending" id="final-approval-status-display">
+                        Chờ phê duyệt
+                    </div>
+                </div>
+            </div>
+            <div class="approval-history">
+                <h3>Lịch sử phê duyệt</h3>
+                <ul id="approval-history-list">
+                    <li>Chưa có yêu cầu phê duyệt nào được gửi.</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="button-row">
+            <button type="button" class="btn-primary" id="save-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                Lưu đề nghị
+            </button>
+            <button type="button" class="btn-success" id="send-approval-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"></line><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                Gửi phê duyệt
+            </button>
+            <div class="loading-indicator" id="loading-indicator">
+                <div class="spinner"></div>
+                <span>Đang gửi...</span>
+            </div>
+            <button type="button" class="btn-secondary" id="export-pdf-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                Xuất PDF
+            </button>
+            <button type="button" class="btn-secondary" id="import-excel-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+                Nhập từ Excel (Form)
+            </button>
+            <button type="button" class="btn-secondary" id="sync-sheets-btn">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>
+                Đồng bộ với Google Sheets
+            </button>
+        </div>
+    </div>
+
+    <!-- New Supplier Modal -->
+    <div id="new-supplier-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeNewSupplierModal()">&times;</span>
+            <h3>Thêm nhà cung cấp mới</h3>
+            <div class="form-group">
+                <label for="new-supplier-name">Tên nhà cung cấp:</label>
+                <input type="text" id="new-supplier-name" required>
+            </div>
+            <div class="form-group">
+                <label for="new-supplier-address">Địa chỉ:</label>
+                <input type="text" id="new-supplier-address">
+            </div>
+            <div class="form-group">
+                <label for="new-supplier-phone">Số điện thoại:</label>
+                <input type="text" id="new-supplier-phone">
+            </div>
+            <div class="form-group">
+                <label for="new-supplier-email">Email:</label>
+                <input type="email" id="new-supplier-email">
+            </div>
+            <div class="form-group">
+                <label for="new-supplier-tax-code">Mã số thuế:</label>
+                <input type="text" id="new-supplier-tax-code">
+            </div>
+            <div class="button-row">
+                <button type="button" class="btn-primary" onclick="addNewSupplier()">Thêm nhà cung cấp</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const data = (function(b64){
+  const bytes = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+  return JSON.parse(new TextDecoder('utf-8').decode(bytes));
+})("eyJmb3JtX3RpdGxlIjoixJDhu4Egbmdo4buLIG11YSBow6BuZyIsInZvdWNoZXJfdHlwZXMiOlsixJDhu4Egbmdo4buLIG11YSBow6BuZyAtIEjDoG5nIGjDs2EiLCLEkOG7gSBuZ2jhu4sgbXVhIGjDoG5nIC0gVGhp4bq/dCBi4buLIiwixJDhu4Egbmdo4buLIG11YSBow6BuZyAtIEThu4tjaCB24bulIiwixJDhu4Egbmdo4buLIG11YSBow6BuZyAtIFbEg24gcGjDsm5nIHBo4bqpbSIsIsSQ4buBIG5naOG7iyBtdWEgaMOgbmcgLSBW4bqtdCB0xrAgdGnDqnUgaGFvIl0sImN1cnJlbmN5X29wdGlvbnMiOlsiVk5EIiwiVVNEIiwiRVVSIl0sImNvbXBhbnlfbmFtZXMiOlsiQ8OUTkcgVFkgQ+G7lCBQSOG6pk4gxJDhuqZVIFTGryBUTEMgR1JPVVAiLCJDw5RORyBUWSBUTkhIIE1FRElBIElOU0lERVIiLCJDw5RORyBUWSBUUsOBQ0ggTkhJ4buGTSBI4buuVSBI4bqgTiBE4buKQ0ggVuG7pCBSSU9UIEdBTUVTIiwiQ8OUTkcgVFkgVE5ISCBFR0cgVkVOVFVSRVMiLCJDw5RORyBUWSBD4buUIFBI4bqmTiBJTlNJREVSUyIsIkPDlE5HIFRZIEPhu5QgUEjhuqZOIMSQ4bqmVSBUxq8gQ0hJTkggUEhPTkciXSwiZW1wbG95ZWVfbmFtZXMiOlsiTMOqIE5nw6JuIEFuaCIsIk5ndXnhu4VuIFbEg24gQ2hpbmgiLCJMw6ogVGjDuXkgTGluaCIsIk5ndXnhu4VuIEzhu7FjIiwiTMOqIE1pbmgiLCJMw6ogTWluaCBBbmgiLCJOZ3V54buFbiBUaOG7iyBOaGFuaCIsIkzGsCBL4buzIE5ow6MiLCJOZ3V5ZW4gUGhvbmciLCJUcuG6p24gVGhhbmgiLCJBbmggVGjGsCBUaMOhaSBUaOG7iyIsIk5ndXnhu4VuIEzGsCBBbmggVGjGsCIsIk5ndXllbiBUaW1vdGh5IiwiTmd1eWVuIFRpbmEgTGluaCIsIlBo4bqhbSBUcsOtIl0sImFwcHJvdmVyX25hbWVzIjpbIk5ndXnhu4VuIFbEg24gQW4gLSBUcsaw4bufbmcgcGjDsm5nIEvhur8gdG/DoW4iLCJQaOG6oW0gVGjhu4sgRHVuZyAtIEdpw6FtIMSR4buRYyIsIkhvw6BuZyBWxINuIEVtIC0gUGjDsyBHacOhbSDEkeG7kWMiLCJMw6ogTWluaCBDxrDhu51uZyAtIFRo4bunIHF14bu5Il0sImNvbXBhbmllc19kYXRhIjpbeyJuYW1lIjoiQ8OUTkcgVFkgQ+G7lCBQSOG6pk4gxJDhuqZVIFTGryBUTEMgR1JPVVAiLCJhZGRyZXNzIjoiQi4zLjA5LCBU4bqnbmcgMywgTMO0IEIsIFPhu5EgMzQtMzUgQuG6v24gVsOibiDEkOG7k24sIFBoxrDhu51uZyBYw7NtIENoaeG6v3UsIFRQIEjhu5MgQ2jDrSBNaW5oLCBWaeG7h3QgTmFtIiwidGF4X2NvZGUiOiIxMjM0NTY3ODkiLCJwaG9uZSI6IjAyOC0zODIyLTAwMDAiLCJlbWFpbCI6ImluZm9AdGxjZ3JvdXAudm4ifSx7Im5hbWUiOiJDw5RORyBUWSBUTkhIIE1FRElBIElOU0lERVIiLCJhZGRyZXNzIjoiTOG6p3UgMywgMTIzIE5ndXnhu4VuIFbEg24gQ+G7qywgUS4xLCBUUC5IQ00iLCJ0YXhfY29kZSI6IjIzNDU2Nzg5MCIsInBob25lIjoiMDI4LTM4MjMtMTExMSIsImVtYWlsIjoiY29udGFjdEBtZWRpYWluc2lkZXIudm4ifSx7Im5hbWUiOiJDw5RORyBUWSBUUsOBQ0ggTkhJ4buGTSBI4buuVSBI4bqgTiBE4buKQ0ggVuG7pCBSSU9UIEdBTUVTIiwiYWRkcmVzcyI6IlThuqduZyAxNSwgQml0ZXhjbyBGaW5hbmNpYWwgVG93ZXIsIDIgSOG6o2kgVHJp4buBdSwgUS4xLCBUUC5IQ00iLCJ0YXhfY29kZSI6IjM0NTY3ODkwMSIsInBob25lIjoiMDI4LTM4MjQtMjIyMiIsImVtYWlsIjoic2VydmljZXNAcmlvdGdhbWVzLnZuIn0seyJuYW1lIjoiQ8OUTkcgVFkgVE5ISCBFR0cgVkVOVFVSRVMiLCJhZGRyZXNzIjoiTOG6p3UgNywgVMOyYSBuaMOgIFZpbmNvbSBDZW50ZXIsIDcyIEzDqiBUaMOhbmggVMO0biwgUS4xLCBUUC5IQ00iLCJ0YXhfY29kZSI6IjQ1Njc4OTAxMiIsInBob25lIjoiMDI4LTM4MjUtMzMzMyIsImVtYWlsIjoiaGVsbG9AZWdndmVudHVyZXMudm4ifSx7Im5hbWUiOiJDw5RORyBUWSBD4buUIFBI4bqmTiBJTlNJREVSUyIsImFkZHJlc3MiOiJU4bqnbmcgOCwgNDUgTMOqIER14bqpbiwgUS4xLCBUUC5IQ00iLCJ0YXhfY29kZSI6IjU2Nzg5MDEyMyIsInBob25lIjoiMDI4LTM4MjYtNDQ0NCIsImVtYWlsIjoidGVhbUBpbnNpZGVycy52biJ9LHsibmFtZSI6IkPDlE5HIFRZIEPhu5QgUEjhuqZOIMSQ4bqmVSBUxq8gQ0hJTkggUEhPTkciLCJhZGRyZXNzIjoiTOG6p3UgMTAsIERpYW1vbmQgUGxhemEsIDM0IEzDqiBEdeG6qW4sIFEuMSwgVFAuSENNIiwidGF4X2NvZGUiOiI2Nzg5MDEyMzQiLCJwaG9uZSI6IjAyOC0zODI3LTU1NTUiLCJlbWFpbCI6ImludmVzdEBjaGluaHBob25nLnZuIn1dfQ==");;
+
+        // ==================== CONFIGURATION ====================
+        // Use Vercel proxy for all backend requests (handles CORS and routing)
+        const VERCEL_PROXY_URL = 'https://workflow.egg-ventures.com/api/voucher';
+        
+        // Payload size limits (learned from Voucher workflow)
+        const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB per file
+        const MAX_TOTAL_PAYLOAD_SIZE = 900 * 1024; // 900KB total payload
+        const MAX_SIGNATURE_SIZE = 300 * 1024; // 300KB for signatures
+        
+        // Check user authentication
+        function checkUserLogin() {
+            const userData = localStorage.getItem('userData');
+            if (!userData) {
+                alert('Bạn chưa đăng nhập. Vui lòng đăng nhập trước.');
+                window.location.href = 'index.html';
+                return null;
+            }
+            try {
+                return JSON.parse(userData);
+            } catch (e) {
+                console.error('Error parsing userData:', e);
+                localStorage.removeItem('userData');
+                window.location.href = 'index.html';
+                return null;
+            }
+        }
+        
+        // Get logged-in user on page load
+        const loggedInUser = checkUserLogin();
+        if (!loggedInUser) {
+            // Redirect handled in checkUserLogin
+        }
+
+        // ==================== IMAGE COMPRESSION & VALIDATION ====================
+        
+        /**
+         * Compress image to target size
+         * @param {File} file - Image file to compress
+         * @param {number} maxSizeKB - Maximum size in KB
+         * @returns {Promise<string>} - Compressed image as base64 data URL
+         */
+        async function compressImage(file, maxSizeKB) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image();
+                    img.onload = () => {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+                        
+                        // Calculate new dimensions (max 1200px)
+                        const maxDimension = 1200;
+                        if (width > height && width > maxDimension) {
+                            height = (height / width) * maxDimension;
+                            width = maxDimension;
+                        } else if (height > maxDimension) {
+                            width = (width / height) * maxDimension;
+                            height = maxDimension;
+                        }
+                        
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+                        
+                        // Try different quality levels
+                        let quality = 0.8;
+                        let compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                        
+                        while (compressedDataUrl.length > maxSizeKB * 1024 && quality > 0.1) {
+                            quality -= 0.1;
+                            compressedDataUrl = canvas.toDataURL('image/jpeg', quality);
+                        }
+                        
+                        console.log(`🖼️ Image compressed: ${Math.round(compressedDataUrl.length / 1024)}KB (quality: ${quality})`);
+                        resolve(compressedDataUrl);
+                    };
+                    img.onerror = () => reject(new Error('Failed to load image'));
+                    img.src = e.target.result;
+                };
+                reader.onerror = () => reject(new Error('Failed to read file'));
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        /**
+         * Validate file before upload
+         * @param {File} file - File to validate
+         * @returns {boolean} - True if valid
+         */
+        function validateFile(file) {
+            if (!file) return false;
+            
+            // Check file size
+            if (file.size > MAX_FILE_SIZE) {
+                alert(`❌ File "${file.name}" vượt quá giới hạn ${MAX_FILE_SIZE / 1024 / 1024}MB`);
+                return false;
+            }
+            
+            // Check file type
+            const allowedTypes = [
+                'image/jpeg', 'image/jpg', 'image/png', 'image/gif',
+                'application/pdf',
+                'application/vnd.ms-excel',
+                'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                'application/msword',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+            ];
+            
+            if (!allowedTypes.includes(file.type)) {
+                alert(`❌ File type "${file.type}" không được hỗ trợ. Vui lòng upload ảnh, PDF, Excel hoặc Word.`);
+                return false;
+            }
+            
+            return true;
+        }
+        
+        /**
+         * Calculate total payload size
+         * @param {object} payload - Payload object to measure
+         * @returns {number} - Size in bytes
+         */
+        function calculatePayloadSize(payload) {
+            const jsonString = JSON.stringify(payload);
+            return new Blob([jsonString]).size;
+        }
+        
+        // Initialize email mappings based on provided exact emails and company data
+        const employeeEmailMap = {
+            "Lê Ngân Anh": "anh.le@mediainsider.vn",
+            "Nguyễn Văn Chinh": "chinh.nguyen@mediainsider.vn",
+            "Lê Thùy Linh": "linh.le@tl-c.com.vn",
+            "Nguyễn Lực": "hieuluc.nguyen@gmail.com",
+            "Lê Minh": "minh.le@example.com",
+            "Lê Minh Anh": "minhanh.le@example.com",
+            "Nguyễn Thị Nhanh": "nhanh.nguyen@example.com",
+            "Lư Kỳ Nhã": "nha.lu@example.com",
+            "Nguyen Phong": "phong.nguyen@example.com",
+            "Trần Thanh": "thanh.tran@example.com",
+            "Anh Thư Thái Thị": "anthu.thai@example.com",
+            "Nguyễn Lư Anh Thư": "anthu.nguyen@example.com",
+            "Nguyen Timothy": "timothy.nguyen@example.com",
+            "Nguyen Tina Linh": "tinalinh.nguyen@example.com",
+            "Phạm Trí": "tri.pham@example.com"
+        };
+
+        const approverEmailMap = {
+            "Lê Ngân Anh": "anh.le@mediainsider.vn",
+            "Nguyễn Văn Chinh": "chinh.nguyen@mediainsider.vn",
+            "Lê Thùy Linh": "linh.le@tl-c.com.vn",
+            "Nguyễn Lực": "hieuluc.nguyen@gmail.com",
+            "Lê Minh": "minh.le@example.com",
+            "Lê Minh Anh": "minhanh.le@example.com",
+            "Nguyễn Thị Nhanh": "nhanh.nguyen@example.com",
+            "Lư Kỳ Nhã": "nha.lu@example.com",
+            "Nguyen Phong": "phong.nguyen@example.com",
+            "Trần Thanh": "thanh.tran@example.com",
+            "Anh Thư Thái Thị": "anthu.thai@example.com",
+            "Nguyễn Lư Anh Thư": "anthu.nguyen@example.com",
+            "Nguyen Timothy": "timothy.nguyen@example.com",
+            "Nguyen Tina Linh": "tinalinh.nguyen@example.com",
+            "Phạm Trí": "tri.pham@example.com"
+        };
+
+        // Augment employeeEmailMap and approverEmailMap with emails from companies_data
+        data.companies_data.forEach(company => {
+            if (company["Đại diện pháp luật"] && company["Email Đại diện pháp luật"]) {
+                employeeEmailMap[company["Đại diện pháp luật"]] = company["Email Đại diện pháp luật"];
+                approverEmailMap[company["Đại diện pháp luật"]] = company["Email Đại diện pháp luật"];
+            }
+            if (company["Kế toán trưởng"] && company["Email Kế toán trưởng"]) {
+                employeeEmailMap[company["Kế toán trưởng"]] = company["Email Kế toán trưởng"];
+                approverEmailMap[company["Kế toán trưởng"]] = company["Email Kế toán trưởng"];
+            }
+            if (company["Thủ quỹ"] && company["Email Thủ quỹ"]) {
+                employeeEmailMap[company["Thủ quỹ"]] = company["Email Thủ quỹ"];
+                // Thủ quỹ might not always be an approver, but including for completeness if they are in approver_names
+                approverEmailMap[company["Thủ quỹ"]] = company["Thủ quỹ"];
+            }
+        });
+
+        // Add employee departments (assuming this data exists or can be derived)
+        // For demonstration, creating a simple map. In a real app, this would come from backend.
+        data.employee_departments = {};
+        data.employee_names.forEach(name => {
+            if (name.includes("Giám đốc")) data.employee_departments[name] = "Ban Giám đốc";
+            else if (name.includes("Kế toán")) data.employee_departments[name] = "Phòng Kế toán";
+            else if (name.includes("Pháp chế")) data.employee_departments[name] = "Phòng Pháp chế";
+            else if (name.includes("Kinh doanh")) data.employee_departments[name] = "Phòng Kinh doanh";
+            else if (name.includes("Kỹ thuật")) data.employee_departments[name] = "Phòng Kỹ thuật";
+            else data.employee_departments[name] = "Phòng ban khác";
+        });
+
+        // Predefined suppliers (can be fetched from Google Sheets in a real app)
+        let suppliers = ["CÔNG TY TNHH ABC", "CÔNG TY CỔ PHẦN XYZ", "CÔNG TY TNHH THIẾT BỊ VIỆT NAM", "CÔNG TY CP VĂN PHÒNG PHẨM MINH ANH", "CÔNG TY TNHH CÔNG NGHỆ SỐ"];
+
+        let productItems = []; // Renamed from expenseItems
+        let paymentPhases = []; // For payment request table
+        let approvalHistory = [];
+        let contractAttachments = []; // For contract approval section
+        
+        // Signature storage
+        let signatures = {
+            requester: null,
+            budget: null,
+            supplier: null,
+            legal: null,
+            accounting: null,
+            director: null,
+            final: null
+        };
+        
+        /**
+         * Handle signature upload with compression
+         * @param {Event} event - File input change event
+         * @param {string} signatureType - Type of signature (budget, supplier, etc.)
+         */
+        async function handleSignatureUpload(event, signatureType) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            // Validate file type
+            if (!file.type.startsWith('image/')) {
+                alert('❌ Vui lòng chọn file ảnh (JPG, PNG, GIF)');
+                event.target.value = '';
+                return;
+            }
+            
+            // Validate file size
+            if (file.size > MAX_FILE_SIZE) {
+                alert(`❌ File quá lớn (${Math.round(file.size / 1024 / 1024)}MB). Tối đa ${MAX_FILE_SIZE / 1024 / 1024}MB`);
+                event.target.value = '';
+                return;
+            }
+            
+            try {
+                console.log(`📝 Compressing ${signatureType} signature...`);
+                
+                // Compress image
+                const compressedDataUrl = await compressImage(file, MAX_SIGNATURE_SIZE / 1024);
+                
+                // Store signature
+                signatures[signatureType] = compressedDataUrl;
+                
+                // Show preview
+                const preview = document.getElementById(`${signatureType}-signature-preview`);
+                if (preview) {
+                    preview.src = compressedDataUrl;
+                    preview.style.display = 'block';
+                }
+                
+                console.log(`✅ ${signatureType} signature compressed and stored (${Math.round(compressedDataUrl.length / 1024)}KB)`);
+                
+            } catch (error) {
+                console.error('Error processing signature:', error);
+                alert('❌ Lỗi khi xử lý chữ ký: ' + error.message);
+                event.target.value = '';
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeForm();
+            setCurrentDate();
+            generateVoucherNumber();
+            renderProductTable();
+            renderPaymentTable();
+
+            document.getElementById('export-pdf-btn').addEventListener('click', exportToPDF);
+            document.getElementById('import-excel-btn').addEventListener('click', importFromExcelForm);
+            document.getElementById('sync-sheets-btn').addEventListener('click', syncWithGoogleSheets);
+            document.getElementById('save-btn').addEventListener('click', saveVoucher);
+            document.getElementById('send-approval-btn').addEventListener('click', sendForApproval);
+            
+            document.getElementById('add-product-row-btn').addEventListener('click', addProductRow);
+            document.getElementById('copy-excel-product-btn').addEventListener('click', copyFromExcelToProductTable);
+            document.getElementById('import-product-excel-btn').addEventListener('click', importExcelToProductTable);
+            document.getElementById('add-payment-row-btn').addEventListener('click', addPaymentRow);
+
+            // Event listener for legal approver selection
+            document.getElementById('legal-approver-select').addEventListener('change', function() {
+                document.getElementById('legal-signature').value = this.value;
+            });
+
+            renderApprovalHistory();
+        });
+        
+        function initializeForm() {
+            document.getElementById('form-title').textContent = data.form_title;
+            
+            const companySelect = document.getElementById('company');
+            data.company_names.forEach(company => {
+                const option = document.createElement('option');
+                option.value = company;
+                option.textContent = company;
+                companySelect.appendChild(option);
+            });
+            
+            const employeeSelect = document.getElementById('employee');
+            const recipientNameSelect = document.getElementById('recipient-name');
+            const legalApproverSelect = document.getElementById('legal-approver-select');
+            const finalApproverSelect = document.getElementById('final-approver');
+            const budgetApproverSelect = document.getElementById('budget-approver');
+            const supplierApproverSelect = document.getElementById('supplier-approver');
+            
+            data.employee_names.forEach(employee => {
+                const option = document.createElement('option');
+                option.value = employee;
+                option.textContent = employee;
+                employeeSelect.appendChild(option);
+
+                const recipientOption = option.cloneNode(true);
+                recipientNameSelect.appendChild(recipientOption);
+
+                const legalOption = option.cloneNode(true);
+                legalApproverSelect.appendChild(legalOption);
+
+                const finalApproverOption = option.cloneNode(true);
+                finalApproverSelect.appendChild(finalApproverOption);
+
+                const budgetApproverOption = option.cloneNode(true);
+                budgetApproverSelect.appendChild(budgetApproverOption);
+
+                const supplierApproverOption = option.cloneNode(true);
+                supplierApproverSelect.appendChild(supplierApproverOption);
+            });
+            
+            const purchaseVoucherTypeSelect = document.getElementById('purchase-voucher-type');
+            // Populate purchase voucher types from data.voucher_types
+            data.voucher_types.forEach(type => {
+                if (type.startsWith("Đề nghị mua hàng")) {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.textContent = type;
+                    purchaseVoucherTypeSelect.appendChild(option);
+                }
+            });
+
+            // FIX: Populate payment voucher types with the new specific list
+            const paymentVoucherTypeSelect = document.getElementById('payment-voucher-type');
+            const specificPaymentTypes = [
+                'Thanh toán ứng trước',
+                'Thanh toán theo hợp đồng',
+                'Thanh toán chi phí',
+                'Thanh toán lương',
+                'Thanh toán nhà cung cấp',
+                'Thanh toán dịch vụ',
+                'Thanh toán thuế',
+                'Thanh toán khác'
+            ];
+            specificPaymentTypes.forEach(type => {
+                const option = document.createElement('option');
+                option.value = type;
+                option.textContent = type;
+                paymentVoucherTypeSelect.appendChild(option);
+            });
+            
+            const currencySelect = document.getElementById('currency');
+            data.currency_options.forEach(currency => {
+                const option = document.createElement('option');
+                option.value = currency;
+                option.textContent = currency;
+                currencySelect.appendChild(option);
+            });
+            
+            populateSupplierDropdown();
+        }
+
+        function populateSupplierDropdown() {
+            const supplierDropdown = document.getElementById('supplier-dropdown');
+            supplierDropdown.innerHTML = '<option value="">-- Chọn nhà cung cấp --</option>';
+            suppliers.forEach(supplier => {
+                const option = document.createElement('option');
+                option.value = supplier;
+                option.textContent = supplier;
+                supplierDropdown.appendChild(option);
+            });
+            const newSupplierOption = document.createElement('option');
+            newSupplierOption.value = "new-supplier";
+            newSupplierOption.textContent = "Tạo nhà cung cấp mới";
+            supplierDropdown.appendChild(newSupplierOption);
+        }
+
+        function handleSupplierChange() {
+            const supplierDropdown = document.getElementById('supplier-dropdown');
+            if (supplierDropdown.value === 'new-supplier') {
+                openNewSupplierModal();
+            }
+        }
+
+        function openNewSupplierModal() {
+            document.getElementById('new-supplier-modal').style.display = 'flex';
+            document.getElementById('new-supplier-name').value = '';
+            document.getElementById('new-supplier-address').value = '';
+            document.getElementById('new-supplier-phone').value = '';
+            document.getElementById('new-supplier-email').value = '';
+            document.getElementById('new-supplier-tax-code').value = '';
+        }
+
+        function closeNewSupplierModal() {
+            document.getElementById('new-supplier-modal').style.display = 'none';
+            document.getElementById('supplier-dropdown').value = ''; // Reset dropdown
+        }
+
+        async function addNewSupplier() {
+            const name = document.getElementById('new-supplier-name').value.trim();
+            const address = document.getElementById('new-supplier-address').value.trim();
+            const phone = document.getElementById('new-supplier-phone').value.trim();
+            const email = document.getElementById('new-supplier-email').value.trim();
+            const taxCode = document.getElementById('new-supplier-tax-code').value.trim();
+
+            if (!name) {
+                alert('Tên nhà cung cấp là bắt buộc.');
+                return;
+            }
+
+            if (suppliers.includes(name)) {
+                alert('Nhà cung cấp này đã tồn tại.');
+                return;
+            }
+
+            suppliers.push(name);
+            populateSupplierDropdown();
+            document.getElementById('supplier-dropdown').value = name;
+            closeNewSupplierModal();
+            alert(`Đã thêm nhà cung cấp "${name}" thành công!`);
+
+            // Optionally, send to Google Sheets
+            if (GOOGLE_APPS_SCRIPT_WEB_APP_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
+                try {
+                    const payload = {
+                        action: 'addSupplier',
+                        supplier: { name, address, phone, email, taxCode }
+                    };
+                    await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
+                        method: 'POST',
+                        mode: 'no-cors',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                    });
+                    console.log('Supplier data sent to Google Sheets.');
+                } catch (error) {
+                    console.error('Error sending supplier data to Google Sheets:', error);
+                }
+            }
+        }
+        
+        function updateCompanyDetails() {
+            const companySelect = document.getElementById('company');
+            const companyDetails = document.getElementById('company-details');
+            const companyAddress = document.getElementById('company-address');
+            
+            const selectedCompany = companySelect.value;
+            
+            if (selectedCompany) {
+                const companyData = data.companies_data.find(c => c["Tên công ty"] === selectedCompany);
+                if (companyData) {
+                    companyAddress.textContent = `Địa chỉ: ${companyData["Địa chỉ"]}`;
+                    companyDetails.classList.add('show');
+                }
+            } else {
+                companyDetails.classList.remove('show');
+            }
+        }
+
+        // CHANGE #2 & #3: Auto-populate Accounting and Director approvers
+        function updateCompanyApprovers() {
+            const companySelect = document.getElementById('company');
+            const selectedCompany = companySelect.value;
+            const accountingApproverSignatureInput = document.getElementById('accounting-approver-signature');
+            const accountingSignatureInput = document.getElementById('accounting-signature');
+            const directorApproverSignatureInput = document.getElementById('director-approver-signature');
+            const directorSignatureInput = document.getElementById('director-signature');
+
+            if (selectedCompany) {
+                const companyData = data.companies_data.find(c => c["Tên công ty"] === selectedCompany);
+                if (companyData) {
+                    // Accounting Approver
+                    const chiefAccountant = companyData["Kế toán trưởng"] || '';
+                    accountingApproverSignatureInput.value = chiefAccountant;
+                    accountingSignatureInput.value = chiefAccountant; // Auto-fill signature field
+
+                    // Director Approver
+                    const director = companyData["Đại diện pháp luật"] || ''; // Assuming "Đại diện pháp luật" is the Director
+                    directorApproverSignatureInput.value = director;
+                    directorSignatureInput.value = director; // Auto-fill signature field
+                } else {
+                    accountingApproverSignatureInput.value = '';
+                    accountingSignatureInput.value = '';
+                    directorApproverSignatureInput.value = '';
+                    directorSignatureInput.value = '';
+                }
+            } else {
+                accountingApproverSignatureInput.value = '';
+                accountingSignatureInput.value = '';
+                directorApproverSignatureInput.value = '';
+                directorSignatureInput.value = '';
+            }
+        }
+
+        function updateEmployeeDepartment() {
+            const employeeSelect = document.getElementById('employee');
+            const departmentInput = document.getElementById('department');
+            const selectedEmployee = employeeSelect.value;
+
+            if (selectedEmployee && data.employee_departments) {
+                departmentInput.value = data.employee_departments[selectedEmployee] || '';
+            } else {
+                departmentInput.value = '';
+            }
+        }
+        
+        function setCurrentDate() {
+            const today = new Date();
+            const formattedDate = today.toISOString().substr(0, 10);
+            document.getElementById('voucher-date').value = formattedDate;
+        }
+        
+        function generateVoucherNumber() {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = String(today.getMonth() + 1).padStart(2, '0');
+            const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            
+            const voucherNumber = `TL-${year}${month}-${randomNum}`;
+            document.getElementById('voucher-number').value = voucherNumber;
+        }
+
+        // CHANGE #1: Auto Purchase Request Number
+        let prSequenceCounter = 0;
+        let lastPrDate = '';
+
+        function generatePrRequestNo() {
+            const companySelect = document.getElementById('company');
+            const selectedCompany = companySelect.value;
+            const prRequestNoInput = document.getElementById('pr-request-no');
+
+            if (!selectedCompany) {
+                prRequestNoInput.value = '';
+                return;
+            }
+
+            const companyAbbr = getCompanyAbbreviation(selectedCompany);
+            const today = new Date();
+            const yy = String(today.getFullYear()).slice(-2);
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+
+            const currentDateString = `${yy}-${mm}-${dd}`;
+
+            if (currentDateString !== lastPrDate) {
+                prSequenceCounter = 0; // Reset sequence for a new day
+                lastPrDate = currentDateString;
+            }
+            prSequenceCounter++;
+            const sequence = String(prSequenceCounter).padStart(3, '0');
+
+            prRequestNoInput.value = `${companyAbbr}-PR-${currentDateString}-${sequence}`;
+        }
+
+        function getCompanyAbbreviation(companyName) {
+            // Simple abbreviation logic: take first 3-4 letters, remove spaces/special chars
+            const cleanedName = companyName.replace(/[^a-zA-Z0-9\s]/g, '').toUpperCase();
+            const words = cleanedName.split(' ').filter(Boolean);
+            if (words.length > 1) {
+                return words.map(word => word[0]).join('').slice(0, 4); // e.g., CPTLCG
+            }
+            return cleanedName.slice(0, 4); // e.g., CONG
+        }
+        
+        function updateAmountInWords() {
+            const amountInput = document.getElementById('amount');
+            const amount = parseCurrency(amountInput.value) || 0;
+            const amountInWordsInput = document.getElementById('amount-in-words');
+            
+            if (amount > 0) {
+                amountInWordsInput.value = convertNumberToWords(amount) + " đồng";
+            } else {
+                amountInWordsInput.value = "";
+            }
+        }
+        
+        function convertNumberToWords(num) {
+            const units = ['', 'một', 'hai', 'ba', 'bốn', 'năm', 'sáu', 'bảy', 'tám', 'chín'];
+            const teens = ['mười', 'mười một', 'mười hai', 'mười ba', 'mười bốn', 'mười lăm', 'mười sáu', 'mười bảy', 'mười tám', 'mười chín'];
+            const tens = ['', 'mười', 'hai mươi', 'ba mươi', 'bốn mươi', 'năm mươi', 'sáu mươi', 'bảy mươi', 'tám mươi', 'chín mươi'];
+            const scales = ['', 'nghìn', 'triệu', 'tỷ'];
+
+            function convertLessThanOneThousand(n) {
+                let s = '';
+                if (n >= 100) {
+                    s += units[Math.floor(n / 100)] + ' trăm ';
+                    n %= 100;
+                }
+                if (n >= 20) {
+                    s += tens[Math.floor(n / 10)] + ' ';
+                    n %= 10;
+                }
+                if (n >= 10) {
+                    s += teens[n - 10] + ' ';
+                    n = 0;
+                }
+                if (n > 0) {
+                    s += units[n] + ' ';
+                }
+                return s.trim();
+            }
+
+            if (num === 0) return 'Không';
+
+            let result = '';
+            let i = 0;
+            let tempNum = num;
+
+            while (tempNum > 0) {
+                const chunk = tempNum % 1000;
+                if (chunk !== 0) {
+                    let chunkWords = convertLessThanOneThousand(chunk);
+                    result = chunkWords + ' ' + scales[i] + ' ' + result;
+                }
+                tempNum = Math.floor(tempNum / 1000);
+                i++;
+            }
+            return result.trim().replace(/\s+/g, ' ').replace(/mươi một/g, 'mươi mốt').replace(/mươi năm/g, 'mươi lăm').replace(/một trăm/g, 'một trăm').replace(/linh một/g, 'lẻ một').replace(/linh năm/g, 'lẻ năm');
+        }
+        
+        function exportToPDF() {
+            const element = document.getElementById('voucher-form');
+            const opt = {
+                margin: 10,
+                filename: 'de_nghi_mua_hang.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            html2pdf().set(opt).from(element).save();
+            alert('Đã xuất PDF thành công!');
+        }
+        
+        function importFromExcelForm() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.xlsx, .xls';
+            
+            input.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    
+                    if (jsonData.length > 0) {
+                        const row = jsonData[0];
+                        if (row.company) document.getElementById('company').value = row.company;
+                        if (row.employee) document.getElementById('employee').value = row.employee;
+                        if (row.recipientName) document.getElementById('recipient-name').value = row.recipientName;
+                        if (row.purchaseVoucherType) document.getElementById('purchase-voucher-type').value = row.purchaseVoucherType;
+                        if (row.purchasePurposeReason) document.getElementById('purchase-purpose-reason').value = row.purchasePurposeReason;
+                        if (row.supplier) document.getElementById('supplier-dropdown').value = row.supplier;
+                        if (row.implementationTimeGeneral) document.getElementById('implementation-time-general').value = row.implementationTimeGeneral;
+                        if (row.prRequestNo) document.getElementById('pr-request-no').value = row.prRequestNo;
+                        // FIX: Do not auto-populate budget-approver and supplier-approver
+                        // if (row.budgetApprover) document.getElementById('budget-approver').value = row.budgetApprover;
+                        // if (row.supplierApprover) document.getElementById('supplier-approver').value = row.supplierApprover;
+                        if (row.paymentVoucherType) document.getElementById('payment-voucher-type').value = row.paymentVoucherType;
+                        if (row.paymentType) document.getElementById('payment-type').value = row.paymentType;
+                        if (row.dueDate) document.getElementById('due-date').value = row.dueDate;
+                        if (row.poRequestNo) document.getElementById('po-request-no').value = row.poRequestNo;
+                        if (row.paymentInfo) document.getElementById('payment-info').value = row.paymentInfo;
+                        if (row.currency) document.getElementById('currency').value = row.currency;
+                        if (row.legalApproverSelect) document.getElementById('legal-approver-select').value = row.legalApproverSelect;
+                        if (row.legalComment) document.getElementById('legal-comment').value = row.legalComment;
+                        if (row.accountingComment) document.getElementById('accounting-comment').value = row.accountingComment;
+                        if (row.directorComment) document.getElementById('director-comment').value = row.directorComment;
+                        if (row.finalApprover) document.getElementById('final-approver').value = row.finalApprover;
+                        
+                        updateCompanyDetails();
+                        updateEmployeeDepartment();
+                        updateCompanyApprovers(); // Call to update auto-filled fields
+                        document.getElementById('legal-signature').value = document.getElementById('legal-approver-select').value; // Update legal signature
+                        updateGrandTotal(); 
+                        alert('Đã nhập dữ liệu từ Excel vào form chính thành công!');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            });
+            
+            input.click();
+        }
+        
+        function syncWithGoogleSheets() {
+            alert('Tính năng đồng bộ với Google Sheets đang được phát triển.');
+        }
+        
+        function saveVoucher() {
+            const requiredFields = [
+                'company', 'purchase-voucher-type', 'employee', 'recipient-name', 'purchase-purpose-reason', 'supplier-dropdown',
+                'budget-approver', 'supplier-approver', 'payment-voucher-type', 'payment-type', 'currency', 'final-approver'
+            ];
+            let isValid = true;
+            
+            requiredFields.forEach(field => {
+                const element = document.getElementById(field);
+                if (!element.value) {
+                    element.style.borderColor = 'red';
+                    isValid = false;
+                } else {
+                    element.style.borderColor = '';
+                }
+            });
+
+            if (productItems.length === 0 || productItems.some(item => !item.description || item.quantity === 0 || item.unitPrice === 0)) {
+                alert('Vui lòng nhập ít nhất một dòng chi tiết sản phẩm và điền đầy đủ Mô tả, Số lượng, Đơn giá.');
+                isValid = false;
+            }
+
+            if (paymentPhases.length === 0 || paymentPhases.some(phase => !phase.amount || phase.amount === 0)) {
+                alert('Vui lòng nhập ít nhất một đợt thanh toán và điền đầy đủ Số tiền.');
+                isValid = false;
+            }
+            
+            if (!isValid) {
+                alert('Vui lòng điền đầy đủ thông tin bắt buộc!');
+                return;
+            }
+            
+            alert('Đề nghị đã được lưu thành công!');
+        }
+        
+        async function sendForApproval() {
+            try {
+                // Validate required fields
+                const requiredFields = [
+                    'company', 'purchase-voucher-type', 'employee', 'recipient-name', 'purchase-purpose-reason', 'supplier-dropdown',
+                    'budget-approver', 'supplier-approver', 'payment-voucher-type', 'payment-type', 'currency', 'final-approver'
+                ];
+                let isValid = true;
+                
+                requiredFields.forEach(field => {
+                    const element = document.getElementById(field);
+                    if (!element.value) {
+                        element.style.borderColor = 'red';
+                        isValid = false;
+                    } else {
+                        element.style.borderColor = '';
+                    }
+                });
+
+                if (productItems.length === 0 || productItems.some(item => !item.description || item.quantity === 0 || item.unitPrice === 0)) {
+                    alert('❌ Vui lòng nhập ít nhất một dòng chi tiết sản phẩm và điền đầy đủ Mô tả, Số lượng, Đơn giá.');
+                    isValid = false;
+                }
+
+                if (paymentPhases.length === 0 || paymentPhases.some(phase => !phase.amount || phase.amount === 0)) {
+                    alert('❌ Vui lòng nhập ít nhất một đợt thanh toán và điền đầy đủ Số tiền.');
+                    isValid = false;
+                }
+                
+                if (!isValid) {
+                    alert('❌ Vui lòng điền đầy đủ thông tin bắt buộc!');
+                    return;
+                }
+
+                const loadingIndicator = document.getElementById('loading-indicator');
+                loadingIndicator.classList.add('show');
+                document.getElementById('send-approval-btn').disabled = true;
+
+                console.log('📝 Preparing payment request submission...');
+                
+                // Get form data
+                const voucherNumber = document.getElementById('voucher-number').value;
+                const voucherDate = document.getElementById('voucher-date').value;
+                const companyName = document.getElementById('company').value;
+                const requestorName = document.getElementById('employee').value;
+                const department = document.getElementById('department').value;
+
+                // Purchase Request Section
+                const purchaseVoucherType = document.getElementById('purchase-voucher-type').value;
+                const purchasePurposeReason = document.getElementById('purchase-purpose-reason').value;
+                const supplier = document.getElementById('supplier-dropdown').value;
+                const implementationTimeGeneral = document.getElementById('implementation-time-general').value;
+                const recipientName = document.getElementById('recipient-name').value;
+                const prRequestNo = document.getElementById('pr-request-no').value;
+
+                // Approval Sections
+                const budgetApproverName = document.getElementById('budget-approver').value;
+                const supplierApproverName = document.getElementById('supplier-approver').value;
+
+                // Contract Approval Section
+                const legalApproverName = document.getElementById('legal-approver-select').value;
+                const legalComment = document.getElementById('legal-comment').value;
+                const accountingApproverName = document.getElementById('accounting-approver-signature').value;
+                const accountingComment = document.getElementById('accounting-comment').value;
+                const directorApproverName = document.getElementById('director-approver-signature').value;
+                const directorComment = document.getElementById('director-comment').value;
+
+                // Payment Request Section
+                const paymentVoucherType = document.getElementById('payment-voucher-type').value;
+                const paymentType = document.getElementById('payment-type').value;
+                const poRequestNo = document.getElementById('po-request-no').value;
+                const dueDate = document.getElementById('due-date').value;
+                const currency = document.getElementById('currency').value;
+                const paymentInfo = document.getElementById('payment-info').value;
+                const totalAmount = document.getElementById('amount').value;
+                const amountInWords = document.getElementById('amount-in-words').value;
+                const finalApproverName = document.getElementById('final-approver').value;
+
+                // Get email addresses
+                const budgetApproverEmail = approverEmailMap[budgetApproverName];
+                const supplierApproverEmail = approverEmailMap[supplierApproverName];
+                const finalApproverEmail = approverEmailMap[finalApproverName];
+                const legalApproverEmail = employeeEmailMap[legalApproverName];
+                const accountingApproverEmail = employeeEmailMap[accountingApproverName];
+                const directorApproverEmail = employeeEmailMap[directorApproverName];
+                
+                // Use logged-in user's email (not from map)
+                const requestorEmail = loggedInUser ? loggedInUser.email : employeeEmailMap[requestorName];
+
+                if (!requestorEmail) {
+                    alert('❌ Không tìm thấy email của người đề nghị. Vui lòng đăng nhập lại.');
+                    loadingIndicator.classList.remove('show');
+                    document.getElementById('send-approval-btn').disabled = false;
+                    return;
+                }
+                
+                console.log('📧 Requestor email:', requestorEmail);
+
+                // Build payload
+                const payload = {
+                    action: 'sendPaymentRequest',
+                    requestId: voucherNumber,
+                    requestDate: voucherDate,
+                    company: companyName,
+                    requestor: requestorName,
+                    requestorEmail: requestorEmail,
+                    department: department,
+                    purchaseType: purchaseVoucherType,
+                    prRequestNo: prRequestNo,
+                    purpose: purchasePurposeReason,
+                    supplier: supplier,
+                    recipient: recipientName,
+                    implementationTime: implementationTimeGeneral,
+                    productItems: productItems,
+                    totalAmount: totalAmount,
+                    paymentType: paymentVoucherType,
+                    paymentPhases: paymentPhases,
+                    budgetApprover: budgetApproverName,
+                    budgetApproverEmail: budgetApproverEmail,
+                    supplierApprover: supplierApproverName,
+                    supplierApproverEmail: supplierApproverEmail,
+                    legalApprover: legalApproverName,
+                    legalApproverEmail: legalApproverEmail,
+                    legalComment: legalComment,
+                    accountingApprover: accountingApproverName,
+                    accountingApproverEmail: accountingApproverEmail,
+                    accountingComment: accountingComment,
+                    directorApprover: directorApproverName,
+                    directorApproverEmail: directorApproverEmail,
+                    directorComment: directorComment,
+                    finalApprover: finalApproverName,
+                    finalApproverEmail: finalApproverEmail,
+                    currency: currency,
+                    paymentInfo: paymentInfo,
+                    poRequestNo: poRequestNo,
+                    dueDate: dueDate,
+                    amountInWords: amountInWords,
+                    contractAttachments: contractAttachments,
+                    requesterSignature: signatures.requester
+                };
+                
+                // Check payload size
+                const payloadSize = calculatePayloadSize(payload);
+                console.log(`📦 Payload size: ${Math.round(payloadSize / 1024)}KB`);
+                
+                if (payloadSize > MAX_TOTAL_PAYLOAD_SIZE) {
+                    alert(`❌ Dữ liệu quá lớn (${Math.round(payloadSize / 1024)}KB). Tối đa ${Math.round(MAX_TOTAL_PAYLOAD_SIZE / 1024)}KB. Vui lòng giảm số lượng file đính kèm.`);
+                    loadingIndicator.classList.remove('show');
+                    document.getElementById('send-approval-btn').disabled = false;
+                    return;
+                }
+                
+                console.log('🚀 Sending payment request to backend...');
+
+            const emailBodyHtml = `
+                <p>Kính gửi các cấp quản lý,</p>
+                <p>Đề nghị <b>${purchaseVoucherType}</b> số <b>${voucherNumber}</b> đã được tạo và đang chờ phê duyệt.</p>
+                <p><b>Thông tin chung:</b></p>
+                <ul>
+                    <li><b>Số đề nghị:</b> ${voucherNumber}</li>
+                    <li><b>Ngày lập:</b> ${voucherDate}</li>
+                    <li><b>Công ty:</b> ${companyName}</li>
+                    <li><b>Người đề nghị:</b> ${requestorName} (${requestorEmail || 'Không có email'})</li>
+                    <li><b>Bộ phận:</b> ${department}</li>
+                </ul>
+                <p><b>PHẦN 1: ĐỀ NGHỊ MUA HÀNG</b></p>
+                <ul>
+                    <li><b>Loại đề nghị mua hàng:</b> ${purchaseVoucherType}</li>
+                    <li><b>Số đề nghị mua hàng (PR):</b> ${prRequestNo || 'Không có'}</li>
+                    <li><b>Mục đích và lý do mua hàng:</b> ${purchasePurposeReason}</li>
+                    <li><b>Nhà cung cấp:</b> ${supplier}</li>
+                    <li><b>Thời gian thực hiện chung:</b> ${implementationTimeGeneral || 'Không có'}</li>
+                    <li><b>Người nhận hàng:</b> ${recipientName}</li>
+                </ul>
+                <p><b>Chi tiết hàng hóa/dịch vụ:</b></p>
+                <table style="width:100%; border-collapse: collapse; border: 1px solid #ddd;">
+                    <thead>
+                        <tr style="background-color: #f2f2f2;">
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">STT</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Mô tả hàng hóa</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Thời gian thực hiện</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Số lượng</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Đơn giá</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Thành tiền</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">File đính kèm</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${productItems.map((item, index) => `
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${index + 1}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${item.description}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${item.implementationTime}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${item.quantity}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${formatCurrency(item.unitPrice)}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${formatCurrency(item.totalAmount)}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${item.attachments.map(file => file.name).join(', ') || 'Không có'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                <p><b>Tổng số tiền đề nghị:</b> ${totalAmount}</p>
+
+                <p><b>PHÊ DUYỆT NGÂN SÁCH:</b></p>
+                <ul>
+                    <li><b>Người phê duyệt:</b> ${budgetApproverName} (${budgetApproverEmail || 'Không có email'})</li>
+                    <li><b>Trạng thái:</b> Chờ phê duyệt</li>
+                </ul>
+                <p><b>PHÊ DUYỆT NHÀ CUNG CẤP:</b></p>
+                <ul>
+                    <li><b>Người phê duyệt:</b> ${supplierApproverName} (${supplierApproverEmail || 'Không có email'})</li>
+                    <li><b>Trạng thái:</b> Chờ phê duyệt</li>
+                </ul>
+                <p><b>Hợp đồng với nhà cung cấp:</b></p>
+                <ul>
+                    <li><b>File đính kèm hợp đồng:</b> ${contractAttachments.map(file => file.name).join(', ') || 'Không có'}</li>
+                    <li><b>Người phê duyệt pháp chế:</b> ${legalApproverName || 'Không có'}</li>
+                    <li><b>Ý kiến bộ phận pháp chế:</b> ${legalComment || 'Không có'}</li>
+                    <li><b>Chữ ký pháp chế:</b> ${legalSignature || 'Không có'}</li>
+                    <li><b>Người phê duyệt kế toán:</b> ${accountingApproverName || 'Không có'}</li>
+                    <li><b>Ý kiến bộ phận kế toán:</b> ${accountingComment || 'Không có'}</li>
+                    <li><b>Chữ ký kế toán:</b> ${accountingSignature || 'Không có'}</li>
+                    <li><b>Người phê duyệt giám đốc:</b> ${directorApproverName || 'Không có'}</li>
+                    <li><b>Ý kiến giám đốc:</b> ${directorComment || 'Không có'}</li>
+                    <li><b>Chữ ký giám đốc:</b> ${directorSignature || 'Không có'}</li>
+                </ul>
+
+                <p><b>PHẦN 2: ĐỀ NGHỊ THANH TOÁN</b></p>
+                <ul>
+                    <li><b>Loại đề nghị thanh toán:</b> ${paymentVoucherType}</li>
+                    <li><b>Loại thanh toán:</b> ${paymentType}</li>
+                    <li><b>Số đơn hàng (PO):</b> ${poRequestNo || 'Không có'}</li>
+                    <li><b>Ngày đáo hạn:</b> ${dueDate || 'Không có'}</li>
+                    <li><b>Loại tiền:</b> ${currency}</li>
+                    <li><b>Thông tin thanh toán:</b> ${paymentInfo || 'Không có'}</li>
+                    <li><b>Tổng số tiền thanh toán:</b> ${totalAmount}</li>
+                    <li><b>Số tiền bằng chữ:</b> ${amountInWords}</li>
+                </ul>
+                <p><b>Chi tiết đợt thanh toán:</b></p>
+                <table style="width:100%; border-collapse: collapse; border: 1px solid #ddd;">
+                    <thead>
+                        <tr style="background-color: #f2f2f2;">
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Đợt thanh toán</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">Số tiền</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">% so với ngân sách</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">Hợp đồng đã ký</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Biên bản nghiệm thu</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Đề nghị TT của NCC</th>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">Hóa đơn</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${paymentPhases.map((phase, index) => `
+                            <tr>
+                                <td style="padding: 8px; border: 1px solid #ddd;">Đợt ${index + 1}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${formatCurrency(phase.amount)}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">${phase.percentage.toFixed(2)}%</td>
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">${phase.signedContract ? '✔️' : '❌'}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${phase.acceptanceMinutes.map(file => file.name).join(', ') || 'Không có'}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${phase.supplierPaymentRequest.map(file => file.name).join(', ') || 'Không có'}</td>
+                                <td style="padding: 8px; border: 1px solid #ddd;">${phase.invoice.map(file => file.name).join(', ') || 'Không có'}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                <p><b>Tổng % so với ngân sách:</b> ${paymentPhases.reduce((sum, phase) => sum + phase.percentage, 0).toFixed(2)}%</p>
+
+                <p><b>PHÊ DUYỆT CUỐI CÙNG:</b></p>
+                <ul>
+                    <li><b>Người phê duyệt:</b> ${finalApproverName} (${finalApproverEmail || 'Không có email'})</li>
+                    <li><b>Trạng thái:</b> Chờ phê duyệt</li>
+                </ul>
+
+                <p>Vui lòng xem xét và phê duyệt/từ chối đề nghị này:</p>
+                <p>
+                    <a href="${approvalLink}" style="background-color: #34A853; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; margin-right: 10px;">Phê duyệt</a>
+                    <a href="${rejectionLink}" style="background-color: #EA4335; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Từ chối</a>
+                </p>
+                <p>Trân trọng,<br>Hệ thống Kế toán Tự động</p>
+            `;
+
+                // Send to backend via Vercel proxy
+                const response = await fetch(VERCEL_PROXY_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                // Read response text first
+                const responseText = await response.text();
+                
+                // Check for HTML error pages
+                if (responseText.trim().startsWith('<!') || responseText.includes('<!DOCTYPE')) {
+                    throw new Error('Backend returned HTML error page instead of JSON');
+                }
+                
+                // Parse JSON
+                let result;
+                try {
+                    result = JSON.parse(responseText);
+                } catch (parseError) {
+                    console.error('❌ JSON parse error:', parseError);
+                    console.error('Response text:', responseText.substring(0, 500));
+                    throw new Error('Invalid JSON response from backend');
+                }
+
+                if (!result.success) {
+                    throw new Error(result.message || 'Unknown error from backend');
+                }
+
+                console.log('✅ Payment request submitted successfully');
+
+                // Update UI status
+                document.getElementById('budget-approval-status').textContent = 'Đã gửi phê duyệt';
+                document.getElementById('budget-approval-status').classList.remove('status-pending', 'status-rejected');
+                document.getElementById('budget-approval-status').classList.add('status-approved');
+                document.getElementById('supplier-approval-status').textContent = 'Đã gửi phê duyệt';
+                document.getElementById('supplier-approval-status').classList.remove('status-pending', 'status-rejected');
+                document.getElementById('supplier-approval-status').classList.add('status-approved');
+                document.getElementById('final-approval-status-display').textContent = 'Đã gửi phê duyệt';
+                document.getElementById('final-approval-status-display').classList.remove('status-pending', 'status-rejected');
+                document.getElementById('final-approval-status-display').classList.add('status-approved');
+
+                // Update history
+                const now = new Date();
+                const timestamp = now.toLocaleString('vi-VN');
+                approvalHistory.push({
+                    timestamp: timestamp,
+                    action: 'Gửi yêu cầu phê duyệt',
+                    by: requestorName,
+                    to: [budgetApproverName, supplierApproverName, finalApproverName, legalApproverName, accountingApproverName, directorApproverName].filter(Boolean).join(', ')
+                });
+                renderApprovalHistory();
+
+                alert(`✅ Đã gửi yêu cầu phê duyệt thành công!\n\nSố đề nghị: ${voucherNumber}`);
+
+            } catch (error) {
+                console.error('❌ Error submitting payment request:', error);
+                alert(`❌ Lỗi khi gửi đề nghị:\n\n${error.message}\n\nVui lòng thử lại hoặc liên hệ IT.`);
+            } finally {
+                loadingIndicator.classList.remove('show');
+                document.getElementById('send-approval-btn').disabled = false;
+            }
+        }
+
+        function renderApprovalHistory() {
+            const historyList = document.getElementById('approval-history-list');
+            historyList.innerHTML = '';
+
+            if (approvalHistory.length === 0) {
+                historyList.innerHTML = '<li>Chưa có yêu cầu phê duyệt nào được gửi.</li>';
+                return;
+            }
+
+            approvalHistory.forEach(entry => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${entry.timestamp}: ${entry.action} bởi ${entry.by} (gửi đến: ${entry.to})`;
+                historyList.appendChild(listItem);
+            });
+        }
+
+        // Product Table Functions (Modified from Expense Table)
+        function renderProductTable() {
+            const tableBody = document.getElementById('product-table-body');
+            tableBody.innerHTML = '';
+
+            productItems.forEach((item, index) => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>${index + 1}</td>
+                    <td><input type="text" value="${item.description || ''}" oninput="updateProductItem(${index}, 'description', this.value)"></td>
+                    <td><input type="text" value="${item.implementationTime || ''}" oninput="updateProductItem(${index}, 'implementationTime', this.value)"></td>
+                    <td><input type="number" min="0" value="${item.quantity || 0}" oninput="updateProductItem(${index}, 'quantity', parseFloat(this.value))"></td>
+                    <td><input type="text" value="${formatCurrency(item.unitPrice || 0)}" oninput="updateProductItem(${index}, 'unitPrice', parseCurrency(this.value))" onblur="this.value = formatCurrency(parseCurrency(this.value))"></td>
+                    <td><input type="text" value="${formatCurrency(item.totalAmount || 0)}" readonly></td>
+                    <td class="attachment-cell">
+                        <button type="button" class="attachment-button" onclick="triggerAttachmentInput(${index})">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                            Đính kèm (${item.attachments.length})
+                        </button>
+                        <input type="file" multiple class="hidden" id="attachment-input-${index}" onchange="handleRowFileSelect(event, ${index})">
+                        <div class="file-list" id="file-list-${index}">
+                            ${item.attachments.map(file => `<p>${file.name}</p>`).join('')}
+                        </div>
+                    </td>
+                    <td><button type="button" class="remove-row-btn" onclick="removeProductRow(${index})">&times;</button></td>
+                `;
+            });
+            updateGrandTotal();
+        }
+
+        function addProductRow() {
+            productItems.push({ description: '', implementationTime: '', quantity: 0, unitPrice: 0, totalAmount: 0, attachments: [] });
+            renderProductTable();
+        }
+
+        function removeProductRow(index) {
+            productItems.splice(index, 1);
+            renderProductTable();
+        }
+
+        function updateProductItem(index, field, value) {
+            productItems[index][field] = value;
+            productItems[index].totalAmount = (productItems[index].quantity || 0) * (productItems[index].unitPrice || 0);
+            renderProductTable(); // Re-render to update totalAmount and grand total
+        }
+
+        function triggerAttachmentInput(index) {
+            document.getElementById(`attachment-input-${index}`).click();
+        }
+
+        function handleRowFileSelect(event, index) {
+            const files = Array.from(event.target.files);
+            productItems[index].attachments = files;
+            renderProductTable();
+        }
+
+        function updateGrandTotal() {
+            const grandTotal = productItems.reduce((sum, item) => sum + (item.totalAmount || 0), 0);
+            document.getElementById('grand-total').textContent = formatCurrency(grandTotal);
+            document.getElementById('amount').value = formatCurrency(grandTotal);
+            updateAmountInWords();
+            updatePaymentPercentages(); // Recalculate payment percentages if total budget changes
+        }
+
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount);
+        }
+
+        function parseCurrency(currencyString) {
+            const cleanedString = currencyString.replace(/[^0-9,.]/g, '');
+            const parts = cleanedString.split(',');
+            if (parts.length > 1) {
+                const lastPart = parts[parts.length - 1];
+                if (lastPart.length <= 3 && lastPart.includes('.')) { 
+                    return parseFloat(cleanedString.replace(/\./g, '').replace(',', '.'));
+                } else if (lastPart.length <= 3 && !lastPart.includes('.')) { 
+                    return parseFloat(cleanedString.replace(/,/g, ''));
+                }
+            }
+            return parseFloat(cleanedString.replace(/\./g, '').replace(',', '.')) || 0;
+        }
+
+        async function copyFromExcelToProductTable() {
+            try {
+                const text = await navigator.clipboard.readText();
+                const lines = text.split('\n').filter(line => line.trim() !== '');
+                
+                if (lines.length === 0) {
+                    alert('Không có dữ liệu để dán từ clipboard.');
+                    return;
+                }
+
+                const newItems = [];
+                lines.forEach(line => {
+                    const parts = line.split('\t'); // Assuming tab-separated values
+                    if (parts.length >= 4) { // description, implementationTime, quantity, unitPrice
+                        const description = parts[0] || '';
+                        const implementationTime = parts[1] || '';
+                        const quantity = parseFloat(parts[2]) || 0;
+                        const unitPrice = parseCurrency(parts[3]) || 0;
+                        const totalAmount = quantity * unitPrice;
+                        newItems.push({ description, implementationTime, quantity, unitPrice, totalAmount, attachments: [] });
+                    }
+                });
+
+                if (newItems.length > 0) {
+                    productItems = newItems;
+                    renderProductTable();
+                    alert('Đã dán dữ liệu từ Excel vào bảng chi tiết sản phẩm thành công!');
+                } else {
+                    alert('Không thể phân tích dữ liệu dán. Vui lòng đảm bảo định dạng là "Mô tả\\tThời gian\\tSố lượng\\tĐơn giá".');
+                }
+
+            } catch (err) {
+                console.error('Failed to read clipboard contents: ', err);
+                alert('Không thể truy cập clipboard. Vui lòng đảm bảo bạn đã cấp quyền cho trình duyệt hoặc thử nhập từ file.');
+            }
+        }
+
+        function importExcelToProductTable() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.xlsx, .xls';
+            
+            input.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+                
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet, { header: 1 });
+
+                    if (jsonData.length > 1) { // Assuming first row is header
+                        const newItems = [];
+                        for (let i = 1; i < jsonData.length; i++) {
+                            const row = jsonData[i];
+                            if (row.length >= 4) { // description, implementationTime, quantity, unitPrice
+                                const description = row[0] || '';
+                                const implementationTime = row[1] || '';
+                                const quantity = parseFloat(row[2]) || 0;
+                                const unitPrice = parseFloat(row[3]) || 0;
+                                const totalAmount = quantity * unitPrice;
+                                newItems.push({ description, implementationTime, quantity, unitPrice, totalAmount, attachments: [] });
+                            }
+                        }
+
+                        if (newItems.length > 0) {
+                            productItems = newItems;
+                            renderProductTable();
+                            alert('Đã nhập dữ liệu từ file Excel vào bảng chi tiết sản phẩm thành công!');
+                        } else {
+                            alert('Không tìm thấy dữ liệu hợp lệ trong file Excel. Vui lòng đảm bảo file có các cột "Mô tả hàng hóa", "Thời gian thực hiện", "Số lượng", "Đơn giá".');
+                        }
+                    } else {
+                        alert('File Excel trống hoặc không có dữ liệu.');
+                    }
+                };
+                reader.readAsArrayBuffer(file);
+            });
+            
+            input.click();
+        }
+
+        // CHANGE #3: Contract Approval Enhancement - File upload for contract attachment
+        function handleContractFileSelect(event) {
+            contractAttachments = Array.from(event.target.files);
+            const fileListDiv = document.getElementById('contract-file-list');
+            fileListDiv.innerHTML = '';
+            if (contractAttachments.length > 0) {
+                contractAttachments.forEach(file => {
+                    const p = document.createElement('p');
+                    p.textContent = file.name;
+                    fileListDiv.appendChild(p);
+                });
+            } else {
+                fileListDiv.innerHTML = '<p>Chưa có file nào được đính kèm.</p>';
+            }
+        }
+
+        // CHANGE #4: Payment Request Table
+        function renderPaymentTable() {
+            const tableBody = document.getElementById('payment-table-body');
+            tableBody.innerHTML = '';
+
+            paymentPhases.forEach((phase, index) => {
+                const row = tableBody.insertRow();
+                row.innerHTML = `
+                    <td>Đợt ${index + 1}</td>
+                    <td><input type="text" value="${formatCurrency(phase.amount || 0)}" oninput="updatePaymentPhase(${index}, 'amount', parseCurrency(this.value))" onblur="this.value = formatCurrency(parseCurrency(this.value))"></td>
+                    <td><input type="text" value="${phase.percentage.toFixed(2)}%" readonly></td>
+                    <td><input type="checkbox" ${phase.signedContract ? 'checked' : ''} onchange="updatePaymentPhase(${index}, 'signedContract', this.checked)"></td>
+                    <td class="attachment-cell">
+                        <button type="button" class="attachment-button" onclick="triggerPaymentAttachmentInput(${index}, 'acceptanceMinutes')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                            Đính kèm (${phase.acceptanceMinutes.length})
+                        </button>
+                        <input type="file" multiple class="hidden" id="acceptance-minutes-input-${index}" onchange="handlePaymentFileSelect(event, ${index}, 'acceptanceMinutes')">
+                        <div class="file-list" id="acceptance-minutes-list-${index}">
+                            ${phase.acceptanceMinutes.map(file => `<p>${file.name}</p>`).join('')}
+                        </div>
+                    </td>
+                    <td class="attachment-cell">
+                        <button type="button" class="attachment-button" onclick="triggerPaymentAttachmentInput(${index}, 'supplierPaymentRequest')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                            Đính kèm (${phase.supplierPaymentRequest.length})
+                        </button>
+                        <input type="file" multiple class="hidden" id="supplier-payment-request-input-${index}" onchange="handlePaymentFileSelect(event, ${index}, 'supplierPaymentRequest')">
+                        <div class="file-list" id="supplier-payment-request-list-${index}">
+                            ${phase.supplierPaymentRequest.map(file => `<p>${file.name}</p>`).join('')}
+                        </div>
+                    </td>
+                    <td class="attachment-cell">
+                        <button type="button" class="attachment-button" onclick="triggerPaymentAttachmentInput(${index}, 'invoice')">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
+                            Đính kèm (${phase.invoice.length})
+                        </button>
+                        <input type="file" multiple class="hidden" id="invoice-input-${index}" onchange="handlePaymentFileSelect(event, ${index}, 'invoice')">
+                        <div class="file-list" id="invoice-list-${index}">
+                            ${phase.invoice.map(file => `<p>${file.name}</p>`).join('')}
+                        </div>
+                    </td>
+                    <td><button type="button" class="remove-row-btn" onclick="removePaymentRow(${index})">&times;</button></td>
+                `;
+            });
+            updateTotalPaymentPercentage();
+        }
+
+        function addPaymentRow() {
+            paymentPhases.push({
+                amount: 0,
+                percentage: 0,
+                signedContract: false,
+                acceptanceMinutes: [],
+                supplierPaymentRequest: [],
+                invoice: []
+            });
+            renderPaymentTable();
+        }
+
+        function removePaymentRow(index) {
+            paymentPhases.splice(index, 1);
+            renderPaymentTable();
+        }
+
+        function updatePaymentPhase(index, field, value) {
+            paymentPhases[index][field] = value;
+            updatePaymentPercentages();
+            renderPaymentTable(); // Re-render to update percentage and total
+        }
+
+        function triggerPaymentAttachmentInput(index, type) {
+            document.getElementById(`${type}-input-${index}`).click();
+        }
+
+        function handlePaymentFileSelect(event, index, type) {
+            const files = Array.from(event.target.files);
+            paymentPhases[index][type] = files;
+            renderPaymentTable();
+        }
+
+        function updatePaymentPercentages() {
+            const grandTotalAmount = parseCurrency(document.getElementById('amount').value);
+            paymentPhases.forEach(phase => {
+                if (grandTotalAmount > 0) {
+                    phase.percentage = (phase.amount / grandTotalAmount) * 100;
+                } else {
+                    phase.percentage = 0;
+                }
+            });
+            updateTotalPaymentPercentage();
+        }
+
+        function updateTotalPaymentPercentage() {
+            const totalPercentage = paymentPhases.reduce((sum, phase) => sum + phase.percentage, 0);
+            document.getElementById('total-payment-percentage').textContent = `${totalPercentage.toFixed(2)}%`;
+        }
+
+        /*
+         * Google Apps Script (Code.gs) for sending emails and adding suppliers:
+         *
+         * Instructions:
+         * 1. Go to script.google.com and create a new project.
+         * 2. Copy the following code into the Code.gs file.
+         * 3. Save the project.
+         * 4. Deploy the script as a Web App:
+         *    - Click "Deploy" -> "New deployment".
+         *    - Select "Web app" as the type.
+         *    - Set "Execute as" to "Me" (your Google account).
+         *    - Set "Who has access" to "Anyone".
+         *    - Click "Deploy".
+         *    - Authorize the script if prompted (it will ask for permission to send emails and access Google Sheets on your behalf).
+         *    - Copy the "Web app URL" and replace 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE' in the HTML with this URL.
+         * 5. Create a Google Sheet named "Purchase Request Data" with a tab named "Suppliers" and columns: "Name", "Address", "Phone", "Email", "Tax Code".
+         * 6. Test the integration by filling out the form and clicking "Gửi phê duyệt" or adding a new supplier.
+         */
+        /*
+        function doPost(e) {
+            try {
+                const requestBody = JSON.parse(e.postData.contents);
+                const action = requestBody.action;
+
+                if (action === 'sendApprovalEmail') {
+                    const emailData = requestBody.email;
+                    const to = emailData.to;
+                    const cc = emailData.cc;
+                    const subject = emailData.subject;
+                    const body = emailData.body;
+
+                    GmailApp.sendEmail(to, subject, '', {
+                        htmlBody: body,
+                        cc: cc
+                    });
+
+                    return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Email sent successfully.' }))
+                        .setMimeType(ContentService.MimeType.JSON);
+                } else if (action === 'addSupplier') {
+                    const supplierData = requestBody.supplier;
+                    const ss = SpreadsheetApp.openByName("Purchase Request Data"); // Replace with your actual Google Sheet name
+                    const sheet = ss.getSheetByName("Suppliers"); // Replace with your actual sheet name for suppliers
+
+                    if (!sheet) {
+                        throw new Error("Sheet 'Suppliers' not found in 'Purchase Request Data' spreadsheet.");
+                    }
+
+                    sheet.appendRow([supplierData.name, supplierData.address, supplierData.phone, supplierData.email, supplierData.taxCode]);
+
+                    return ContentService.createTextOutput(JSON.stringify({ success: true, message: 'Supplier added successfully.' }))
+                        .setMimeType(ContentService.MimeType.JSON);
+                }
+                else {
+                    return ContentService.createTextOutput(JSON.stringify({ success: false, message: 'Invalid action.' }))
+                        .setMimeType(ContentService.MimeType.JSON);
+            }
+            } catch (error) {
+                return ContentService.createTextOutput(JSON.stringify({ success: false, message: error.message }))
+                    .setMimeType(ContentService.MimeType.JSON);
+            }
+        }
+        */
+    </script>
+</body>
+</html>

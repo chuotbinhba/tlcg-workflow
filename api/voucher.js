@@ -62,6 +62,10 @@ export default async function handler(req, res) {
   const TLCGROUP_BACKEND = process.env.TLCGROUP_BACKEND_URL || 
     'https://script.google.com/macros/s/AKfycbwQ9lisLCr2iATBF2NGOqdNlG_f8ygDKrIEYkiZYsaVbm_7gFI4P_EC0FC5Wq-TJdMYKw/exec';
   
+  // PAYMENT_REQUEST_BACKEND - For payment request operations
+  const PAYMENT_REQUEST_BACKEND = process.env.PAYMENT_REQUEST_BACKEND_URL || 
+    'YOUR_PAYMENT_REQUEST_BACKEND_URL_HERE'; // Update after deploying PAYMENT_REQUEST_BACKEND.gs
+  
   // Determine which backend to use based on action
   let GAS_URL = PHIEU_THU_CHI_BACKEND; // Default to Phieu Thu Chi Backend
   
@@ -82,6 +86,20 @@ export default async function handler(req, res) {
   if (action === 'getMasterData') {
     GAS_URL = TLCGROUP_BACKEND;
     console.log('[Proxy] Routing getMasterData to TLCGroup Backend');
+  }
+  
+  // Route payment request actions to Payment Request Backend
+  const paymentRequestActions = [
+    'sendPaymentRequest',
+    'approvePaymentRequest',
+    'rejectPaymentRequest',
+    'getPaymentRequestHistory',
+    'getPaymentRequestDetails'
+  ];
+  
+  if (paymentRequestActions.includes(action)) {
+    GAS_URL = PAYMENT_REQUEST_BACKEND;
+    console.log('[Proxy] Routing ' + action + ' to Payment Request Backend');
   }
   
   // Log warnings if environment variables not set (only in development or first request)
