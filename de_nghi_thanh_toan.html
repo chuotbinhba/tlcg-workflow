@@ -909,6 +909,294 @@
                 width: 100%;
             }
         }
+        
+        /* ============ RECENT PAYMENT REQUESTS PANEL ============ */
+        .recent-requests-section {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .recent-requests-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .recent-requests-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            background: #f8fafc;
+        }
+
+        .recent-requests-header h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        .refresh-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .refresh-btn:hover {
+            background: #2563eb;
+        }
+
+        .request-stats {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: white;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-item .stat-value {
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .stat-item .stat-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            text-transform: uppercase;
+        }
+
+        .stat-item.pending .stat-value { color: #f59e0b; }
+        .stat-item.approved .stat-value { color: #10b981; }
+        .stat-item.rejected .stat-value { color: #ef4444; }
+
+        .request-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .request-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .request-item:hover {
+            background: #f8fafc;
+        }
+
+        .request-item:last-child {
+            border-bottom: none;
+        }
+
+        .request-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+
+        .request-icon.pending { background: #fef3c7; color: #d97706; }
+        .request-icon.approved { background: #d1fae5; color: #059669; }
+        .request-icon.rejected { background: #fee2e2; color: #dc2626; }
+
+        .request-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .request-info .request-title {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.9375rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .request-info .request-meta {
+            font-size: 0.8125rem;
+            color: #64748b;
+        }
+
+        .request-amount {
+            font-weight: 600;
+            color: #1e293b;
+            font-size: 0.9375rem;
+            text-align: right;
+            margin-left: 1rem;
+        }
+
+        .request-status {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            margin-left: 1rem;
+            white-space: nowrap;
+        }
+
+        .request-status.pending { background: #fef3c7; color: #92400e; }
+        .request-status.approved { background: #d1fae5; color: #065f46; }
+        .request-status.rejected { background: #fee2e2; color: #991b1b; }
+
+        .no-requests {
+            padding: 3rem;
+            text-align: center;
+            color: #94a3b8;
+        }
+
+        /* ============ REQUEST DETAIL MODAL ============ */
+        .request-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(4px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+        }
+
+        .request-modal-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .request-modal {
+            background: white;
+            border-radius: 16px;
+            max-width: 800px;
+            width: 95%;
+            max-height: 90vh;
+            overflow: hidden;
+            transform: scale(0.95) translateY(20px);
+            transition: transform 0.3s;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .request-modal-overlay.show .request-modal {
+            transform: scale(1) translateY(0);
+        }
+
+        .request-modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .request-modal-header h2 {
+            margin: 0;
+            font-size: 1.25rem;
+            color: #1e293b;
+        }
+
+        .request-modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            border: none;
+            background: #f1f5f9;
+            color: #64748b;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s;
+        }
+
+        .request-modal-close:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        .request-modal-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .request-modal-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.75rem;
+        }
+
+        /* Toast Container */
+        .toast-container {
+            position: fixed;
+            top: 80px;
+            right: 20px;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast {
+            background: white;
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            min-width: 300px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast.success { border-left: 4px solid #10b981; }
+        .toast.error { border-left: 4px solid #ef4444; }
+        .toast.info { border-left: 4px solid #3b82f6; }
     </style>
 </head>
 <body class="min-h-screen flex flex-col">
@@ -1404,6 +1692,65 @@
         </div>
     </div>
 
+    <!-- Recent Payment Requests Panel -->
+    <div class="recent-requests-section">
+        <div class="recent-requests-card">
+            <div class="recent-requests-header">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <h3>📋 Đề nghị gần đây</h3>
+                    <span id="last-refresh-time" style="font-size: 0.75rem; color: #64748b; font-weight: normal;"></span>
+                </div>
+                <button class="refresh-btn" onclick="loadRecentRequests()" title="Tự động làm mới mỗi 30 giây">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
+                    Làm mới
+                </button>
+            </div>
+            <div class="request-stats">
+                <div class="stat-item pending">
+                    <div>
+                        <div class="stat-value" id="pending-count">0</div>
+                        <div class="stat-label">Chờ duyệt</div>
+                    </div>
+                </div>
+                <div class="stat-item approved">
+                    <div>
+                        <div class="stat-value" id="approved-count">0</div>
+                        <div class="stat-label">Đã duyệt</div>
+                    </div>
+                </div>
+                <div class="stat-item rejected">
+                    <div>
+                        <div class="stat-value" id="rejected-count">0</div>
+                        <div class="stat-label">Từ chối</div>
+                    </div>
+                </div>
+            </div>
+            <div class="request-list" id="request-list">
+                <div class="no-requests">Đang tải danh sách đề nghị...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Request Detail Modal -->
+    <div class="request-modal-overlay" id="request-modal-overlay" onclick="if(event.target === this) closeRequestModal()">
+        <div class="request-modal">
+            <div class="request-modal-header">
+                <h2>Chi tiết đề nghị</h2>
+                <button class="request-modal-close" onclick="closeRequestModal()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
+            <div class="request-modal-body" id="request-modal-body">
+                <div style="text-align: center; padding: 2rem; color: #94a3b8;">
+                    Đang tải...
+                </div>
+            </div>
+            <div class="request-modal-footer">
+                <button class="btn-secondary" onclick="closeRequestModal()">Đóng</button>
+            </div>
+        </div>
+    </div>
+
     <!-- New Supplier Modal -->
     <div id="new-supplier-modal" class="modal">
         <div class="modal-content">
@@ -1771,6 +2118,86 @@
             }
         }
 
+        // ==================== RECENT REQUESTS & MODAL ====================
+        
+        /**
+         * Load recent payment requests
+         */
+        async function loadRecentRequests() {
+            const requestList = document.getElementById('request-list');
+            const pendingCount = document.getElementById('pending-count');
+            const approvedCount = document.getElementById('approved-count');
+            const rejectedCount = document.getElementById('rejected-count');
+            const lastRefreshTime = document.getElementById('last-refresh-time');
+            
+            try {
+                // Show loading state
+                requestList.innerHTML = '<div class="no-requests">Đang tải...</div>';
+                
+                // TODO: Replace with actual API call to fetch payment requests
+                // For now, show placeholder
+                requestList.innerHTML = '<div class="no-requests">Chưa có đề nghị nào. Tạo đề nghị mới để bắt đầu!</div>';
+                
+                // Update stats
+                pendingCount.textContent = '0';
+                approvedCount.textContent = '0';
+                rejectedCount.textContent = '0';
+                
+                // Update last refresh time
+                const now = new Date();
+                lastRefreshTime.textContent = `Cập nhật lúc ${now.toLocaleTimeString('vi-VN')}`;
+                
+                console.log('✅ Recent requests loaded');
+            } catch (error) {
+                console.error('❌ Error loading recent requests:', error);
+                requestList.innerHTML = '<div class="no-requests">Lỗi khi tải danh sách. Vui lòng thử lại.</div>';
+            }
+        }
+        
+        /**
+         * Open request detail modal
+         * @param {string} requestId - Request ID
+         */
+        function openRequestModal(requestId) {
+            const overlay = document.getElementById('request-modal-overlay');
+            const body = document.getElementById('request-modal-body');
+            
+            // Show modal
+            overlay.classList.add('show');
+            
+            // Load request details
+            body.innerHTML = '<div style="text-align: center; padding: 2rem; color: #94a3b8;">Đang tải...</div>';
+            
+            // TODO: Fetch request details from backend
+            // For now, show placeholder
+            setTimeout(() => {
+                body.innerHTML = `
+                    <div style="text-align: center; padding: 2rem; color: #64748b;">
+                        <p>Chi tiết đề nghị #${requestId}</p>
+                        <p style="font-size: 0.875rem; margin-top: 1rem;">Tính năng đang được phát triển...</p>
+                    </div>
+                `;
+            }, 500);
+        }
+        
+        /**
+         * Close request detail modal
+         */
+        function closeRequestModal() {
+            const overlay = document.getElementById('request-modal-overlay');
+            overlay.classList.remove('show');
+        }
+        
+        /**
+         * Start auto-refresh for recent requests
+         */
+        function startAutoRefresh() {
+            // Refresh every 30 seconds
+            setInterval(() => {
+                loadRecentRequests();
+            }, 30000);
+        }
+
         document.addEventListener('DOMContentLoaded', function() {
             initializeForm();
             setCurrentDate();
@@ -1795,6 +2222,12 @@
             });
 
             renderApprovalHistory();
+            
+            // Load recent requests after a short delay to ensure page is ready
+            setTimeout(() => {
+                loadRecentRequests();
+                startAutoRefresh();
+            }, 1000);
         });
         
         function initializeForm() {
