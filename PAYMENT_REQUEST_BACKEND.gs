@@ -17,11 +17,12 @@
 // ==================== CONFIGURATION ====================
 
 const CONFIG = {
-  SHEET_NAME: 'PaymentRequests',
-  HISTORY_SHEET_NAME: 'PaymentRequestHistory',
+  SPREADSHEET_ID: '1ujmPbtEdkGLgEshfhvV8gRB6R0GLI31jsZM5rDOJS0g', // TLCG_Master Data
+  SHEET_NAME: 'Payment_Request_History', // Main sheet for storing all payment requests
+  SUPPLIERS_SHEET_NAME: 'Nhà cung cấp', // Existing suppliers sheet
   DRIVE_FOLDER_NAME: 'Payment Request Attachments',
   
-  // Column indices for PaymentRequests sheet
+  // Column indices for Payment_Request_History sheet
   COLUMNS: {
     REQUEST_ID: 0,
     REQUEST_DATE: 1,
@@ -89,6 +90,7 @@ function doPost(e) {
     
     // Route to appropriate handler
     switch (action) {
+      case 'submitPaymentRequest':
       case 'sendPaymentRequest':
         return handleSendPaymentRequest(data);
       case 'approvePaymentRequest':
@@ -96,9 +98,14 @@ function doPost(e) {
       case 'rejectPaymentRequest':
         return handleRejectPaymentRequest(data);
       case 'getPaymentRequestHistory':
+      case 'getRecentPaymentRequests':
         return handleGetPaymentRequestHistory(data);
       case 'getPaymentRequestDetails':
         return handleGetPaymentRequestDetails(data);
+      case 'getSuppliers':
+        return handleGetSuppliers(data);
+      case 'addSupplier':
+        return handleAddSupplier(data);
       default:
         return createResponse(false, 'Invalid action: ' + action);
     }
@@ -414,7 +421,7 @@ function handleRejectPaymentRequest(data) {
 
 function handleGetPaymentRequestHistory(data) {
   try {
-    const historySheet = getOrCreateSheet(CONFIG.HISTORY_SHEET_NAME);
+    const historySheet = getOrCreateSheet(CONFIG.SHEET_NAME);
     const dataRange = historySheet.getDataRange();
     
     if (dataRange.getNumRows() <= 1) {
@@ -762,7 +769,7 @@ function sendApprovalNotification(row, approver, stage, action, comment) {
 
 function appendHistory(requestId, action, actor, note) {
   try {
-    const historySheet = getOrCreateSheet(CONFIG.HISTORY_SHEET_NAME);
+    const historySheet = getOrCreateSheet(CONFIG.SHEET_NAME);
     
     // Create header if sheet is empty
     if (historySheet.getLastRow() === 0) {
@@ -804,8 +811,9 @@ function getOrCreateSheet(sheetName) {
         'Overall Status', 'Submitted At', 'Metadata (JSON)'
       ];
       sheet.appendRow(headers);
-    } else if (sheetName === CONFIG.HISTORY_SHEET_NAME) {
-      sheet.appendRow(['Request ID', 'Timestamp', 'Action', 'Actor', 'Note']);
+    } else if (sheetName === CONFIG.SHEET_NAME) {
+      // Payment_Request_History sheet - will be created manually by user
+      // Header row should already exist
     }
   }
   
@@ -861,3 +869,138 @@ function createResponse(success, message, data = {}) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
+
+
+// ==================== SUPPLIER MANAGEMENT ====================
+
+/**
+ * Get all suppliers from "Nhà cung cấp" sheet
+ */
+function handleGetSuppliers(data) {
+  try {
+    Logger.log('[Payment Request] Getting suppliers from "Nhà cung cấp" sheet');
+    
+    const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+    const suppliersSheet = ss.getSheetByName(CONFIG.SUPPLIERS_SHEET_NAME);
+    
+    if (!suppliersSheet) {
+      Logger.log('[Payment Request] Sheet "Nhà cung cấp" not found');
+      return createResponse(false, 'Sheet "Nhà cung cấp" not found');
+    }
+    
+    // Get all data (starting from row 2 to skip header)
+    const lastRow = suppliersSheet.getLastRow();
+    if (lastRow < 2) {
+      Logger.log('[Payment Request] No suppliers found');
+      return createResponse(true, 'No suppliers found', { suppliers: [], count: 0 });
+    }
+    
+    // Get Column C (Vendor_Full_Name) - index 3
+    const vendorNames = suppliersSheet.getRange(2, 3, lastRow - 1, 1).getValues();
+    
+    // Filter out empty rows and create supplier list
+    const suppliers = vendorNames
+      .map(row => row[0])
+      .filter(name => name && name.toString().trim() !== '')
+      .map(name => name.toString().trim())
+      .sort(); // Sort alphabetically
+    
+    // Remove duplicates
+    const uniqueSuppliers = [...new Set(suppliers)];
+    
+    Logger.log('[Payment Request] Found ' + uniqueSuppliers.length + ' suppliers');
+    
+    return createResponse(true, 'Suppliers retrieved successfully', {
+      suppliers: uniqueSuppliers,
+      count: uniqueSuppliers.length
+    });
+    
+  } catch (error) {
+    Logger.log('[Payment Request] Error getting suppliers: ' + error.message);
+    return createResponse(false, 'Error: ' + error.message);
+  }
+}
+
+/**
+ * Add new supplier to "Nhà cung cấp" sheet
+ */
+function handleAddSupplier(data) {
+  try {
+    const { name, address, phone, email, taxCode, companyType } = data;
+    
+    Logger.log('[Payment Request] Adding new supplier: ' + name);
+    
+    // Validate required field
+    if (!name || name.trim() === '') {
+      return createResponse(false, 'Supplier name is required');
+    }
+    
+    const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+    const suppliersSheet = ss.getSheetByName(CONFIG.SUPPLIERS_SHEET_NAME);
+    
+    if (!suppliersSheet) {
+      Logger.log('[Payment Request] Sheet "Nhà cung cấp" not found');
+      return createResponse(false, 'Sheet "Nhà cung cấp" not found');
+    }
+    
+    // Check for duplicates in Column C
+    const lastRow = suppliersSheet.getLastRow();
+    if (lastRow > 1) {
+      const existingNames = suppliersSheet.getRange(2, 3, lastRow - 1, 1).getValues();
+      const isDuplicate = existingNames.some(row => 
+        row[0] && row[0].toString().trim().toLowerCase() === name.trim().toLowerCase()
+      );
+      
+      if (isDuplicate) {
+        Logger.log('[Payment Request] Supplier already exists: ' + name);
+        return createResponse(false, 'Supplier "' + name + '" already exists');
+      }
+    }
+    
+    // Generate unique ID for Column A
+    const newId = 'VD' + String(lastRow).padStart(3, '0');
+    
+    // Prepare row data matching the sheet structure
+    const newRow = [
+      newId,                           // A: Name (ID)
+      name.substring(0, 50),           // B: Vendor (short name)
+      name,                            // C: Vendor_Full_Name
+      '',                              // D: Công ty mua hàng (empty for now)
+      '',                              // E: QBO_Code (empty for now)
+      companyType || 'Others',         // F: Vendor_Type
+      taxCode || '',                   // G: Tax_ID
+      address || '',                   // H: Address
+      '',                              // I: QB_ID
+      '',                              // J: FCT
+      'VND',                           // K: Payment_Currency
+      '',                              // L: Quoc_tich
+      '',                              // M: Khong_cu_tru
+      '',                              // N: Loai_giay_to
+      '',                              // O: CMND/CCCD/Ho_Chieu
+      '',                              // P: Ngay_cap
+      '',                              // Q: Noi_cap
+      phone || '',                     // R: So_dien_thoai_lien_he
+      address || '',                   // S: Dia_chi_lien_he
+      email || '',                     // T: Email_lien_he
+      '',                              // U: Gioi_tinh
+      '',                              // V: Ngay_sinh
+      '',                              // W: Loan
+      '',                              // X: Freelancer_Job_Name
+      'Yes'                            // Y: Active
+    ];
+    
+    // Append the new row
+    suppliersSheet.appendRow(newRow);
+    
+    Logger.log('[Payment Request] Successfully added supplier: ' + name + ' with ID: ' + newId);
+    
+    return createResponse(true, 'Supplier added successfully', {
+      supplierId: newId,
+      name: name
+    });
+    
+  } catch (error) {
+    Logger.log('[Payment Request] Error adding supplier: ' + error.message);
+    return createResponse(false, 'Error: ' + error.message);
+  }
+}
