@@ -91,10 +91,14 @@ export default async function handler(req, res) {
   // Route payment request actions to Payment Request Backend
   const paymentRequestActions = [
     'sendPaymentRequest',
+    'submitPaymentRequest',        // Alias for sendPaymentRequest
     'approvePaymentRequest',
     'rejectPaymentRequest',
     'getPaymentRequestHistory',
-    'getPaymentRequestDetails'
+    'getRecentPaymentRequests',    // Alias for getPaymentRequestHistory
+    'getPaymentRequestDetails',
+    'getSuppliers',                // New: Load suppliers from "Nhà cung cấp" sheet
+    'addSupplier'                  // New: Add supplier to "Nhà cung cấp" sheet
   ];
   
   if (paymentRequestActions.includes(action)) {

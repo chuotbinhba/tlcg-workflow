@@ -869,8 +869,6 @@ function createResponse(success, message, data = {}) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-
-
 // ==================== SUPPLIER MANAGEMENT ====================
 
 /**
