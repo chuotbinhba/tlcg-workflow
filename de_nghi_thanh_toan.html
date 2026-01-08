@@ -3114,19 +3114,28 @@
                 const row = tableBody.insertRow();
                 row.innerHTML = `
                     <td>${index + 1}</td>
-                    <td><input type="text" value="${item.description || ''}" oninput="updateProductItem(${index}, 'description', this.value)"></td>
-                    <td><input type="text" value="${item.implementationTime || ''}" oninput="updateProductItem(${index}, 'implementationTime', this.value)"></td>
-                    <td><input type="number" min="0" value="${item.quantity || 0}" oninput="updateProductItem(${index}, 'quantity', parseFloat(this.value))"></td>
-                    <td><input type="text" value="${formatCurrency(item.unitPrice || 0)}" oninput="updateProductItem(${index}, 'unitPrice', parseCurrency(this.value))" onblur="this.value = formatCurrency(parseCurrency(this.value))"></td>
-                    <td><input type="text" value="${formatCurrency(item.totalAmount || 0)}" readonly></td>
+                    <td><textarea rows="2" style="width: 100%; min-width: 200px; resize: vertical; padding: 8px; border: 1px solid #e2e8f0; border-radius: 4px; font-family: 'Inter', sans-serif;" 
+                        onchange="updateProductItem(${index}, 'description', this.value)" 
+                        onblur="updateProductItem(${index}, 'description', this.value)">${item.description || ''}</textarea></td>
+                    <td><input type="date" value="${item.implementationTime || ''}" 
+                        onchange="updateProductItem(${index}, 'implementationTime', this.value)" 
+                        style="width: 100%; min-width: 150px;"></td>
+                    <td><input type="number" min="0" step="1" value="${item.quantity || 0}" 
+                        onchange="updateProductItem(${index}, 'quantity', parseFloat(this.value) || 0)" 
+                        style="width: 100%; min-width: 80px;"></td>
+                    <td><input type="number" min="0" step="1000" value="${item.unitPrice || 0}" 
+                        onchange="updateProductItem(${index}, 'unitPrice', parseFloat(this.value) || 0)" 
+                        onblur="updateGrandTotal()" 
+                        style="width: 100%; min-width: 120px; text-align: right;"></td>
+                    <td><input type="text" value="${formatCurrency(item.totalAmount || 0)}" readonly style="width: 100%; min-width: 120px; text-align: right; background: #f8fafc;"></td>
                     <td class="attachment-cell">
                         <button type="button" class="attachment-button" onclick="triggerAttachmentInput(${index})">
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path></svg>
-                            Đính kèm (${item.attachments.length})
+                            Đính kèm (${item.attachments ? item.attachments.length : 0})
                         </button>
-                        <input type="file" multiple class="hidden" id="attachment-input-${index}" onchange="handleRowFileSelect(event, ${index})">
+                        <input type="file" multiple style="display: none;" id="attachment-input-${index}" onchange="handleRowFileSelect(event, ${index})">
                         <div class="file-list" id="file-list-${index}">
-                            ${item.attachments.map(file => `<p>${file.name}</p>`).join('')}
+                            ${item.attachments && item.attachments.length > 0 ? item.attachments.map(file => `<p>${file.name}</p>`).join('') : '<p style="color: #94a3b8; font-size: 0.75rem;">Chưa có file</p>'}
                         </div>
                     </td>
                     <td><button type="button" class="remove-row-btn" onclick="removeProductRow(${index})">&times;</button></td>
@@ -3147,8 +3156,21 @@
 
         function updateProductItem(index, field, value) {
             productItems[index][field] = value;
+            
+            // Recalculate total amount
             productItems[index].totalAmount = (productItems[index].quantity || 0) * (productItems[index].unitPrice || 0);
-            renderProductTable(); // Re-render to update totalAmount and grand total
+            
+            // Update only the total amount cell without re-rendering entire table
+            const row = document.getElementById('product-table-body').rows[index];
+            if (row) {
+                const totalAmountCell = row.cells[5]; // Column 6 (0-indexed)
+                if (totalAmountCell) {
+                    totalAmountCell.querySelector('input').value = formatCurrency(productItems[index].totalAmount || 0);
+                }
+            }
+            
+            // Update grand total
+            updateGrandTotal();
         }
 
         function triggerAttachmentInput(index) {
@@ -3157,8 +3179,42 @@
 
         function handleRowFileSelect(event, index) {
             const files = Array.from(event.target.files);
-            productItems[index].attachments = files;
-            renderProductTable();
+            
+            // Validate files
+            let validFiles = [];
+            let hasError = false;
+            
+            for (const file of files) {
+                if (file.size > MAX_FILE_SIZE) {
+                    alert(`❌ File "${file.name}" quá lớn (${Math.round(file.size / 1024 / 1024)}MB).\nTối đa ${MAX_FILE_SIZE / 1024 / 1024}MB per file.`);
+                    hasError = true;
+                    continue;
+                }
+                validFiles.push(file);
+            }
+            
+            if (validFiles.length > 0) {
+                productItems[index].attachments = validFiles;
+                console.log(`✅ Added ${validFiles.length} file(s) to row ${index + 1}`);
+                
+                // Update only the file list display without re-rendering entire table
+                const fileListDiv = document.getElementById(`file-list-${index}`);
+                if (fileListDiv) {
+                    fileListDiv.innerHTML = validFiles.map(file => `<p>${file.name} (${Math.round(file.size / 1024)}KB)</p>`).join('');
+                }
+                
+                // Update button text
+                const button = document.querySelector(`#attachment-input-${index}`).previousElementSibling;
+                if (button) {
+                    const svg = button.querySelector('svg');
+                    button.textContent = '';
+                    button.appendChild(svg);
+                    button.appendChild(document.createTextNode(` Đính kèm (${validFiles.length})`));
+                }
+            } else if (hasError) {
+                // Clear the input if all files were invalid
+                event.target.value = '';
+            }
         }
 
         function updateGrandTotal() {
