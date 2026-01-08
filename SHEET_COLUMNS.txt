@@ -1,0 +1,47 @@
+COPY THIS HEADER ROW (Tab-separated, paste directly into Google Sheets Row 1):
+================================================================================
+
+Request_ID	Request_Number	Company	Request_Date	Requester_Name	Requester_Email	Department	Purchase_Type	PR_Request_No	Purpose	Recipient	Supplier	Total_Amount	Currency	Payment_Type	PO_Number	Overall_Status	Budget_Approver	Budget_Approval_Status	Budget_Approval_Date	Supplier_Approver	Supplier_Approval_Status	Supplier_Approval_Date	Final_Approver	Final_Approval_Status	Final_Approval_Date	Product_Items_JSON	Payment_Phases_JSON	Attachments_JSON	Signatures_JSON	Created_Date	Last_Modified_Date	Modified_By	Notes	Rejection_Reason
+
+
+OR COLUMN BY COLUMN (if copy-paste doesn't work):
+================================================================================
+
+Column A:  Request_ID
+Column B:  Request_Number
+Column C:  Company
+Column D:  Request_Date
+Column E:  Requester_Name
+Column F:  Requester_Email
+Column G:  Department
+Column H:  Purchase_Type
+Column I:  PR_Request_No
+Column J:  Purpose
+Column K:  Recipient
+Column L:  Supplier
+Column M:  Total_Amount
+Column N:  Currency
+Column O:  Payment_Type
+Column P:  PO_Number
+Column Q:  Overall_Status
+Column R:  Budget_Approver
+Column S:  Budget_Approval_Status
+Column T:  Budget_Approval_Date
+Column U:  Supplier_Approver
+Column V:  Supplier_Approval_Status
+Column W:  Supplier_Approval_Date
+Column X:  Final_Approver
+Column Y:  Final_Approval_Status
+Column Z:  Final_Approval_Date
+Column AA: Product_Items_JSON
+Column AB: Payment_Phases_JSON
+Column AC: Attachments_JSON
+Column AD: Signatures_JSON
+Column AE: Created_Date
+Column AF: Last_Modified_Date
+Column AG: Modified_By
+Column AH: Notes
+Column AI: Rejection_Reason
+
+
+TOTAL: 35 columns (A to AI)
