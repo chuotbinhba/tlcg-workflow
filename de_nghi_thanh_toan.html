@@ -2051,8 +2051,8 @@
             else data.employee_departments[name] = "Phòng ban khác";
         });
 
-        // Predefined suppliers (can be fetched from Google Sheets in a real app)
-        let suppliers = ["CÔNG TY TNHH ABC", "CÔNG TY CỔ PHẦN XYZ", "CÔNG TY TNHH THIẾT BỊ VIỆT NAM", "CÔNG TY CP VĂN PHÒNG PHẨM MINH ANH", "CÔNG TY TNHH CÔNG NGHỆ SỐ"];
+        // Suppliers will be loaded from "Nhà cung cấp" sheet
+        let suppliers = [];
 
         let productItems = []; // Renamed from expenseItems
         let paymentPhases = []; // For payment request table
@@ -2308,21 +2308,67 @@
                 currencySelect.appendChild(option);
             });
             
-            populateSupplierDropdown();
+            // Load suppliers from backend (async)
+            loadSuppliersFromBackend();
         }
 
+        /**
+         * Load suppliers from "Nhà cung cấp" sheet via backend
+         */
+        async function loadSuppliersFromBackend() {
+            try {
+                console.log('📦 Loading suppliers from backend...');
+                
+                const response = await fetch(VERCEL_PROXY_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        action: 'getSuppliers'
+                    }),
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    suppliers = result.suppliers || [];
+                    console.log(`✅ Loaded ${suppliers.length} suppliers from backend`);
+                    populateSupplierDropdown();
+                } else {
+                    console.error('❌ Failed to load suppliers:', result.message);
+                    // Keep empty array, user can still add new suppliers
+                    populateSupplierDropdown();
+                }
+            } catch (error) {
+                console.error('❌ Error loading suppliers:', error);
+                // Keep empty array, user can still add new suppliers
+                populateSupplierDropdown();
+            }
+        }
+        
         function populateSupplierDropdown() {
             const supplierDropdown = document.getElementById('supplier-dropdown');
             supplierDropdown.innerHTML = '<option value="">-- Chọn nhà cung cấp --</option>';
-            suppliers.forEach(supplier => {
-                const option = document.createElement('option');
-                option.value = supplier;
-                option.textContent = supplier;
-                supplierDropdown.appendChild(option);
-            });
+            
+            if (suppliers.length === 0) {
+                const emptyOption = document.createElement('option');
+                emptyOption.value = "";
+                emptyOption.textContent = "Đang tải...";
+                emptyOption.disabled = true;
+                supplierDropdown.appendChild(emptyOption);
+            } else {
+                suppliers.forEach(supplier => {
+                    const option = document.createElement('option');
+                    option.value = supplier;
+                    option.textContent = supplier;
+                    supplierDropdown.appendChild(option);
+                });
+            }
+            
             const newSupplierOption = document.createElement('option');
             newSupplierOption.value = "new-supplier";
-            newSupplierOption.textContent = "Tạo nhà cung cấp mới";
+            newSupplierOption.textContent = "➕ Tạo nhà cung cấp mới";
             supplierDropdown.appendChild(newSupplierOption);
         }
 
@@ -2355,38 +2401,56 @@
             const taxCode = document.getElementById('new-supplier-tax-code').value.trim();
 
             if (!name) {
-                alert('Tên nhà cung cấp là bắt buộc.');
+                alert('❌ Tên nhà cung cấp là bắt buộc.');
                 return;
             }
 
             if (suppliers.includes(name)) {
-                alert('Nhà cung cấp này đã tồn tại.');
+                alert('❌ Nhà cung cấp này đã tồn tại.');
                 return;
             }
 
-            suppliers.push(name);
-            populateSupplierDropdown();
-            document.getElementById('supplier-dropdown').value = name;
-            closeNewSupplierModal();
-            alert(`Đã thêm nhà cung cấp "${name}" thành công!`);
-
-            // Optionally, send to Google Sheets
-            if (GOOGLE_APPS_SCRIPT_WEB_APP_URL !== 'YOUR_GOOGLE_APPS_SCRIPT_WEB_APP_URL_HERE') {
-                try {
-                    const payload = {
+            try {
+                console.log('📝 Adding new supplier to backend:', name);
+                
+                const response = await fetch(VERCEL_PROXY_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
                         action: 'addSupplier',
-                        supplier: { name, address, phone, email, taxCode }
-                    };
-                    await fetch(GOOGLE_APPS_SCRIPT_WEB_APP_URL, {
-                        method: 'POST',
-                        mode: 'no-cors',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                    });
-                    console.log('Supplier data sent to Google Sheets.');
-                } catch (error) {
-                    console.error('Error sending supplier data to Google Sheets:', error);
+                        name: name,
+                        address: address,
+                        phone: phone,
+                        email: email,
+                        taxCode: taxCode,
+                        companyType: 'Supplier'
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    console.log('✅ Supplier added successfully:', result.supplierId);
+                    
+                    // Add to local array
+                    suppliers.push(name);
+                    suppliers.sort(); // Keep alphabetically sorted
+                    
+                    // Update dropdown
+                    populateSupplierDropdown();
+                    document.getElementById('supplier-dropdown').value = name;
+                    
+                    closeNewSupplierModal();
+                    alert(`✅ Đã thêm nhà cung cấp "${name}" thành công!\n\nMã NCC: ${result.supplierId}`);
+                } else {
+                    console.error('❌ Failed to add supplier:', result.message);
+                    alert(`❌ Lỗi khi thêm nhà cung cấp:\n\n${result.message}`);
                 }
+            } catch (error) {
+                console.error('❌ Error adding supplier:', error);
+                alert(`❌ Lỗi khi thêm nhà cung cấp:\n\n${error.message}\n\nVui lòng thử lại hoặc liên hệ IT.`);
             }
         }
         
