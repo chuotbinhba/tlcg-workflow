@@ -2926,6 +2926,34 @@
         }
 
         document.addEventListener('DOMContentLoaded', function() {
+            // ==================== AUTHENTICATION CHECK ====================
+            // Check if user is logged in before allowing access
+            const currentUser = localStorage.getItem('tlc_current_user');
+            
+            if (!currentUser) {
+                // User not logged in - redirect to login page
+                console.warn('⚠️ User not logged in. Redirecting to login page...');
+                alert('Vui lòng đăng nhập để truy cập trang này.\n\nPlease login to access this page.');
+                window.location.href = 'index.html';
+                return; // Stop execution
+            }
+            
+            // Verify user data is valid
+            try {
+                const userData = JSON.parse(currentUser);
+                if (!userData.email || !userData.name) {
+                    throw new Error('Invalid user data');
+                }
+                console.log('✅ User authenticated:', userData.name, '(' + userData.email + ')');
+            } catch (e) {
+                console.error('❌ Invalid user data in localStorage:', e);
+                localStorage.removeItem('tlc_current_user');
+                alert('Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.\n\nInvalid session. Please login again.');
+                window.location.href = 'index.html';
+                return;
+            }
+            // ==================== END AUTHENTICATION CHECK ====================
+            
             initializeForm();
             generateVoucherNumber();
             renderExpenseTable();

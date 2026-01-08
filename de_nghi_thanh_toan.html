@@ -1087,17 +1087,23 @@
         
         // Check user authentication
         function checkUserLogin() {
-            const userData = localStorage.getItem('userData');
+            const userData = localStorage.getItem('tlc_current_user');
             if (!userData) {
-                alert('Bạn chưa đăng nhập. Vui lòng đăng nhập trước.');
+                alert('Bạn chưa đăng nhập. Vui lòng đăng nhập trước.\n\nPlease login to access this page.');
                 window.location.href = 'index.html';
                 return null;
             }
             try {
-                return JSON.parse(userData);
+                const user = JSON.parse(userData);
+                if (!user.email || !user.name) {
+                    throw new Error('Invalid user data');
+                }
+                console.log('✅ User authenticated:', user.name, '(' + user.email + ')');
+                return user;
             } catch (e) {
-                console.error('Error parsing userData:', e);
-                localStorage.removeItem('userData');
+                console.error('❌ Error parsing userData:', e);
+                localStorage.removeItem('tlc_current_user');
+                alert('Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.\n\nInvalid session. Please login again.');
                 window.location.href = 'index.html';
                 return null;
             }
