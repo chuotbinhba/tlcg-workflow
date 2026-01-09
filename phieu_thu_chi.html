@@ -4077,33 +4077,27 @@
                         <div style="display: flex; flex-direction: column; gap: 0.5rem;">
                             ${(function() {
                                 // Parse attachments: format from backend is "filename\nurl\n\nfilename2\nurl2"
-                                // Split by double newline to get each file block
                                 const fileBlocks = voucher.attachments.split('\n\n').filter(block => block.trim());
-                                return fileBlocks.map(block => {
+                                const links = fileBlocks.map(block => {
                                     const lines = block.split('\n').filter(l => l.trim());
                                     if (lines.length < 2) return '';
-                                    
-                                    // First line is filename (may include size like "filename.pdf (2.45 MB)")
-                                    // Second line is URL
-                                    let fileName = lines[0].trim();
+                                    const fileName = lines[0].trim();
                                     const fileUrl = lines[1].trim();
-                                    
                                     if (!fileUrl.startsWith('http')) return '';
-                                    
-                                    // Extract size from filename if present (format: "filename.pdf (2.45 MB)")
-                                    let displayName = fileName;
+
+                                    // Extract size if present in "name (size)" format
+                                    let baseName = fileName;
+                                    let sizeText = '';
                                     const sizeMatch = fileName.match(/^(.+?)\s*\((.+?)\)\s*$/);
                                     if (sizeMatch) {
-                                        const baseName = sizeMatch[1].trim();
-                                        const size = sizeMatch[2].trim();
-                                        displayName = baseName + ' <span style="opacity: 0.7; font-size: 0.75rem;">(' + size + ')</span>';
+                                        baseName = sizeMatch[1].trim();
+                                        sizeText = sizeMatch[2].trim();
                                     }
-                                    
-                                    return '<a href="' + fileUrl + '" target="_blank" style="display: inline-flex; align-items: center; gap: 0.5rem; background: #3b82f6; color: white; padding: 0.5rem 0.75rem; border-radius: 6px; text-decoration: none; font-size: 0.8125rem; font-weight: 500; margin-right: 0.5rem;">' +
-                                        '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>' +
-                                        displayName +
-                                    '</a>';
-                                }).filter(l => l).join('');
+
+                                    const display = sizeText ? `${baseName} (${sizeText})` : baseName;
+                                    return `<a href="${fileUrl}" target="_blank" style="color: #1a73e8; text-decoration: underline;">${display}</a>`;
+                                }).filter(l => l);
+                                return links.length ? links.join('<br>') : '';
                             })()}
                         </div>
                     </div>
