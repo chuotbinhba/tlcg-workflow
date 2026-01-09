@@ -6039,8 +6039,8 @@
 
             // Collect files for upload to Drive
             const filesToUpload = [];
-            const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB max per file (reduced further)
-            const MAX_TOTAL_PAYLOAD_SIZE = 900 * 1024; // 900KB max total payload (conservative limit to prevent truncation)
+            const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB max per file
+            const MAX_TOTAL_PAYLOAD_SIZE = 5 * 1024 * 1024; // 5MB max total payload (allows 1-2 typical PDFs)
             
             for (let i = 0; i < expenseItems.length; i++) {
                 const item = expenseItems[i];
@@ -6227,7 +6227,7 @@
                 return;
             }
             
-            if (payloadSizeBytes > 900 * 1024) { // Warn if > 900KB (close to 1MB limit)
+            if (payloadSizeBytes > 4 * 1024 * 1024) { // Warn if > 4MB (close to 5MB limit)
                 console.warn('⚠️ Payload is large (' + payloadSizeMB + 'MB), close to limit. Consider reducing file sizes.');
             }
 
