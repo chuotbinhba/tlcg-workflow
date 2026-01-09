@@ -3280,13 +3280,14 @@
          * @param {string} voucherNumber - Voucher number for folder organization
          * @returns {Promise<Object>} - File info with Drive URL
          */
-        async function getOrCreateDriveFolder(accessToken, voucherNumber) {
+        async function getOrCreateDriveFolder(accessToken, voucherNumber, useParent = true) {
+            const parentId = useParent ? DRIVE_CONFIG.DRIVE_FOLDER_ID : null;
+
             // Find existing folder
-            const query = encodeURIComponent(`name='${voucherNumber}' and '${DRIVE_CONFIG.DRIVE_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+            const parentFilter = parentId ? ` and '${parentId}' in parents` : '';
+            const query = encodeURIComponent(`name='${voucherNumber}'${parentFilter} and mimeType='application/vnd.google-apps.folder' and trashed=false`);
             const listUrl = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name)`;
-            const listResp = await fetch(listUrl, {
-                headers: { 'Authorization': `Bearer ${accessToken}` }
-            });
+            const listResp = await fetch(listUrl, { headers: { 'Authorization': `Bearer ${accessToken}` } });
             if (listResp.ok) {
                 const data = await listResp.json();
                 if (data.files && data.files.length > 0) {
@@ -3297,22 +3298,31 @@
             }
 
             // Create folder
+            const body = {
+                name: voucherNumber,
+                mimeType: 'application/vnd.google-apps.folder'
+            };
+            if (parentId) body.parents = [parentId];
+
             const createResp = await fetch('https://www.googleapis.com/drive/v3/files', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({
-                    name: voucherNumber,
-                    mimeType: 'application/vnd.google-apps.folder',
-                    parents: [DRIVE_CONFIG.DRIVE_FOLDER_ID]
-                })
+                body: JSON.stringify(body)
             });
+
+            // If parent not found (404), retry without parent (create in My Drive)
             if (!createResp.ok) {
                 const errText = await createResp.text();
+                if (createResp.status === 404 && useParent) {
+                    console.warn('Parent folder not found or not accessible. Retrying in My Drive (no parent).');
+                    return await getOrCreateDriveFolder(accessToken, voucherNumber, false);
+                }
                 throw new Error(`Failed to create Drive folder: ${createResp.status} - ${errText}`);
             }
+
             const folderData = await createResp.json();
             return folderData.id;
         }
