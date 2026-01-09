@@ -3158,6 +3158,20 @@
          * Initialize Google Drive API
          * Call this on page load
          */
+        function logDriveInitError(context, error) {
+            try {
+                const serialized = JSON.stringify(error);
+                console.error(`❌ Drive init error (${context}):`, error, serialized);
+            } catch (e) {
+                console.error(`❌ Drive init error (${context}):`, error);
+            }
+            // Common Google auth cookie issue
+            const msg = (error && error.error) || (error && error.details) || '';
+            if (msg && typeof msg === 'string' && msg.includes('idpiframe_initialization_failed')) {
+                showToast('Không thể tải Drive API. Hãy bật third‑party cookies / popups cho google.com và reload.', 'error');
+            }
+        }
+
         function initDriveAPI() {
             return new Promise((resolve, reject) => {
                 // Check if gapi is loaded
@@ -3182,12 +3196,12 @@
                         console.log('✅ Google Drive API initialized');
                         resolve(true);
                     } catch (error) {
-                        console.error('❌ Failed to initialize Drive API:', error);
+                        logDriveInitError('init', error);
                         driveAPIReady = false;
                         reject(error);
                     }
                 }, (error) => {
-                    console.error('❌ Failed to load gapi client:auth2:', error);
+                    logDriveInitError('gapi.load', error);
                     reject(new Error('Failed to load Google API client'));
                 });
             });
