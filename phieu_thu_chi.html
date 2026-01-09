@@ -6240,6 +6240,10 @@
             const filesToUpload = [];
             const useDriveAPI = isDriveConfigured();
             
+            // Define constants for legacy method (used later for payload size check)
+            const MAX_FILE_SIZE = 500 * 1024; // 500KB max per file
+            const MAX_TOTAL_PAYLOAD_SIZE = 800 * 1024; // 800KB max total payload
+            
             if (useDriveAPI) {
                 console.log('📤 Using Google Drive API for file uploads (no size limit)');
                 
@@ -6269,9 +6273,6 @@
                 console.warn('⚠️ File size limited to 500KB. Configure Drive API for unlimited uploads.');
                 
                 // FALLBACK: Use old base64 method if Drive API not configured
-                const MAX_FILE_SIZE = 500 * 1024; // 500KB max per file
-                const MAX_TOTAL_PAYLOAD_SIZE = 800 * 1024; // 800KB max total payload
-                
                 for (let i = 0; i < expenseItems.length; i++) {
                     const item = expenseItems[i];
                     if (item.attachments && item.attachments.length > 0) {
