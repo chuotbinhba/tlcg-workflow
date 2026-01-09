@@ -6391,6 +6391,7 @@
             
             if (useDriveAPI) {
                 console.log('📤 Using Google Drive API for file uploads (no size limit)');
+                let uploadErrors = [];
                 
                 // Upload files directly to Drive
                 for (let i = 0; i < expenseItems.length; i++) {
@@ -6407,11 +6408,21 @@
                                 } catch (err) {
                                     console.error(`❌ Failed to upload ${file.name}:`, err);
                                     showToast(`Không thể tải lên ${file.name}: ${err.message}`, 'error');
-                                    // Continue with other files
+                                    uploadErrors.push({ file: file.name, error: err });
                                 }
                             }
                         }
                     }
+                }
+
+                if (uploadErrors.length > 0) {
+                    const names = uploadErrors.map(e => e.file).join(', ');
+                    showToast(`Không thể tải lên các file: ${names}. Vui lòng thử lại.`, 'error');
+                    loadingIndicator.classList.remove('show');
+                    isSubmitting = false;
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalButtonText;
+                    return;
                 }
             } else {
                 console.log('📦 Using legacy base64 upload (Drive API not configured)');
