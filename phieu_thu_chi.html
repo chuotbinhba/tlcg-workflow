@@ -3163,6 +3163,9 @@
         let currentSignatureData = null;
         const SIGNATURE_STORAGE_KEY = 'tlcg_user_signature';
         
+        // CRITICAL: Flag to prevent duplicate submissions
+        let isSubmitting = false;
+        
         // Load saved signature on page load
         function loadSavedSignature() {
             const savedSignature = localStorage.getItem(SIGNATURE_STORAGE_KEY);
@@ -5561,6 +5564,23 @@
         }
         
         async function sendForApproval() {
+            // CRITICAL: Prevent duplicate submissions
+            if (isSubmitting) {
+                console.log('⚠️ Submission already in progress, ignoring duplicate click');
+                showToast('Đang xử lý yêu cầu trước đó, vui lòng đợi...', 'warning');
+                return;
+            }
+            
+            // Set flag immediately to block any subsequent clicks
+            isSubmitting = true;
+            console.log('🔒 isSubmitting flag set to TRUE');
+            
+            // Disable button immediately (before validation)
+            const submitBtn = document.getElementById('send-approval-btn');
+            const originalButtonText = submitBtn.innerHTML;
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="animate-spin"><line x1="12" y1="2" x2="12" y2="6"></line><line x1="12" y1="18" x2="12" y2="22"></line><line x1="4.93" y1="4.93" x2="7.76" y2="7.76"></line><line x1="16.24" y1="16.24" x2="19.07" y2="19.07"></line><line x1="2" y1="12" x2="6" y2="12"></line><line x1="18" y1="12" x2="22" y2="12"></line><line x1="4.93" y1="19.07" x2="7.76" y2="16.24"></line><line x1="16.24" y1="7.76" x2="19.07" y2="4.93"></line></svg> Đang xử lý...';
+            
             // Validate approver field specifically
             const approverField = document.getElementById('approver');
             if (!approverField.value) {
@@ -5613,12 +5633,15 @@
                     firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     firstError.focus();
                 }
+                // Reset flag and button
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalButtonText;
                 return;
             }
 
             const loadingIndicator = document.getElementById('loading-indicator');
             loadingIndicator.classList.add('show');
-            document.getElementById('send-approval-btn').disabled = true;
 
             // Ensure voucher number is generated if not already set
             let voucherNumber = document.getElementById('voucher-number').value;
@@ -5633,7 +5656,9 @@
                 console.error('❌ Invalid voucher number format:', voucherNumber);
                 showToast('Lỗi: Số phiếu không hợp lệ. Vui lòng thử lại.', 'error');
                 loadingIndicator.classList.remove('show');
-                document.getElementById('send-approval-btn').disabled = false;
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalButtonText;
                 return;
             }
             
@@ -5764,7 +5789,9 @@
                 alert(errorMsg);
                 showToast('Không tìm thấy địa chỉ email người nhận. Xem console để biết chi tiết.', 'error', 'Lỗi email');
                 loadingIndicator.classList.remove('show');
-                document.getElementById('send-approval-btn').disabled = false;
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalButtonText;
                 return;
             }
 
@@ -5977,7 +6004,9 @@
                 showToast('Không có email hợp lệ để gửi. Vui lòng kiểm tra lại thông tin.', 'error', 'Lỗi email');
                 console.error('No valid email addresses found');
                 loadingIndicator.classList.remove('show');
-                document.getElementById('send-approval-btn').disabled = false;
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalButtonText;
                 return;
             }
             
@@ -6192,7 +6221,9 @@
                 console.error('❌ Payload size exceeded:', payloadSizeBytes, 'bytes');
                 showToast(errorMsg, 'error', 'Payload quá lớn');
                 loadingIndicator.classList.remove('show');
-                document.getElementById('send-approval-btn').disabled = false;
+                isSubmitting = false;
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalButtonText;
                 return;
             }
             
@@ -6309,7 +6340,11 @@
                 window.open(mailtoLink, '_blank');
             } finally {
                 loadingIndicator.classList.remove('show');
-                document.getElementById('send-approval-btn').disabled = false;
+                // Reset submission flag and button state
+                isSubmitting = false;
+                console.log('🔓 isSubmitting flag reset to FALSE');
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = originalButtonText;
             }
         }
 

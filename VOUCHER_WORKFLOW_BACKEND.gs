@@ -173,6 +173,33 @@ function handleSendEmail(requestBody) {
     if (!emailData || !emailData.to) return createResponse(false, 'Thiếu người nhận');
 
     const voucherNo = voucher.voucherNumber || 'AUTO-' + new Date().getTime();
+    
+    // ✅ CRITICAL FIX: Check for duplicate submission BEFORE processing
+    Logger.log('🔍 Checking for duplicate submission: ' + voucherNo);
+    const sheet = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID).getSheetByName(VH_SHEET_NAME);
+    
+    if (!sheet) {
+      Logger.log('❌ ERROR: Sheet "' + VH_SHEET_NAME + '" not found');
+      return createResponse(false, 'Lỗi: Không tìm thấy sheet lịch sử. Vui lòng kiểm tra cấu hình.');
+    }
+    
+    const data = sheet.getDataRange().getValues();
+    const rows = data.slice(1); // Skip header
+    
+    // Check if this voucher was already submitted (action = 'Submit')
+    for (let i = 0; i < rows.length; i++) {
+      const rowVoucherNo = rows[i][0]; // Column A = Voucher Number
+      const rowAction = rows[i][6];    // Column G = Action
+      
+      if (rowVoucherNo === voucherNo && rowAction === 'Submit') {
+        Logger.log('⚠️ DUPLICATE SUBMISSION DETECTED: ' + voucherNo);
+        Logger.log('⚠️ Found existing submission at row: ' + (i + 2)); // +2 for header and 0-index
+        return createResponse(false, 'Phiếu này đã được gửi trước đó (số phiếu: ' + voucherNo + '). Vui lòng kiểm tra lại lịch sử phiếu.');
+      }
+    }
+    
+    Logger.log('✅ No duplicate found, proceeding with submission: ' + voucherNo);
+    
     let fileLinks = "";
 
     // Upload files - deduplicate by fileName before uploading
@@ -663,12 +690,56 @@ function uploadFilesToDrive_(files, folderName) {
 }
 
 function appendHistory_(entry) {
-  const sheet = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID).getSheetByName(VH_SHEET_NAME);
-  sheet.appendRow([
-    entry.voucherNumber, entry.voucherType, entry.company || '', entry.employee,
-    entry.amount, entry.status, entry.action, entry.by, entry.note,
-    entry.attachments, entry.requestorEmail, entry.approverEmail, new Date()
-  ]);
+  try {
+    Logger.log('📝 Attempting to append history for voucher: ' + entry.voucherNumber);
+    
+    const sheet = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID).getSheetByName(VH_SHEET_NAME);
+    
+    if (!sheet) {
+      const errorMsg = 'Sheet "' + VH_SHEET_NAME + '" not found in spreadsheet ID: ' + VOUCHER_HISTORY_SHEET_ID;
+      Logger.log('❌ ERROR: ' + errorMsg);
+      throw new Error(errorMsg);
+    }
+    
+    // Validate entry data
+    if (!entry.voucherNumber) {
+      Logger.log('⚠️ WARNING: Voucher number is missing in entry');
+    }
+    
+    sheet.appendRow([
+      entry.voucherNumber || '',
+      entry.voucherType || '',
+      entry.company || '',
+      entry.employee || '',
+      entry.amount || 0,
+      entry.status || '',
+      entry.action || '',
+      entry.by || '',
+      entry.note || '',
+      entry.attachments || '',
+      entry.requestorEmail || '',
+      entry.approverEmail || '',
+      new Date()
+    ]);
+    
+    Logger.log('✅ History appended successfully for voucher: ' + entry.voucherNumber);
+    Logger.log('   - Action: ' + entry.action);
+    Logger.log('   - Status: ' + entry.status);
+    Logger.log('   - By: ' + entry.by);
+    
+    return true;
+  } catch (error) {
+    Logger.log('❌ CRITICAL ERROR in appendHistory_: ' + error.toString());
+    Logger.log('❌ Error stack: ' + error.stack);
+    Logger.log('❌ Entry data: ' + JSON.stringify({
+      voucherNumber: entry.voucherNumber,
+      action: entry.action,
+      status: entry.status
+    }));
+    
+    // Re-throw error so parent function can handle it
+    throw new Error('Failed to append history: ' + error.message);
+  }
 }
 
 function formatTimestamp(timestamp) {
