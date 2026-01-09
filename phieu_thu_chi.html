@@ -3478,14 +3478,15 @@
                 return;
             }
             
-            // Validate file size (max 500KB)
-            if (file.size > 500 * 1024) {
-                showToast('Kích thước chữ ký tối đa 500KB', 'error');
-                return;
-            }
-            
             try {
-                const base64Data = await fileToBase64(file);
+                // Compress before encoding to reduce size; target same bounds as approver signature
+                const base64Data = await compressImageSignature(file, 800, 400, 0.7);
+                
+                // Ensure final size limit (500KB)
+                if (base64Data.length > 500 * 1024) {
+                    showToast('Chữ ký quá lớn sau khi nén (tối đa 500KB). Vui lòng chọn ảnh nhỏ hơn hoặc chụp mới.', 'error');
+                    return;
+                }
                 currentSignatureData = base64Data;
                 
                 // Save to localStorage for future use
