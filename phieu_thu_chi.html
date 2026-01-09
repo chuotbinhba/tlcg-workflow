@@ -3160,6 +3160,14 @@
          */
         function initDriveAPI() {
             return new Promise((resolve, reject) => {
+                // Check if gapi is loaded
+                if (typeof gapi === 'undefined') {
+                    const error = new Error('Google API library (gapi) not loaded');
+                    console.error('❌ gapi is undefined. Make sure the script tag is loaded.');
+                    reject(error);
+                    return;
+                }
+                
                 gapi.load('client:auth2', async () => {
                     try {
                         await gapi.client.init({
@@ -3178,6 +3186,9 @@
                         driveAPIReady = false;
                         reject(error);
                     }
+                }, (error) => {
+                    console.error('❌ Failed to load gapi client:auth2:', error);
+                    reject(new Error('Failed to load Google API client'));
                 });
             });
         }
@@ -6081,21 +6092,47 @@
                     </thead>
                     <tbody>
                         ${expenseItems.map((item, index) => {
-                            // Handle attachments - can be File objects or plain objects with name property
+                            // Handle attachments - show clickable links with file size
                             let attachmentsList = 'Không có';
                             if (item.attachments && Array.isArray(item.attachments) && item.attachments.length > 0) {
-                                const fileNames = item.attachments.map(f => {
-                                    // Handle both File objects and plain objects
-                                    if (f instanceof File) {
-                                        return f.name;
-                                    } else if (f && typeof f === 'object' && f.name) {
-                                        return f.name;
-                                    }
-                                    return '';
-                                }).filter(name => name); // Remove empty strings
+                                const fileLinks = [];
                                 
-                                if (fileNames.length > 0) {
-                                    attachmentsList = fileNames.join(', ');
+                                item.attachments.forEach(f => {
+                                    let fileName = '';
+                                    let fileSize = 0;
+                                    let fileUrl = '';
+                                    
+                                    // Handle File objects
+                                    if (f instanceof File) {
+                                        fileName = f.name;
+                                        fileSize = f.size;
+                                        // Find the uploaded file URL from filesToUpload
+                                        const uploadedFile = filesToUpload.find(uf => uf.fileName === fileName);
+                                        if (uploadedFile && uploadedFile.fileUrl) {
+                                            fileUrl = uploadedFile.fileUrl;
+                                        }
+                                    } 
+                                    // Handle plain objects (already uploaded)
+                                    else if (f && typeof f === 'object') {
+                                        fileName = f.fileName || f.name || '';
+                                        fileSize = f.fileSize || 0;
+                                        fileUrl = f.fileUrl || '';
+                                    }
+                                    
+                                    if (fileName) {
+                                        const sizeMB = (fileSize / (1024 * 1024)).toFixed(2);
+                                        if (fileUrl) {
+                                            // Clickable link with size
+                                            fileLinks.push(`<a href="${fileUrl}" target="_blank" style="color: #1a73e8; text-decoration: none;">${fileName}</a> (${sizeMB} MB)`);
+                                        } else {
+                                            // Just name and size if no URL
+                                            fileLinks.push(`${fileName} (${sizeMB} MB)`);
+                                        }
+                                    }
+                                });
+                                
+                                if (fileLinks.length > 0) {
+                                    attachmentsList = fileLinks.join('<br>');
                                 }
                             }
                             
@@ -6156,21 +6193,47 @@
                     </thead>
                     <tbody>
                         ${expenseItems.map((item, index) => {
-                            // Handle attachments - can be File objects or plain objects with name property
+                            // Handle attachments - show clickable links with file size
                             let attachmentsList = 'Không có';
                             if (item.attachments && Array.isArray(item.attachments) && item.attachments.length > 0) {
-                                const fileNames = item.attachments.map(f => {
-                                    // Handle both File objects and plain objects
-                                    if (f instanceof File) {
-                                        return f.name;
-                                    } else if (f && typeof f === 'object' && f.name) {
-                                        return f.name;
-                                    }
-                                    return '';
-                                }).filter(name => name); // Remove empty strings
+                                const fileLinks = [];
                                 
-                                if (fileNames.length > 0) {
-                                    attachmentsList = fileNames.join(', ');
+                                item.attachments.forEach(f => {
+                                    let fileName = '';
+                                    let fileSize = 0;
+                                    let fileUrl = '';
+                                    
+                                    // Handle File objects
+                                    if (f instanceof File) {
+                                        fileName = f.name;
+                                        fileSize = f.size;
+                                        // Find the uploaded file URL from filesToUpload
+                                        const uploadedFile = filesToUpload.find(uf => uf.fileName === fileName);
+                                        if (uploadedFile && uploadedFile.fileUrl) {
+                                            fileUrl = uploadedFile.fileUrl;
+                                        }
+                                    } 
+                                    // Handle plain objects (already uploaded)
+                                    else if (f && typeof f === 'object') {
+                                        fileName = f.fileName || f.name || '';
+                                        fileSize = f.fileSize || 0;
+                                        fileUrl = f.fileUrl || '';
+                                    }
+                                    
+                                    if (fileName) {
+                                        const sizeMB = (fileSize / (1024 * 1024)).toFixed(2);
+                                        if (fileUrl) {
+                                            // Clickable link with size
+                                            fileLinks.push(`<a href="${fileUrl}" target="_blank" style="color: #1a73e8; text-decoration: none;">${fileName}</a> (${sizeMB} MB)`);
+                                        } else {
+                                            // Just name and size if no URL
+                                            fileLinks.push(`${fileName} (${sizeMB} MB)`);
+                                        }
+                                    }
+                                });
+                                
+                                if (fileLinks.length > 0) {
+                                    attachmentsList = fileLinks.join('<br>');
                                 }
                             }
                             
