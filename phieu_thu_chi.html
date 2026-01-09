@@ -6059,6 +6059,9 @@
             });
             const formattedSubmitDateTime = `lúc ${currentDateTime}`;
 
+            // Collect files (Drive URLs if configured, base64 fallback)
+            const filesToUpload = [];
+
             // Email body for APPROVERS (with buttons)
             // Declare outside try block so it's accessible in catch block
             let approverEmailBodyHtml = '';
@@ -6300,7 +6303,6 @@
 
             // ==================== FILE UPLOAD TO GOOGLE DRIVE ====================
             // NEW: Upload files directly to Google Drive (no size limit!)
-            const filesToUpload = [];
             const useDriveAPI = isDriveConfigured();
             
             // Define constants for legacy method (used later for payload size check)
