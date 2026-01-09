@@ -3392,7 +3392,7 @@
 
                 return {
                     fileName: uploadResult.name,
-                    fileUrl: uploadResult.webViewLink || `https://drive.google.com/file/d/${uploadResult.id}/view`,
+                    fileUrl: uploadResult.webViewLink || uploadResult.webContentLink || `https://drive.google.com/file/d/${uploadResult.id}/view`,
                     fileSize: file.size,
                     fileId: uploadResult.id
                 };
