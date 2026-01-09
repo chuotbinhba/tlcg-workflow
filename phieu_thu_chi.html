@@ -8,8 +8,10 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
-    <!-- Google Drive API -->
+    <!-- Google Drive API (legacy gapi) -->
     <script src="https://apis.google.com/js/api.js"></script>
+    <!-- Google Identity Services (required for new OAuth clients) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
     <style>
         :root {
             --primary: #3b82f6;      /* Blue-500 */
@@ -2265,7 +2267,11 @@
         };
         
         let driveAPIReady = false;
-        let driveAuthInstance = null;
+        let driveAuthInstance = null; // legacy gapi (kept for backward compatibility)
+        // GIS token flow variables
+        let driveTokenClient = null;
+        let driveAccessToken = null;
+        let driveTokenExpiry = 0;
 
         // Initialize email mappings based on provided exact emails and company data
         const employeeEmailMap = {
@@ -2953,16 +2959,16 @@
                 return; // Stop execution
             }
             
-            // ==================== INITIALIZE GOOGLE DRIVE API ====================
-            // Initialize Drive API if configured (non-blocking)
+            // ==================== INITIALIZE GOOGLE DRIVE (GIS TOKEN FLOW) ====================
+            // We use Google Identity Services (GIS) to get a Drive token.
             if (isDriveConfigured()) {
-                console.log('🔧 Google Drive API credentials detected, initializing...');
-                initDriveAPI().then(() => {
-                    console.log('✅ Drive API ready - unlimited file uploads enabled!');
-                }).catch(error => {
-                    console.warn('⚠️ Drive API initialization failed:', error);
-                    console.warn('⚠️ Falling back to legacy upload (500KB limit)');
-                });
+                console.log('🔧 Google Drive API credentials detected, initializing (GIS token)...');
+                ensureDriveToken(false)
+                    .then(() => console.log('✅ Drive API ready - unlimited file uploads enabled!'))
+                    .catch(error => {
+                        console.warn('⚠️ Drive API initialization failed:', error);
+                        console.warn('⚠️ Falling back to legacy upload (500KB limit)');
+                    });
             } else {
                 console.log('ℹ️ Google Drive API not configured - using legacy upload (500KB limit)');
                 console.log('ℹ️ To enable unlimited uploads, configure Drive API credentials');
@@ -3165,45 +3171,79 @@
             } catch (e) {
                 console.error(`❌ Drive init error (${context}):`, error);
             }
-            // Common Google auth cookie issue
-            const msg = (error && error.error) || (error && error.details) || '';
+            const msg = (error && (error.error || error.details || error.message)) || '';
             if (msg && typeof msg === 'string' && msg.includes('idpiframe_initialization_failed')) {
                 showToast('Không thể tải Drive API. Hãy bật third‑party cookies / popups cho google.com và reload.', 'error');
             }
         }
 
+        // GIS: ensure the Google Identity Services script is ready
+        function ensureGISLoaded() {
+            return new Promise((resolve, reject) => {
+                if (window.google && google.accounts && google.accounts.oauth2) {
+                    return resolve(true);
+                }
+                let attempts = 0;
+                const timer = setInterval(() => {
+                    attempts++;
+                    if (window.google && google.accounts && google.accounts.oauth2) {
+                        clearInterval(timer);
+                        resolve(true);
+                    } else if (attempts > 40) { // ~8s
+                        clearInterval(timer);
+                        reject(new Error('Google Identity Services script not loaded'));
+                    }
+                }, 200);
+            });
+        }
+
+        // GIS: get or refresh an access token
+        function ensureDriveToken(promptConsent = false) {
+            return new Promise(async (resolve, reject) => {
+                try {
+                    await ensureGISLoaded();
+
+                    // Reuse valid token
+                    if (driveAccessToken && Date.now() < driveTokenExpiry) {
+                        driveAPIReady = true;
+                        return resolve(driveAccessToken);
+                    }
+
+                    if (!driveTokenClient) {
+                        driveTokenClient = google.accounts.oauth2.initTokenClient({
+                            client_id: DRIVE_CONFIG.CLIENT_ID,
+                            scope: DRIVE_CONFIG.SCOPES,
+                            callback: (response) => {
+                                if (response.error) {
+                                    logDriveInitError('gis.token', response);
+                                    return reject(response);
+                                }
+                                driveAccessToken = response.access_token;
+                                driveTokenExpiry = Date.now() + ((response.expires_in || 1800) - 60) * 1000; // buffer 60s
+                                driveAPIReady = true;
+                                console.log('✅ Drive token acquired via GIS');
+                                resolve(driveAccessToken);
+                            }
+                        });
+                    }
+
+                    // Request token (prompt consent if needed)
+                    driveTokenClient.requestAccessToken({
+                        prompt: promptConsent ? 'consent' : ''
+                    });
+                } catch (err) {
+                    logDriveInitError('gis.ensureToken', err);
+                    reject(err);
+                }
+            });
+        }
+
+        // Legacy gapi init (kept for backward compatibility if ever needed)
         function initDriveAPI() {
             return new Promise((resolve, reject) => {
-                // Check if gapi is loaded
-                if (typeof gapi === 'undefined') {
-                    const error = new Error('Google API library (gapi) not loaded');
-                    console.error('❌ gapi is undefined. Make sure the script tag is loaded.');
-                    reject(error);
-                    return;
-                }
-                
-                gapi.load('client:auth2', async () => {
-                    try {
-                        await gapi.client.init({
-                            apiKey: DRIVE_CONFIG.API_KEY,
-                            clientId: DRIVE_CONFIG.CLIENT_ID,
-                            discoveryDocs: DRIVE_CONFIG.DISCOVERY_DOCS,
-                            scope: DRIVE_CONFIG.SCOPES
-                        });
-                        
-                        driveAuthInstance = gapi.auth2.getAuthInstance();
-                        driveAPIReady = true;
-                        console.log('✅ Google Drive API initialized');
-                        resolve(true);
-                    } catch (error) {
-                        logDriveInitError('init', error);
-                        driveAPIReady = false;
-                        reject(error);
-                    }
-                }, (error) => {
-                    logDriveInitError('gapi.load', error);
-                    reject(new Error('Failed to load Google API client'));
-                });
+                // Prefer GIS; this remains as a fallback
+                logDriveInitError('initDriveAPI', 'Legacy gapi init is deprecated; using GIS token flow.');
+                resolve(false);
             });
         }
         
@@ -3240,97 +3280,113 @@
          * @param {string} voucherNumber - Voucher number for folder organization
          * @returns {Promise<Object>} - File info with Drive URL
          */
+        async function getOrCreateDriveFolder(accessToken, voucherNumber) {
+            // Find existing folder
+            const query = encodeURIComponent(`name='${voucherNumber}' and '${DRIVE_CONFIG.DRIVE_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`);
+            const listUrl = `https://www.googleapis.com/drive/v3/files?q=${query}&fields=files(id,name)`;
+            const listResp = await fetch(listUrl, {
+                headers: { 'Authorization': `Bearer ${accessToken}` }
+            });
+            if (listResp.ok) {
+                const data = await listResp.json();
+                if (data.files && data.files.length > 0) {
+                    return data.files[0].id;
+                }
+            } else {
+                console.warn('Folder search failed, will try to create. Status:', listResp.status);
+            }
+
+            // Create folder
+            const createResp = await fetch('https://www.googleapis.com/drive/v3/files', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`,
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: voucherNumber,
+                    mimeType: 'application/vnd.google-apps.folder',
+                    parents: [DRIVE_CONFIG.DRIVE_FOLDER_ID]
+                })
+            });
+            if (!createResp.ok) {
+                const errText = await createResp.text();
+                throw new Error(`Failed to create Drive folder: ${createResp.status} - ${errText}`);
+            }
+            const folderData = await createResp.json();
+            return folderData.id;
+        }
+
+        async function setDriveFilePublic(accessToken, fileId, fileName) {
+            try {
+                const permResp = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}/permissions`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        role: 'reader',
+                        type: 'anyone'
+                    })
+                });
+                if (!permResp.ok) {
+                    const errText = await permResp.text();
+                    console.warn(`⚠️ Failed to set sharing for ${fileName}: ${permResp.status} - ${errText}`);
+                } else {
+                    console.log(`✅ Sharing permissions set for: ${fileName}`);
+                }
+            } catch (err) {
+                console.warn(`⚠️ Exception setting sharing for ${fileName}:`, err);
+            }
+        }
+
         async function uploadToDrive(file, voucherNumber) {
             try {
                 console.log(`📤 Uploading ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB) to Drive...`);
-                
-                // Ensure user is authenticated
-                await ensureDriveAuth();
-                
-                // Step 1: Check if folder exists, create if not
-                let folderId;
-                try {
-                    const folderSearch = await gapi.client.drive.files.list({
-                        q: `name='${voucherNumber}' and '${DRIVE_CONFIG.DRIVE_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
-                        fields: 'files(id, name)',
-                        spaces: 'drive'
-                    });
-                    
-                    if (folderSearch.result.files && folderSearch.result.files.length > 0) {
-                        folderId = folderSearch.result.files[0].id;
-                        console.log(`✅ Found existing folder: ${voucherNumber}`);
-                    } else {
-                        // Create folder
-                        const folderMetadata = {
-                            name: voucherNumber,
-                            mimeType: 'application/vnd.google-apps.folder',
-                            parents: [DRIVE_CONFIG.DRIVE_FOLDER_ID]
-                        };
-                        
-                        const folder = await gapi.client.drive.files.create({
-                            resource: folderMetadata,
-                            fields: 'id'
-                        });
-                        
-                        folderId = folder.result.id;
-                        console.log(`✅ Created new folder: ${voucherNumber}`);
-                    }
-                } catch (error) {
-                    console.error('❌ Folder creation/search failed:', error);
-                    throw new Error('Failed to create/find Drive folder: ' + error.message);
-                }
-                
-                // Step 2: Upload file to folder
+
+                // Get/refresh token via GIS
+                const accessToken = await ensureDriveToken(true);
+
+                // Get or create voucher folder
+                const folderId = await getOrCreateDriveFolder(accessToken, voucherNumber);
+                console.log(`✅ Using folder for voucher ${voucherNumber}: ${folderId}`);
+
+                // Upload file
                 const metadata = {
                     name: file.name,
                     parents: [folderId]
                 };
-                
                 const form = new FormData();
                 form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
                 form.append('file', file);
-                
-                const accessToken = gapi.auth.getToken().access_token;
-                
-                const uploadResponse = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,size', {
+
+                const uploadResp = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,size', {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${accessToken}`
                     },
                     body: form
                 });
-                
-                if (!uploadResponse.ok) {
-                    const errorText = await uploadResponse.text();
-                    throw new Error(`Upload failed: ${uploadResponse.status} - ${errorText}`);
+
+                if (!uploadResp.ok) {
+                    const errorText = await uploadResp.text();
+                    throw new Error(`Upload failed: ${uploadResp.status} - ${errorText}`);
                 }
-                
-                const uploadResult = await uploadResponse.json();
+
+                const uploadResult = await uploadResp.json();
                 console.log(`✅ File uploaded: ${uploadResult.name}`);
-                
-                // Step 3: Set sharing permissions (anyone with link can view)
-                try {
-                    await gapi.client.drive.permissions.create({
-                        fileId: uploadResult.id,
-                        resource: {
-                            role: 'reader',
-                            type: 'anyone'
-                        }
-                    });
-                    console.log(`✅ Sharing permissions set for: ${uploadResult.name}`);
-                } catch (error) {
-                    console.warn('⚠️ Failed to set sharing permissions:', error);
-                    // Continue anyway - file is uploaded
-                }
-                
-                // Return file info
+
+                // Set sharing
+                await setDriveFilePublic(accessToken, uploadResult.id, uploadResult.name);
+
                 return {
                     fileName: uploadResult.name,
                     fileUrl: uploadResult.webViewLink || `https://drive.google.com/file/d/${uploadResult.id}/view`,
                     fileSize: file.size,
                     fileId: uploadResult.id
                 };
-                
+
             } catch (error) {
                 console.error(`❌ Failed to upload ${file.name} to Drive:`, error);
                 throw error;
