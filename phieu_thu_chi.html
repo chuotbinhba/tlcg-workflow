@@ -6039,8 +6039,8 @@
 
             // Collect files for upload to Drive
             const filesToUpload = [];
-            const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB max per file
-            const MAX_TOTAL_PAYLOAD_SIZE = 5 * 1024 * 1024; // 5MB max total payload (allows 1-2 typical PDFs)
+            const MAX_FILE_SIZE = 500 * 1024; // 500KB max per file (realistic for Google Apps Script)
+            const MAX_TOTAL_PAYLOAD_SIZE = 800 * 1024; // 800KB max total payload (Google Apps Script POST limit ~1MB)
             
             for (let i = 0; i < expenseItems.length; i++) {
                 const item = expenseItems[i];
@@ -6227,8 +6227,8 @@
                 return;
             }
             
-            if (payloadSizeBytes > 4 * 1024 * 1024) { // Warn if > 4MB (close to 5MB limit)
-                console.warn('⚠️ Payload is large (' + payloadSizeMB + 'MB), close to limit. Consider reducing file sizes.');
+            if (payloadSizeBytes > 700 * 1024) { // Warn if > 700KB (close to 800KB limit)
+                console.warn('⚠️ Payload is large (' + payloadSizeKB + 'KB), close to limit. Consider reducing file sizes.');
             }
 
             try {
