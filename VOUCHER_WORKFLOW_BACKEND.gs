@@ -202,29 +202,45 @@ function handleSendEmail(requestBody) {
     
     let fileLinks = "";
 
-    // Upload files - deduplicate by fileName before uploading
+    // Handle files - check if using Drive API or legacy base64
     if (voucher.files && voucher.files.length > 0) {
-      // Deduplicate files by fileName to prevent duplicate uploads
-      const uniqueFiles = [];
-      const seenFileNames = new Set();
-      for (const file of voucher.files) {
-        if (!seenFileNames.has(file.fileName)) {
-          seenFileNames.add(file.fileName);
-          uniqueFiles.push(file);
-        }
-      }
+      const useDriveAPI = voucher.useDriveAPI || false;
       
-      if (uniqueFiles.length > 0) {
-        const uploaded = uploadFilesToDrive_(uniqueFiles, voucherNo);
-        fileLinks = uploaded.map(f => {
-          if (f.error) {
-            return f.fileName + " (Lỗi upload)";
-          }
-          // Format: "filename.pdf (2.45 MB)\nhttps://drive.google.com/file/..."
+      if (useDriveAPI) {
+        // NEW: Files already uploaded to Drive by frontend
+        // Just format the URLs for email/sheet
+        Logger.log('✅ Using Drive API - files already uploaded by frontend');
+        fileLinks = voucher.files.map(f => {
           const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) + " MB" : '';
           const fileNameWithSize = sizeMB ? f.fileName + " (" + sizeMB + ")" : f.fileName;
           return fileNameWithSize + "\n" + f.fileUrl;
         }).join('\n\n');
+      } else {
+        // LEGACY: Upload base64 files to Drive (old method)
+        Logger.log('⚠️ Using legacy base64 upload method');
+        
+        // Deduplicate files by fileName before uploading
+        const uniqueFiles = [];
+        const seenFileNames = new Set();
+        for (const file of voucher.files) {
+          if (!seenFileNames.has(file.fileName)) {
+            seenFileNames.add(file.fileName);
+            uniqueFiles.push(file);
+          }
+        }
+        
+        if (uniqueFiles.length > 0) {
+          const uploaded = uploadFilesToDrive_(uniqueFiles, voucherNo);
+          fileLinks = uploaded.map(f => {
+            if (f.error) {
+              return f.fileName + " (Lỗi upload)";
+            }
+            // Format: "filename.pdf (2.45 MB)\nhttps://drive.google.com/file/..."
+            const sizeMB = f.fileSize ? (f.fileSize / (1024 * 1024)).toFixed(2) + " MB" : '';
+            const fileNameWithSize = sizeMB ? f.fileName + " (" + sizeMB + ")" : f.fileName;
+            return fileNameWithSize + "\n" + f.fileUrl;
+          }).join('\n\n');
+        }
       }
     }
 

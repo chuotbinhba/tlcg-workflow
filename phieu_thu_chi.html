@@ -8,6 +8,8 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://unpkg.com/xlsx/dist/xlsx.full.min.js"></script>
+    <!-- Google Drive API -->
+    <script src="https://apis.google.com/js/api.js"></script>
     <style>
         :root {
             --primary: #3b82f6;      /* Blue-500 */
@@ -2251,6 +2253,19 @@
         // 9. Copy the "Web app URL" and paste it here.
         // 10. Ensure your Google account has permissions to send emails via Gmail (usually default).
         const GOOGLE_APPS_SCRIPT_WEB_APP_URL = '/api/voucher';
+        
+        // ==================== GOOGLE DRIVE API CONFIGURATION ====================
+        // TODO: Replace these with your actual credentials after Google Cloud setup
+        const DRIVE_CONFIG = {
+            CLIENT_ID: 'YOUR_CLIENT_ID_HERE.apps.googleusercontent.com',
+            API_KEY: 'YOUR_API_KEY_HERE',
+            DRIVE_FOLDER_ID: '1RBBUUUAQIrYTWeBONIgkMtELL0hxZhtqG', // Same as backend
+            DISCOVERY_DOCS: ['https://www.googleapis.com/discovery/v1/apis/drive/v3/rest'],
+            SCOPES: 'https://www.googleapis.com/auth/drive.file'
+        };
+        
+        let driveAPIReady = false;
+        let driveAuthInstance = null;
 
         // Initialize email mappings based on provided exact emails and company data
         const employeeEmailMap = {
@@ -2938,6 +2953,21 @@
                 return; // Stop execution
             }
             
+            // ==================== INITIALIZE GOOGLE DRIVE API ====================
+            // Initialize Drive API if configured (non-blocking)
+            if (isDriveConfigured()) {
+                console.log('🔧 Google Drive API credentials detected, initializing...');
+                initDriveAPI().then(() => {
+                    console.log('✅ Drive API ready - unlimited file uploads enabled!');
+                }).catch(error => {
+                    console.warn('⚠️ Drive API initialization failed:', error);
+                    console.warn('⚠️ Falling back to legacy upload (500KB limit)');
+                });
+            } else {
+                console.log('ℹ️ Google Drive API not configured - using legacy upload (500KB limit)');
+                console.log('ℹ️ To enable unlimited uploads, configure Drive API credentials');
+            }
+            
             // Verify user data is valid
             try {
                 const userData = JSON.parse(currentUser);
@@ -3120,6 +3150,174 @@
                 reader.onerror = error => reject(error);
                 reader.readAsDataURL(file);
             });
+        }
+        
+        // ==================== GOOGLE DRIVE API FUNCTIONS ====================
+        
+        /**
+         * Initialize Google Drive API
+         * Call this on page load
+         */
+        function initDriveAPI() {
+            return new Promise((resolve, reject) => {
+                gapi.load('client:auth2', async () => {
+                    try {
+                        await gapi.client.init({
+                            apiKey: DRIVE_CONFIG.API_KEY,
+                            clientId: DRIVE_CONFIG.CLIENT_ID,
+                            discoveryDocs: DRIVE_CONFIG.DISCOVERY_DOCS,
+                            scope: DRIVE_CONFIG.SCOPES
+                        });
+                        
+                        driveAuthInstance = gapi.auth2.getAuthInstance();
+                        driveAPIReady = true;
+                        console.log('✅ Google Drive API initialized');
+                        resolve(true);
+                    } catch (error) {
+                        console.error('❌ Failed to initialize Drive API:', error);
+                        driveAPIReady = false;
+                        reject(error);
+                    }
+                });
+            });
+        }
+        
+        /**
+         * Check if user is signed in to Google Drive
+         * If not, prompt for sign-in
+         */
+        async function ensureDriveAuth() {
+            if (!driveAPIReady) {
+                console.warn('⚠️ Drive API not initialized, attempting to initialize...');
+                try {
+                    await initDriveAPI();
+                } catch (error) {
+                    throw new Error('Drive API initialization failed: ' + error.message);
+                }
+            }
+            
+            if (!driveAuthInstance.isSignedIn.get()) {
+                console.log('🔐 User not signed in, prompting for Google sign-in...');
+                try {
+                    await driveAuthInstance.signIn();
+                    console.log('✅ User signed in to Google Drive');
+                } catch (error) {
+                    throw new Error('Google sign-in failed: ' + error.message);
+                }
+            }
+            
+            return true;
+        }
+        
+        /**
+         * Upload file directly to Google Drive
+         * @param {File} file - The file to upload
+         * @param {string} voucherNumber - Voucher number for folder organization
+         * @returns {Promise<Object>} - File info with Drive URL
+         */
+        async function uploadToDrive(file, voucherNumber) {
+            try {
+                console.log(`📤 Uploading ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB) to Drive...`);
+                
+                // Ensure user is authenticated
+                await ensureDriveAuth();
+                
+                // Step 1: Check if folder exists, create if not
+                let folderId;
+                try {
+                    const folderSearch = await gapi.client.drive.files.list({
+                        q: `name='${voucherNumber}' and '${DRIVE_CONFIG.DRIVE_FOLDER_ID}' in parents and mimeType='application/vnd.google-apps.folder' and trashed=false`,
+                        fields: 'files(id, name)',
+                        spaces: 'drive'
+                    });
+                    
+                    if (folderSearch.result.files && folderSearch.result.files.length > 0) {
+                        folderId = folderSearch.result.files[0].id;
+                        console.log(`✅ Found existing folder: ${voucherNumber}`);
+                    } else {
+                        // Create folder
+                        const folderMetadata = {
+                            name: voucherNumber,
+                            mimeType: 'application/vnd.google-apps.folder',
+                            parents: [DRIVE_CONFIG.DRIVE_FOLDER_ID]
+                        };
+                        
+                        const folder = await gapi.client.drive.files.create({
+                            resource: folderMetadata,
+                            fields: 'id'
+                        });
+                        
+                        folderId = folder.result.id;
+                        console.log(`✅ Created new folder: ${voucherNumber}`);
+                    }
+                } catch (error) {
+                    console.error('❌ Folder creation/search failed:', error);
+                    throw new Error('Failed to create/find Drive folder: ' + error.message);
+                }
+                
+                // Step 2: Upload file to folder
+                const metadata = {
+                    name: file.name,
+                    parents: [folderId]
+                };
+                
+                const form = new FormData();
+                form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
+                form.append('file', file);
+                
+                const accessToken = gapi.auth.getToken().access_token;
+                
+                const uploadResponse = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink,size', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${accessToken}`
+                    },
+                    body: form
+                });
+                
+                if (!uploadResponse.ok) {
+                    const errorText = await uploadResponse.text();
+                    throw new Error(`Upload failed: ${uploadResponse.status} - ${errorText}`);
+                }
+                
+                const uploadResult = await uploadResponse.json();
+                console.log(`✅ File uploaded: ${uploadResult.name}`);
+                
+                // Step 3: Set sharing permissions (anyone with link can view)
+                try {
+                    await gapi.client.drive.permissions.create({
+                        fileId: uploadResult.id,
+                        resource: {
+                            role: 'reader',
+                            type: 'anyone'
+                        }
+                    });
+                    console.log(`✅ Sharing permissions set for: ${uploadResult.name}`);
+                } catch (error) {
+                    console.warn('⚠️ Failed to set sharing permissions:', error);
+                    // Continue anyway - file is uploaded
+                }
+                
+                // Return file info
+                return {
+                    fileName: uploadResult.name,
+                    fileUrl: uploadResult.webViewLink || `https://drive.google.com/file/d/${uploadResult.id}/view`,
+                    fileSize: file.size,
+                    fileId: uploadResult.id
+                };
+                
+            } catch (error) {
+                console.error(`❌ Failed to upload ${file.name} to Drive:`, error);
+                throw error;
+            }
+        }
+        
+        /**
+         * Check if Drive API credentials are configured
+         */
+        function isDriveConfigured() {
+            return DRIVE_CONFIG.CLIENT_ID !== 'YOUR_CLIENT_ID_HERE.apps.googleusercontent.com' &&
+                   DRIVE_CONFIG.API_KEY !== 'YOUR_API_KEY_HERE';
         }
 
         // Compress and resize image signature to reduce payload size
@@ -6037,65 +6235,86 @@
             console.log('requestorEmail value:', requestorEmail);
             console.log('validCCRecipients:', validCCRecipients);
 
-            // Collect files for upload to Drive
+            // ==================== FILE UPLOAD TO GOOGLE DRIVE ====================
+            // NEW: Upload files directly to Google Drive (no size limit!)
             const filesToUpload = [];
-            const MAX_FILE_SIZE = 500 * 1024; // 500KB max per file (realistic for Google Apps Script)
-            const MAX_TOTAL_PAYLOAD_SIZE = 800 * 1024; // 800KB max total payload (Google Apps Script POST limit ~1MB)
+            const useDriveAPI = isDriveConfigured();
             
-            for (let i = 0; i < expenseItems.length; i++) {
-                const item = expenseItems[i];
-                if (item.attachments && item.attachments.length > 0) {
-                    for (const file of item.attachments) {
-                        if (file instanceof File) {
-                            // Check file size
-                            if (file.size > MAX_FILE_SIZE) {
-                                showToast(`File "${file.name}" quá lớn (${(file.size / 1024 / 1024).toFixed(2)} MB). Kích thước tối đa là ${MAX_FILE_SIZE / 1024 / 1024}MB.`, 'error', 'File quá lớn');
-                                console.warn(`File ${file.name} is too large (${(file.size / 1024 / 1024).toFixed(2)} MB). Max: ${MAX_FILE_SIZE / 1024 / 1024}MB. Skipping.`);
-                                continue;
+            if (useDriveAPI) {
+                console.log('📤 Using Google Drive API for file uploads (no size limit)');
+                
+                // Upload files directly to Drive
+                for (let i = 0; i < expenseItems.length; i++) {
+                    const item = expenseItems[i];
+                    if (item.attachments && item.attachments.length > 0) {
+                        for (const file of item.attachments) {
+                            if (file instanceof File) {
+                                try {
+                                    showToast(`Đang tải lên ${file.name}...`, 'info');
+                                    const driveFile = await uploadToDrive(file, voucherNumber);
+                                    filesToUpload.push(driveFile);
+                                    console.log(`✅ Uploaded to Drive: ${driveFile.fileName}`);
+                                    showToast(`✅ Đã tải lên ${file.name}`, 'success');
+                                } catch (err) {
+                                    console.error(`❌ Failed to upload ${file.name}:`, err);
+                                    showToast(`Không thể tải lên ${file.name}: ${err.message}`, 'error');
+                                    // Continue with other files
+                                }
                             }
-                            
-                            try {
-                                // Convert file to base64
-                                const base64Data = await fileToBase64(file);
-                                
-                                // Base64 increases size by ~33%, estimate total size
-                                // Calculate estimated size: existing payload + this file's base64 size
-                                let estimatedSize = 100000; // Base payload size estimate (signature + email body + metadata)
-                                filesToUpload.forEach(f => {
-                                    estimatedSize += (f.fileData ? f.fileData.length : 0);
-                                });
-                                estimatedSize += base64Data.length;
-                                
-                                // Add signature size to estimate (will be added later)
-                                if (currentSignatureData) {
-                                    estimatedSize += currentSignatureData.length;
-                                }
-                                
-                                if (estimatedSize > MAX_TOTAL_PAYLOAD_SIZE) {
-                                    const sizeKB = (estimatedSize / 1024).toFixed(2);
-                                    const limitKB = (MAX_TOTAL_PAYLOAD_SIZE / 1024).toFixed(0);
-                                    showToast(`Tổng kích thước quá lớn (ước tính ${sizeKB} KB). File "${file.name}" sẽ không được tải lên. Giới hạn: ${limitKB}KB.`, 'error', 'Payload quá lớn');
-                                    console.warn(`Adding file ${file.name} would exceed max payload size. Estimated: ${sizeKB}KB. Limit: ${limitKB}KB. Skipping.`);
+                        }
+                    }
+                }
+            } else {
+                console.log('📦 Using legacy base64 upload (Drive API not configured)');
+                console.warn('⚠️ File size limited to 500KB. Configure Drive API for unlimited uploads.');
+                
+                // FALLBACK: Use old base64 method if Drive API not configured
+                const MAX_FILE_SIZE = 500 * 1024; // 500KB max per file
+                const MAX_TOTAL_PAYLOAD_SIZE = 800 * 1024; // 800KB max total payload
+                
+                for (let i = 0; i < expenseItems.length; i++) {
+                    const item = expenseItems[i];
+                    if (item.attachments && item.attachments.length > 0) {
+                        for (const file of item.attachments) {
+                            if (file instanceof File) {
+                                // Check file size
+                                if (file.size > MAX_FILE_SIZE) {
+                                    showToast(`File "${file.name}" quá lớn (${(file.size / 1024 / 1024).toFixed(2)} MB). Kích thước tối đa là ${MAX_FILE_SIZE / 1024 / 1024}MB.`, 'error', 'File quá lớn');
+                                    console.warn(`File ${file.name} is too large. Skipping.`);
                                     continue;
                                 }
                                 
-                                // Verify base64 data was generated
-                                if (!base64Data || base64Data.length < 100) {
-                                    console.error(`Failed to convert ${file.name} to base64. Result was empty or too short.`);
-                                    continue;
+                                try {
+                                    // Convert file to base64
+                                    const base64Data = await fileToBase64(file);
+                                    
+                                    // Calculate estimated size
+                                    let estimatedSize = 100000;
+                                    filesToUpload.forEach(f => {
+                                        estimatedSize += (f.fileData ? f.fileData.length : 0);
+                                    });
+                                    estimatedSize += base64Data.length;
+                                    
+                                    if (currentSignatureData) {
+                                        estimatedSize += currentSignatureData.length;
+                                    }
+                                    
+                                    if (estimatedSize > MAX_TOTAL_PAYLOAD_SIZE) {
+                                        const sizeKB = (estimatedSize / 1024).toFixed(2);
+                                        showToast(`Tổng kích thước quá lớn (${sizeKB} KB). File "${file.name}" sẽ không được tải lên.`, 'error');
+                                        continue;
+                                    }
+                                    
+                                    filesToUpload.push({
+                                        fileName: file.name,
+                                        fileData: base64Data,
+                                        mimeType: file.type || 'application/octet-stream',
+                                        fileSize: file.size,
+                                        rowIndex: i
+                                    });
+                                } catch (err) {
+                                    console.error('Error converting file to base64:', file.name, err);
                                 }
-                                
-                                console.log(`✅ File ${file.name}: ${file.size} bytes -> ${base64Data.length} chars base64`);
-                                
-                                filesToUpload.push({
-                                    fileName: file.name,
-                                    fileData: base64Data,
-                                    mimeType: file.type || 'application/octet-stream',
-                                    fileSize: file.size,
-                                    rowIndex: i
-                                });
-                            } catch (err) {
-                                console.error('Error converting file to base64:', file.name, err);
                             }
                         }
                     }
@@ -6104,13 +6323,14 @@
 
             // Log file information for verification
             console.log('=== FILE UPLOAD INFO ===');
+            console.log('Upload method:', useDriveAPI ? 'Google Drive API' : 'Legacy Base64');
             console.log('Total expense items:', expenseItems.length);
-            console.log('Files to upload:', filesToUpload.length);
+            console.log('Files uploaded:', filesToUpload.length);
             if (filesToUpload.length > 0) {
                 console.log('Files details:');
                 filesToUpload.forEach((f, idx) => {
                     const sizeMB = (f.fileSize / (1024 * 1024)).toFixed(2);
-                    console.log(`  ${idx + 1}. Row ${f.rowIndex}: ${f.fileName} (${sizeMB} MB, ${f.mimeType})`);
+                    console.log(`  ${idx + 1}. ${f.fileName} (${sizeMB} MB)`);
                 });
             } else {
                 console.log('No files attached');
@@ -6166,7 +6386,8 @@
                     reason: reason || '',
                     amountInWords: amountInWords || '',
                     expenseItems: expenseItems || [], // Include expense items for backend to save in meta
-                    files: filesToUpload,  // Files for Drive upload
+                    files: filesToUpload,  // Files (Drive URLs if using API, base64 if legacy)
+                    useDriveAPI: useDriveAPI, // Flag to indicate upload method
                     requesterSignature: finalRequesterSignature || '' // Requester signature for history (compressed if needed)
                 }
             };
