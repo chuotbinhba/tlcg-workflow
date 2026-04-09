@@ -104,6 +104,7 @@ export default async function handler(req, res) {
   // Smart routing: Route to appropriate backend based on action
   // PHIEU_THU_CHI_BACKEND - For voucher operations
   const PHIEU_THU_CHI_BACKEND = process.env.PHIEU_THU_CHI_BACKEND_URL ||
+    process.env.GOOGLE_APPS_SCRIPT_URL ||
     'https://script.google.com/macros/s/AKfycbxhaInTbJKzU7BdgfgHShqKzKeslq-HG-ZTS3kXKngWVn_RqOxogLY_-NiALiEE2bHm/exec';
   
   // TLCGROUP_BACKEND - For intranet operations (login, getMasterData, etc.)
@@ -178,11 +179,11 @@ export default async function handler(req, res) {
   
   // Log warnings if environment variables not set (only in development or first request)
   // These are warnings, not errors - fallback URLs are hardcoded and will work
-  if (!process.env.GOOGLE_APPS_SCRIPT_URL) {
+  if (!process.env.PHIEU_THU_CHI_BACKEND_URL && !process.env.GOOGLE_APPS_SCRIPT_URL) {
     // Only log once per instance to avoid spam
     if (!global.__envWarningLogged) {
-      console.warn('[Proxy Info] GOOGLE_APPS_SCRIPT_URL environment variable not set. Using fallback URL.');
-      console.warn('[Proxy Info] Optional: Set GOOGLE_APPS_SCRIPT_URL in Vercel Dashboard → Settings → Environment Variables for easier management.');
+      console.warn('[Proxy Info] PHIEU_THU_CHI_BACKEND_URL and GOOGLE_APPS_SCRIPT_URL are not set. Using fallback URL.');
+      console.warn('[Proxy Info] Optional: Set PHIEU_THU_CHI_BACKEND_URL (preferred) or GOOGLE_APPS_SCRIPT_URL in Vercel Dashboard → Settings → Environment Variables.');
       global.__envWarningLogged = true;
     }
   }
@@ -544,4 +545,3 @@ export default async function handler(req, res) {
     });
   }
 }
-
