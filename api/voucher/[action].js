@@ -30,8 +30,8 @@ export default async function handler(req, res) {
   // Get GAS URL from environment variable
   // ⚠️ IMPORTANT: This is a SERVER-SIDE variable (no prefix needed for Vercel Serverless Functions)
   // If undefined, log warning and use fallback
-  // PHIEU_THU_CHI_BACKEND - For voucher operations (getVoucherSummary, getVoucherHistory, approveVoucher, rejectVoucher, sendApprovalEmail)
-  const GAS_URL = process.env.GOOGLE_APPS_SCRIPT_URL ||
+  // VOUCHER_BACKEND - For voucher operations (getVoucherSummary, getVoucherHistory, approveVoucher, rejectVoucher, sendApprovalEmail)
+  const GAS_URL = process.env.VOUCHER_BACKEND_URL || process.env.GOOGLE_APPS_SCRIPT_URL ||
     'https://script.google.com/macros/s/AKfycby8ed1o2d7Cf6dU0zZwnDnHYpuoQEo4wVQ99UmgMY0btzTolsC_90QBvb056UZyXMG7/exec';
   
   // Log warning if using fallback (environment variable not set)

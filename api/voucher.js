@@ -102,8 +102,8 @@ export default async function handler(req, res) {
   }
 
   // Smart routing: Route to appropriate backend based on action
-  // PHIEU_THU_CHI_BACKEND - For voucher operations
-  const PHIEU_THU_CHI_BACKEND = process.env.PHIEU_THU_CHI_BACKEND_URL ||
+  // VOUCHER_BACKEND - For voucher operations
+  const VOUCHER_BACKEND = process.env.VOUCHER_BACKEND_URL || process.env.PHIEU_THU_CHI_BACKEND_URL ||
     'https://script.google.com/macros/s/AKfycby8ed1o2d7Cf6dU0zZwnDnHYpuoQEo4wVQ99UmgMY0btzTolsC_90QBvb056UZyXMG7/exec';
   
   // TLCGROUP_BACKEND - For intranet operations (login, getMasterData, etc.)
@@ -115,7 +115,7 @@ export default async function handler(req, res) {
     'https://script.google.com/macros/s/AKfycbxg_DlOgCCCq4393-OKdinqYt6Onni-YlkYiO6hbq9LuFiXC5oj1AiNgJbbJHih4g/exec';
   
   // Determine which backend to use based on action
-  let GAS_URL = PHIEU_THU_CHI_BACKEND; // Default to Phieu Thu Chi Backend
+  let GAS_URL = VOUCHER_BACKEND; // Default to Voucher Backend
   
   // Get action from request
   let action = null;
@@ -170,7 +170,7 @@ export default async function handler(req, res) {
     'getVendorBanks',              // Load vendor banks from "Master Vendor_Bank" sheet
     'addSupplier',                 // Add supplier to "Nhà cung cấp" sheet
     'getPurchaseOrderTypes'        // Load purchase order types from "Purchase Order" sheet
-    // NOTE: 'getEmployees' intentionally NOT here — it must go to PHIEU_THU_CHI_BACKEND
+    // NOTE: 'getEmployees' intentionally NOT here — it must go to VOUCHER_BACKEND
     // which returns companies_data[]. Payment Request backend returns employees[] (different shape).
   ];
   
@@ -181,11 +181,11 @@ export default async function handler(req, res) {
   
   // Log warnings if environment variables not set (only in development or first request)
   // These are warnings, not errors - fallback URLs are hardcoded and will work
-  if (!process.env.GOOGLE_APPS_SCRIPT_URL) {
+  if (!process.env.VOUCHER_BACKEND_URL) {
     // Only log once per instance to avoid spam
     if (!global.__envWarningLogged) {
-      console.warn('[Proxy Info] GOOGLE_APPS_SCRIPT_URL environment variable not set. Using fallback URL.');
-      console.warn('[Proxy Info] Optional: Set GOOGLE_APPS_SCRIPT_URL in Vercel Dashboard → Settings → Environment Variables for easier management.');
+      console.warn('[Proxy Info] VOUCHER_BACKEND_URL environment variable not set. Using fallback URL.');
+      console.warn('[Proxy Info] Optional: Set VOUCHER_BACKEND_URL in Vercel Dashboard → Settings → Environment Variables for easier management.');
       global.__envWarningLogged = true;
     }
   }
@@ -335,9 +335,9 @@ export default async function handler(req, res) {
           GAS_URL = TLCGROUP_BACKEND;
           console.log('[Proxy POST] Re-routing to TLCGroup Backend based on parsedBody action');
         }
-        // getCompanyApprovers defaults to PHIEU_THU_CHI_BACKEND (already set)
+        // getCompanyApprovers defaults to VOUCHER_BACKEND (already set)
         if (action === 'getCompanyApprovers') {
-          console.log('[Proxy POST] ✅ getCompanyApprovers detected - will use PHIEU_THU_CHI_BACKEND (default)');
+          console.log('[Proxy POST] ✅ getCompanyApprovers detected - will use VOUCHER_BACKEND (default)');
           console.log('[Proxy POST] Target URL:', GAS_URL.substring(0, 60) + '...');
         }
       }

@@ -135,7 +135,7 @@ Shows the current backend URLs configured in `api/voucher.js` and the Vercel env
 - "what backend URLs is the proxy using?"
 
 **Output includes:**
-- `PHIEU_THU_CHI_BACKEND` fallback URL
+- `VOUCHER_BACKEND` fallback URL
 - `TLCGROUP_BACKEND` fallback URL
 - `PAYMENT_REQUEST_BACKEND` fallback URL
 - Env var names to set in Vercel Dashboard
@@ -248,7 +248,7 @@ Provide either `functionName` OR `startLine` + `endLine`.
    → Verify the correct backend URL is set
 
 3. "check what env vars are set in Vercel production"
-   → If PHIEU_THU_CHI_BACKEND_URL is missing, the hardcoded fallback is used
+   → If VOUCHER_BACKEND_URL is missing, the hardcoded fallback is used
    → Set it in Vercel Dashboard > Settings > Environment Variables
 ```
 
@@ -260,7 +260,7 @@ Set these in **Vercel Dashboard → Project → Settings → Environment Variabl
 
 | Variable | Backend | Used for |
 |---|---|---|
-| `PHIEU_THU_CHI_BACKEND_URL` | `VOUCHER_WORKFLOW_BACKEND.gs` | All voucher operations (`getVoucherSummary`, `approveVoucher`, etc.) |
+| `VOUCHER_BACKEND_URL` | `VOUCHER_WORKFLOW_BACKEND.gs` | All voucher operations (`getVoucherSummary`, `approveVoucher`, etc.) |
 | `TLCGROUP_BACKEND_URL` | `TLCG_INTRANET_BACKEND_COMPLETE.gs` | Login, `getMasterData` |
 | `PAYMENT_REQUEST_BACKEND_URL` | `PAYMENT_REQUEST_BACKEND.gs` | Payment request operations |
 

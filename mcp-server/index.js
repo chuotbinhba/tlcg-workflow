@@ -106,7 +106,7 @@ const TOOLS = [
   },
   {
     name: 'test_voucher_backend',
-    description: 'Test the current voucher backend (PHIEU_THU_CHI) with any action using the proxy or a direct GAS URL. Reports JSON/HTML status and response preview.',
+    description: 'Test the current voucher backend with any action using the proxy or a direct GAS URL. Reports JSON/HTML status and response preview.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -153,7 +153,7 @@ const TOOLS = [
   },
   {
     name: 'read_proxy_config',
-    description: 'Show the current backend URLs configured in api/voucher.js (PHIEU_THU_CHI, TLCGROUP, PAYMENT_REQUEST) and whether env vars override them.',
+    description: 'Show the current backend URLs configured in api/voucher.js (VOUCHER, TLCGROUP, PAYMENT_REQUEST) and whether env vars override them.',
     inputSchema: {
       type: 'object',
       properties: {},
@@ -376,7 +376,7 @@ function handleReadProxyConfig() {
   let capture = false;
 
   for (const line of lines) {
-    if (line.includes('PHIEU_THU_CHI_BACKEND') || line.includes('TLCGROUP_BACKEND') || line.includes('PAYMENT_REQUEST_BACKEND')) {
+    if (line.includes('VOUCHER_BACKEND') || line.includes('TLCGROUP_BACKEND') || line.includes('PAYMENT_REQUEST_BACKEND')) {
       capture = true;
     }
     if (capture) {
@@ -392,7 +392,7 @@ function handleReadProxyConfig() {
     ...relevant.filter(l => l.trim()),
     '',
     'Env var names to set in Vercel:',
-    '  PHIEU_THU_CHI_BACKEND_URL  → Voucher workflow backend',
+    '  VOUCHER_BACKEND_URL         → Voucher workflow backend',
     '  TLCGROUP_BACKEND_URL        → Login / getMasterData backend',
     '  PAYMENT_REQUEST_BACKEND_URL → Payment request backend',
   ];
