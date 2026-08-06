@@ -150,14 +150,14 @@
 <body>
     <div class="container">
         <div class="panel-head">
-            <h1>TRẢ LẠI / TỪ CHỐI PHIẾU</h1>
-            <p class="subtitle">Chọn lý do rõ ràng để người nộp chỉnh sửa nhanh và gửi lại đúng.</p>
+            <h1 data-i18n="rvTitle">TRẢ LẠI / TỪ CHỐI PHIẾU</h1>
+            <p class="subtitle" data-i18n="rvSubtitle">Chọn lý do rõ ràng để người nộp chỉnh sửa nhanh và gửi lại đúng.</p>
         </div>
         <div class="panel-body">
             <div id="message" class="message"></div>
             <div id="loading" class="loading">
                 <div class="spinner"></div>
-                <p>Đang xử lý...</p>
+                <p data-i18n="processing">Đang xử lý...</p>
             </div>
 
             <div id="voucher-info" class="voucher-info">
@@ -166,31 +166,57 @@
 
             <form id="reject-form">
                 <div class="form-group">
-                    <label for="reject-reason">Lý do trả lại <span class="required">*</span></label>
+                    <label for="reject-reason"><span data-i18n="rvReasonLabel">Lý do trả lại</span> <span class="required">*</span></label>
                     <div class="reason-chips" id="quick-reason-chips">
-                        <button type="button" class="reason-chip" data-reason="Thiếu chứng từ đính kèm cần thiết.">Thiếu chứng từ</button>
-                        <button type="button" class="reason-chip" data-reason="Thông tin số tiền/chỉ tiêu chi chưa chính xác.">Sai số tiền</button>
-                        <button type="button" class="reason-chip" data-reason="Nội dung chi chưa rõ mục đích, cần bổ sung mô tả cụ thể.">Mô tả chưa rõ</button>
-                        <button type="button" class="reason-chip" data-reason="Cần cập nhật lại thông tin công ty/người nhận để khớp hồ sơ.">Sai thông tin hồ sơ</button>
+                        <button type="button" class="reason-chip" data-reason="Thiếu chứng từ đính kèm cần thiết." data-i18n="rvChipDocs">Thiếu chứng từ</button>
+                        <button type="button" class="reason-chip" data-reason="Thông tin số tiền/chỉ tiêu chi chưa chính xác." data-i18n="rvChipAmount">Sai số tiền</button>
+                        <button type="button" class="reason-chip" data-reason="Nội dung chi chưa rõ mục đích, cần bổ sung mô tả cụ thể." data-i18n="rvChipDesc">Mô tả chưa rõ</button>
+                        <button type="button" class="reason-chip" data-reason="Cần cập nhật lại thông tin công ty/người nhận để khớp hồ sơ." data-i18n="rvChipProfile">Sai thông tin hồ sơ</button>
                     </div>
                     <textarea
                         id="reject-reason"
                         name="reject-reason"
-                        placeholder="Mô tả ngắn gọn nhưng đủ hành động: thiếu gì, cần chỉnh gì, và cách gửi lại."
+                        placeholder="Mô tả ngắn gọn nhưng đủ hành động: thiếu gì, cần chỉnh gì, và cách gửi lại." data-i18n-placeholder="rvPhReason"
                         required
                     ></textarea>
-                    <div class="reason-note">Mẹo: lý do từ 12 ký tự trở lên sẽ giúp người nộp xử lý nhanh hơn.</div>
+                    <div class="reason-note" data-i18n="rvTip">Mẹo: lý do từ 12 ký tự trở lên sẽ giúp người nộp xử lý nhanh hơn.</div>
                 </div>
 
                 <div class="button-group">
-                    <button type="button" class="btn-cancel" onclick="window.close()">Hủy</button>
-                    <button type="submit" class="btn-reject">Xác nhận trả lại</button>
+                    <button type="button" class="btn-cancel" onclick="window.close()" data-i18n="cancel">Hủy</button>
+                    <button type="submit" class="btn-reject" data-i18n="rvConfirm">Xác nhận trả lại</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
+    TLCI18n.extend({
+        vi: {
+            rvTitle: 'TRẢ LẠI / TỪ CHỐI PHIẾU',
+            rvSubtitle: 'Chọn lý do rõ ràng để người nộp chỉnh sửa nhanh và gửi lại đúng.',
+            rvReasonLabel: 'Lý do trả lại',
+            rvChipDocs: 'Thiếu chứng từ',
+            rvChipAmount: 'Sai số tiền',
+            rvChipDesc: 'Mô tả chưa rõ',
+            rvChipProfile: 'Sai thông tin hồ sơ',
+            rvPhReason: 'Mô tả ngắn gọn nhưng đủ hành động: thiếu gì, cần chỉnh gì, và cách gửi lại.',
+            rvTip: 'Mẹo: lý do từ 12 ký tự trở lên sẽ giúp người nộp xử lý nhanh hơn.',
+            rvConfirm: 'Xác nhận trả lại'
+        },
+        en: {
+            rvTitle: 'RETURN / REJECT VOUCHER',
+            rvSubtitle: 'Give a clear reason so the submitter can fix it quickly and resubmit correctly.',
+            rvReasonLabel: 'Reason for return',
+            rvChipDocs: 'Missing documents',
+            rvChipAmount: 'Wrong amount',
+            rvChipDesc: 'Unclear description',
+            rvChipProfile: 'Incorrect profile details',
+            rvPhReason: 'Describe briefly but actionably: what is missing, what to fix, and how to resubmit.',
+            rvTip: 'Tip: a reason of 12 characters or more helps the submitter act faster.',
+            rvConfirm: 'Confirm return'
+        }
+    });
         // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const voucherNumber = urlParams.get('voucherNumber') || 'N/A';

@@ -289,38 +289,38 @@
 </head>
 <body>
     <div class="container">
-        <h1>✅ PHÊ DUYỆT ĐỀ NGHỊ MUA HÀNG</h1>
-        <p class="subtitle">Xác nhận phê duyệt đề nghị này</p>
+        <h1 data-i18n="aprTitle">✅ PHÊ DUYỆT ĐỀ NGHỊ MUA HÀNG</h1>
+        <p class="subtitle" data-i18n="aprSubtitle">Xác nhận phê duyệt đề nghị này</p>
 
         <div id="message" class="message"></div>
         <div id="loading" class="loading">
             <div class="spinner"></div>
-            <p>Đang xử lý...</p>
+            <p data-i18n="processing">Đang xử lý...</p>
         </div>
 
         <div id="request-info" class="request-info">
-            <p><strong>Số đề nghị:</strong> <span id="request-id">Loading...</span></p>
-            <p><strong>Loại đề nghị:</strong> <span id="request-type">Loading...</span></p>
-            <p><strong>Công ty:</strong> <span id="company">Loading...</span></p>
-            <p><strong>Người đề nghị:</strong> <span id="requestor">Loading...</span></p>
-            <p><strong>Tổng số tiền:</strong> <span id="amount">Loading...</span></p>
-            <p><strong>Giai đoạn phê duyệt:</strong> <span id="stage">Loading...</span></p>
+            <p><strong data-i18n="apRequestId">Số đề nghị:</strong> <span id="request-id">Loading...</span></p>
+            <p><strong data-i18n="apRequestType">Loại đề nghị:</strong> <span id="request-type">Loading...</span></p>
+            <p><strong data-i18n="apCompany">Công ty:</strong> <span id="company">Loading...</span></p>
+            <p><strong data-i18n="apRequestor">Người đề nghị:</strong> <span id="requestor">Loading...</span></p>
+            <p><strong data-i18n="apAmount">Tổng số tiền:</strong> <span id="amount">Loading...</span></p>
+            <p><strong data-i18n="apStage">Giai đoạn phê duyệt:</strong> <span id="stage">Loading...</span></p>
         </div>
 
         <!-- Signature Upload Section -->
         <div class="signature-section">
-            <h3>✍️ Chữ ký người phê duyệt <span class="required">*</span></h3>
+            <h3><span data-i18n="approverSignature">✍️ Chữ ký người phê duyệt</span> <span class="required">*</span></h3>
             <div class="signature-preview">
-                <span id="signature-placeholder" class="signature-placeholder">Chưa có chữ ký</span>
+                <span id="signature-placeholder" class="signature-placeholder" data-i18n="noSignature">Chưa có chữ ký</span>
                 <img id="signature-img" class="signature-img" src="" alt="Chữ ký">
             </div>
             <div class="signature-controls">
                 <label for="signature-upload-input" class="upload-label">
-                    📤 Tải lên chữ ký
+                    <span data-i18n="aprUploadSig">📤 Tải lên chữ ký</span>
                 </label>
                 <input type="file" id="signature-upload-input" accept="image/png,image/jpeg,image/jpg" style="display: none;">
                 <button type="button" id="clear-signature-btn" class="clear-btn" onclick="clearSignature()">
-                    🗑️ Xóa
+                    <span data-i18n="aprClear">🗑️ Xóa</span>
                 </button>
             </div>
             <p id="signature-error" class="error-text"></p>
@@ -328,17 +328,35 @@
 
         <!-- Comment Section -->
         <div class="comment-section">
-            <label for="comment-input">💬 Nhận xét (tùy chọn):</label>
-            <textarea id="comment-input" placeholder="Nhập nhận xét của bạn về đề nghị này..."></textarea>
+            <label for="comment-input" data-i18n="aprComment">💬 Nhận xét (tùy chọn):</label>
+            <textarea id="comment-input" placeholder="Nhập nhận xét của bạn về đề nghị này..." data-i18n-placeholder="aprPhComment"></textarea>
         </div>
 
         <div class="button-group">
-            <button type="button" class="btn-cancel" onclick="window.close()">Hủy</button>
-            <button type="button" class="btn-approve" onclick="approveRequest()" id="approve-btn" disabled>Xác nhận phê duyệt</button>
+            <button type="button" class="btn-cancel" onclick="window.close()" data-i18n="cancel">Hủy</button>
+            <button type="button" class="btn-approve" onclick="approveRequest()" id="approve-btn" disabled data-i18n="confirmApprove">Xác nhận phê duyệt</button>
         </div>
     </div>
 
     <script>
+    TLCI18n.extend({
+        vi: {
+            aprTitle: '✅ PHÊ DUYỆT ĐỀ NGHỊ MUA HÀNG',
+            aprSubtitle: 'Xác nhận phê duyệt đề nghị này',
+            aprUploadSig: '📤 Tải lên chữ ký',
+            aprClear: '🗑️ Xóa',
+            aprComment: '💬 Nhận xét (tùy chọn):',
+            aprPhComment: 'Nhập nhận xét của bạn về đề nghị này...'
+        },
+        en: {
+            aprTitle: '✅ APPROVE PURCHASE REQUEST',
+            aprSubtitle: 'Confirm approval of this request',
+            aprUploadSig: '📤 Upload signature',
+            aprClear: '🗑️ Clear',
+            aprComment: '💬 Comment (optional):',
+            aprPhComment: 'Enter your comment about this request...'
+        }
+    });
         // Configuration
         const VERCEL_PROXY_URL = '/api/voucher';
         const MAX_SIGNATURE_SIZE = 300 * 1024; // 300KB

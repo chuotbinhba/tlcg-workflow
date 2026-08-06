@@ -161,14 +161,14 @@
 <body>
     <div class="container">
         <div class="panel-head">
-            <h1>PHÊ DUYỆT PHIẾU</h1>
-            <p class="subtitle">Kiểm tra thông tin, xác thực chữ ký và xác nhận bước duyệt hiện tại.</p>
+            <h1 data-i18n="avTitle">PHÊ DUYỆT PHIẾU</h1>
+            <p class="subtitle" data-i18n="avSubtitle">Kiểm tra thông tin, xác thực chữ ký và xác nhận bước duyệt hiện tại.</p>
         </div>
         <div class="panel-body">
             <div id="message" class="message"></div>
             <div id="loading" class="loading">
                 <div class="spinner"></div>
-                <p>Đang xử lý...</p>
+                <p data-i18n="processing">Đang xử lý...</p>
             </div>
 
             <div id="voucher-info" class="voucher-info">
@@ -176,36 +176,48 @@
             </div>
 
             <div class="approval-hint" id="approval-hint">
-                Hệ thống sẽ tự gửi thông báo tới người đề nghị sau khi bước duyệt này hoàn tất.
+                <span data-i18n="avNotifyNote">Hệ thống sẽ tự gửi thông báo tới người đề nghị sau khi bước duyệt này hoàn tất.</span>
             </div>
 
             <!-- Signature Upload Section -->
             <div id="signature-section" style="margin: 20px 0; padding: 20px; background: #f8f9fa; border-radius: 8px; border-left: 4px solid #34A853;">
-                <h3 style="margin-bottom: 15px; color: #dbeafe; font-size: 15px;">Chữ ký người phê duyệt <span style="color: var(--warn);">*</span></h3>
+                <h3 style="margin-bottom: 15px; color: #dbeafe; font-size: 15px;"><span data-i18n="approverSignaturePlain">Chữ ký người phê duyệt</span> <span style="color: var(--warn);">*</span></h3>
                 <div id="signature-preview" style="margin-bottom: 15px; min-height: 100px; border: 2px dashed #ddd; border-radius: 6px; display: flex; align-items: center; justify-content: center; background: white;">
-                    <span id="signature-placeholder" style="color: #94a3b8; font-size: 14px;">Chưa có chữ ký</span>
+                    <span id="signature-placeholder" style="color: #94a3b8; font-size: 14px;" data-i18n="noSignature">Chưa có chữ ký</span>
                     <img id="signature-img" src="" alt="Chữ ký" style="max-width: 100%; max-height: 150px; display: none; border-radius: 4px;">
                 </div>
                 <div style="display: flex; gap: 10px;">
                     <label for="signature-upload-input" style="flex: 1; padding: 10px 16px; background: #34A853; color: white; border-radius: 6px; cursor: pointer; text-align: center; font-size: 14px; display: inline-block;">
-                        Tải lên chữ ký
+                        <span data-i18n="uploadSignature">Tải lên chữ ký</span>
                     </label>
                     <input type="file" id="signature-upload-input" accept="image/png,image/jpeg,image/jpg" style="display: none;">
                     <button type="button" id="clear-signature-btn" onclick="clearSignature()" style="padding: 10px 16px; background: #f0f0f0; color: #333; border: none; border-radius: 6px; cursor: pointer; font-size: 14px; display: none;">
-                        Xóa
+                        <span data-i18n="delete">Xóa</span>
                     </button>
                 </div>
                 <p id="signature-error" style="color: #EA4335; font-size: 12px; margin-top: 8px; display: none;"></p>
             </div>
 
             <div class="button-group">
-                <button type="button" class="btn-cancel" onclick="window.close()">Hủy</button>
-                <button type="button" class="btn-approve" onclick="approveVoucher()" id="approve-btn">Xác nhận phê duyệt</button>
+                <button type="button" class="btn-cancel" onclick="window.close()" data-i18n="cancel">Hủy</button>
+                <button type="button" class="btn-approve" onclick="approveVoucher()" id="approve-btn" data-i18n="confirmApprove">Xác nhận phê duyệt</button>
             </div>
         </div>
     </div>
 
     <script>
+    TLCI18n.extend({
+        vi: {
+            avTitle: 'PHÊ DUYỆT PHIẾU',
+            avSubtitle: 'Kiểm tra thông tin, xác thực chữ ký và xác nhận bước duyệt hiện tại.',
+            avNotifyNote: 'Hệ thống sẽ tự gửi thông báo tới người đề nghị sau khi bước duyệt này hoàn tất.'
+        },
+        en: {
+            avTitle: 'APPROVE VOUCHER',
+            avSubtitle: 'Check the details, verify the signature and confirm the current approval step.',
+            avNotifyNote: 'The system will notify the requester automatically once this approval step is complete.'
+        }
+    });
         // Get URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const voucherNumber = urlParams.get('voucherNumber') || 'N/A';

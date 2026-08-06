@@ -223,39 +223,55 @@
 </head>
 <body>
     <div class="container">
-        <h1>❌ TỪ CHỐI ĐỀ NGHỊ MUA HÀNG</h1>
-        <p class="subtitle">Xác nhận từ chối đề nghị này</p>
+        <h1 data-i18n="rprTitle">❌ TỪ CHỐI ĐỀ NGHỊ MUA HÀNG</h1>
+        <p class="subtitle" data-i18n="rprSubtitle">Xác nhận từ chối đề nghị này</p>
 
         <div id="message" class="message"></div>
         <div id="loading" class="loading">
             <div class="spinner"></div>
-            <p>Đang xử lý...</p>
+            <p data-i18n="processing">Đang xử lý...</p>
         </div>
 
         <div id="request-info" class="request-info">
-            <p><strong>Số đề nghị:</strong> <span id="request-id">Loading...</span></p>
-            <p><strong>Loại đề nghị:</strong> <span id="request-type">Loading...</span></p>
-            <p><strong>Công ty:</strong> <span id="company">Loading...</span></p>
-            <p><strong>Người đề nghị:</strong> <span id="requestor">Loading...</span></p>
-            <p><strong>Tổng số tiền:</strong> <span id="amount">Loading...</span></p>
-            <p><strong>Giai đoạn phê duyệt:</strong> <span id="stage">Loading...</span></p>
+            <p><strong data-i18n="apRequestId">Số đề nghị:</strong> <span id="request-id">Loading...</span></p>
+            <p><strong data-i18n="apRequestType">Loại đề nghị:</strong> <span id="request-type">Loading...</span></p>
+            <p><strong data-i18n="apCompany">Công ty:</strong> <span id="company">Loading...</span></p>
+            <p><strong data-i18n="apRequestor">Người đề nghị:</strong> <span id="requestor">Loading...</span></p>
+            <p><strong data-i18n="apAmount">Tổng số tiền:</strong> <span id="amount">Loading...</span></p>
+            <p><strong data-i18n="apStage">Giai đoạn phê duyệt:</strong> <span id="stage">Loading...</span></p>
         </div>
 
         <!-- Reason Section -->
         <div class="reason-section">
-            <h3>📝 Lý do từ chối <span class="required">*</span></h3>
-            <label for="reason-input">Vui lòng nhập lý do từ chối đề nghị này:</label>
-            <textarea id="reason-input" placeholder="Ví dụ: Ngân sách không đủ, Thông tin không đầy đủ, Không phù hợp với kế hoạch..." required></textarea>
+            <h3><span data-i18n="rprReasonTitle">📝 Lý do từ chối</span> <span class="required">*</span></h3>
+            <label for="reason-input" data-i18n="rprReasonLabel">Vui lòng nhập lý do từ chối đề nghị này:</label>
+            <textarea id="reason-input" placeholder="Ví dụ: Ngân sách không đủ, Thông tin không đầy đủ, Không phù hợp với kế hoạch..." data-i18n-placeholder="rprPhReason" required></textarea>
             <p id="reason-error" class="error-text"></p>
         </div>
 
         <div class="button-group">
-            <button type="button" class="btn-cancel" onclick="window.close()">Hủy</button>
-            <button type="button" class="btn-reject" onclick="rejectRequest()" id="reject-btn">Xác nhận từ chối</button>
+            <button type="button" class="btn-cancel" onclick="window.close()" data-i18n="cancel">Hủy</button>
+            <button type="button" class="btn-reject" onclick="rejectRequest()" id="reject-btn" data-i18n="confirmReject">Xác nhận từ chối</button>
         </div>
     </div>
 
     <script>
+    TLCI18n.extend({
+        vi: {
+            rprTitle: '❌ TỪ CHỐI ĐỀ NGHỊ MUA HÀNG',
+            rprSubtitle: 'Xác nhận từ chối đề nghị này',
+            rprReasonTitle: '📝 Lý do từ chối',
+            rprReasonLabel: 'Vui lòng nhập lý do từ chối đề nghị này:',
+            rprPhReason: 'Ví dụ: Ngân sách không đủ, Thông tin không đầy đủ, Không phù hợp với kế hoạch...'
+        },
+        en: {
+            rprTitle: '❌ REJECT PURCHASE REQUEST',
+            rprSubtitle: 'Confirm rejection of this request',
+            rprReasonTitle: '📝 Rejection reason',
+            rprReasonLabel: 'Please enter the reason for rejecting this request:',
+            rprPhReason: 'e.g. Insufficient budget, Incomplete information, Not aligned with the plan...'
+        }
+    });
         // Configuration
         const VERCEL_PROXY_URL = 'https://workflow.egg-ventures.com/api/voucher';
         
