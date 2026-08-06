@@ -1,7 +1,7 @@
 # Bilingual (VI/EN) Support — Design Spec
 
 **Date:** 2026-08-06
-**Status:** Approved for implementation
+**Status:** Implemented (all 3 phases)
 
 ## Problem
 
@@ -124,3 +124,65 @@ No test framework exists in this repo, so verification is a manual per-page chec
 ## Rollback
 
 Each phase is a separate commit. Reverting any phase leaves the app in a working state, because untranslated pages simply render their inline Vietnamese.
+
+
+---
+
+## Implementation Notes (as built)
+
+Two decisions changed during implementation, both for correctness:
+
+**1. Emails are not localised by the caller's language.** The spec said emails
+would take a `lang` param from the frontend. In implementation this proved
+wrong: emails go to *approvers*, not the submitter, and the backend has no
+per-recipient language preference. Honouring the submitter's `lang` would send
+a Vietnamese approver an English email — worse than the status quo. Email
+templates therefore stay Vietnamese; `msgBilingual_()` is available where both
+languages are wanted on one line. Only API response messages follow `lang`.
+
+**2. `lang` is stamped centrally, not at each call site.** Rather than editing
+~25 fetch calls, `i18n.js` wraps `fetch` once and adds `lang` to recognised
+action payloads, covering both JSON bodies and the FormData `data` field used
+by uploads. It installs at script load rather than DOMContentLoaded so pre-DOM
+requests carry it, and passes through untouched anything it does not recognise
+(non-JSON, malformed JSON, arrays, payloads without an action, existing `lang`).
+
+### Final verification
+
+| Check | Result |
+|---|---|
+| Inline JS parses, all 11 pages | pass |
+| `i18n.js` + 3 backends parse | pass |
+| Every `data-i18n*` / `t()` key resolves (501 keys) | 0 missing |
+| EN/VI page tables symmetric | 0 asymmetric |
+| Comparison strings vs original `43c1476` (16 files) | 0 changed |
+| `value=` attributes vs original (11 pages) | 0 changed |
+| Sheet names + status writes vs original (3 backends) | 0 changed |
+| `data-reason` values in reject_voucher | 0 changed |
+| End-to-end: detect → switch → persist → reload | pass |
+
+### Coverage
+
+| Page | Keys |
+|---|---|
+| purchase_request | 135 |
+| voucher | 93 |
+| payment_request | 77 |
+| acceptance_minutes | 68 |
+| index | 47 |
+| contract | 23 |
+| approve_payment_request | 17 |
+| reject_payment_request | 14 |
+| reject_voucher | 12 |
+| approve_voucher | 10 |
+| create_password_hash | 5 |
+
+Backend message sites converted: 14 (P2P), 33 (CASH), 7 (CORE).
+
+### Known limitation
+
+Translation covers page chrome, form labels, table headers, buttons, modals,
+status display, and API error messages. Dynamic strings built inside JS
+handlers (toast text composed at call sites, some validation messages) remain
+Vietnamese. They surface in EN mode as Vietnamese text and can be migrated
+incrementally with the same `TLCI18n.t()` call — the infrastructure is in place.
