@@ -483,25 +483,25 @@
         </div>
         <div class="sidebar-section">
             <div class="sidebar-section-title">Workflows</div>
-            <button onclick="window.location.href='purchase_request.html'" class="sidebar-item" data-tooltip="Đề Nghị Mua Hàng" data-page="purchase-request">
+            <button onclick="window.location.href='purchase_request.html'" class="sidebar-item" data-tooltip="Đề Nghị Mua Hàng" data-i18n-title="navPurchaseRequest" data-page="purchase-request">
                 <div class="sidebar-icon-box" style="background:#007AFF;"><i class="fas fa-file-pen"></i></div>
-                <span>Đề Nghị Mua Hàng</span>
+                <span data-i18n="navPurchaseRequest">Đề Nghị Mua Hàng</span>
             </button>
-            <button onclick="window.location.href='contract.html'" class="sidebar-item" data-tooltip="Hợp Đồng" data-page="contract">
+            <button onclick="window.location.href='contract.html'" class="sidebar-item" data-tooltip="Hợp Đồng" data-i18n-title="contract" data-page="contract">
                 <div class="sidebar-icon-box" style="background:#5856D6;"><i class="fas fa-file-contract"></i></div>
-                <span>Hợp Đồng</span>
+                <span data-i18n="contract">Hợp Đồng</span>
             </button>
-            <button onclick="window.location.href='acceptance_minutes.html'" class="sidebar-item" data-tooltip="Biên Bản Nghiệm Thu" data-page="acceptance-minutes">
+            <button onclick="window.location.href='acceptance_minutes.html'" class="sidebar-item" data-tooltip="Biên Bản Nghiệm Thu" data-i18n-title="navAcceptance" data-page="acceptance-minutes">
                 <div class="sidebar-icon-box" style="background:#34C759;"><i class="fas fa-clipboard-check"></i></div>
-                <span>Biên Bản Nghiệm Thu</span>
+                <span data-i18n="navAcceptance">Biên Bản Nghiệm Thu</span>
             </button>
             <button class="sidebar-item active">
                 <div class="sidebar-icon-box" style="background: #5856D6;"><i class="fas fa-file-invoice-dollar"></i></div>
-                <span>Đề Nghị Thanh Toán</span>
+                <span data-i18n="navPaymentRequest">Đề Nghị Thanh Toán</span>
             </button>
             <button onclick="window.open('voucher.html', '_blank')" class="sidebar-item">
                 <div class="sidebar-icon-box" style="background: #FF9500;"><i class="fas fa-file-invoice"></i></div>
-                <span>Phiếu Thu Chi</span>
+                <span data-i18n="navVoucher">Phiếu Thu Chi</span>
             </button>
         </div>
         <div class="sidebar-user" style="margin-top: auto; padding: 16px;">
@@ -533,7 +533,7 @@
                 </div>
                 <button onclick="window.location.href='index.html'" class="text-gray-600 font-medium flex items-center gap-2 px-3 py-2" style="background: transparent; border-radius: 8px; border: none;">
                     <i class="fas fa-arrow-left text-sm"></i>
-                    <span class="hidden sm:inline">Quay lại</span>
+                    <span class="hidden sm:inline" data-i18n="backToDash">Quay lại</span>
                 </button>
             </div>
         </nav>
@@ -569,7 +569,7 @@
 
         <!-- ── Page content ──────────────────────────────────────────── -->
         <div class="page-content">
-            <h1 style="font-family: var(--font-display); font-size: 22px; font-weight: 700; text-align: center; margin: 4px 0 0;">ĐỀ NGHỊ THANH TOÁN</h1>
+            <h1 style="font-family: var(--font-display); font-size: 22px; font-weight: 700; text-align: center; margin: 4px 0 0;" data-i18n="pmtPageTitle">ĐỀ NGHỊ THANH TOÁN</h1>
 
             <div class="progress-stepper">
                 <div class="stepper-container">
@@ -578,23 +578,23 @@
                     </div>
                     <div class="stepper-step active" data-step="1" onclick="goToStep(1)">
                         <div class="stepper-circle">1</div>
-                        <div class="stepper-label">Công ty</div>
+                        <div class="stepper-label" data-i18n="company">Công ty</div>
                     </div>
                     <div class="stepper-step" data-step="2" onclick="goToStep(2)">
                         <div class="stepper-circle">2</div>
-                        <div class="stepper-label">Nhà cung cấp</div>
+                        <div class="stepper-label" data-i18n="stepVendor">Nhà cung cấp</div>
                     </div>
                     <div class="stepper-step" data-step="3" onclick="goToStep(3)">
                         <div class="stepper-circle">3</div>
-                        <div class="stepper-label">Thanh toán</div>
+                        <div class="stepper-label" data-i18n="stepPayment">Thanh toán</div>
                     </div>
                     <div class="stepper-step" data-step="4" onclick="goToStep(4)">
                         <div class="stepper-circle">4</div>
-                        <div class="stepper-label">Tài liệu</div>
+                        <div class="stepper-label" data-i18n="stepDocuments">Tài liệu</div>
                     </div>
                     <div class="stepper-step" data-step="5" onclick="goToStep(5)">
                         <div class="stepper-circle">5</div>
-                        <div class="stepper-label">Hóa đơn</div>
+                        <div class="stepper-label" data-i18n="stepInvoice">Hóa đơn</div>
                     </div>
                 </div>
             </div>
@@ -604,21 +604,21 @@
             <div class="form-card">
                 <div class="form-card-header">
                     <i class="fas fa-building" style="color: var(--primary); font-size: 14px;"></i>
-                    <h2>Công Ty</h2>
+                    <h2 data-i18n="company">Công Ty</h2>
                 </div>
                 <div class="form-card-body">
                     <input type="hidden" id="company_name">
                     <input type="hidden" id="company_key_or_taxid">
                     <div class="form-row">
                         <div class="form-group full">
-                            <label for="company_code">Công ty <span class="req">*</span></label>
+                            <label for="company_code"><span data-i18n="company">Công ty</span> <span class="req">*</span></label>
                             <select id="company_code" onchange="onCompanyChange()">
-                                <option value="">-- Chọn công ty --</option>
+                                <option value="" data-i18n="optChooseCompany">-- Chọn công ty --</option>
                             </select>
                         </div>
                     </div>
                     <div id="req-no-row" style="display:none; margin-top: 8px;">
-                        <span style="font-size: 12px; color: var(--text-secondary);">Số phiếu:</span>
+                        <span style="font-size: 12px; color: var(--text-secondary);" data-i18n="labelPrNo">Số phiếu:</span>
                         <span id="req-no-pill" class="req-no-pill" style="margin-left: 8px;"></span>
                     </div>
                 </div>
@@ -628,18 +628,18 @@
             <div class="form-card" style="border-color: rgba(52,199,89,0.4);">
                 <div class="form-card-header" style="background: rgba(52,199,89,0.06);">
                     <i class="fas fa-link" style="color: #34C759; font-size: 14px;"></i>
-                    <h2>Liên Kết Phiếu Tham Chiếu</h2>
+                    <h2 data-i18n="secRefLink">Liên Kết Phiếu Tham Chiếu</h2>
                 </div>
                 <div class="form-card-body">
                     <div class="form-row" style="margin-bottom:12px;">
                         <div class="form-group full">
-                            <label>Loại đề nghị thanh toán</label>
+                            <label data-i18n="labelPmtMode">Loại đề nghị thanh toán</label>
                             <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:6px;">
                                 <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
-                                    <input type="radio" name="pmt_gate_mode" value="am" checked onchange="onPMTGateModeChange()"> Theo Biên bản nghiệm thu (AM)
+                                    <input type="radio" name="pmt_gate_mode" value="am" checked onchange="onPMTGateModeChange()"> <span data-i18n="modeByAm">Theo Biên bản nghiệm thu (AM)</span>
                                 </label>
                                 <label style="display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer;">
-                                    <input type="radio" name="pmt_gate_mode" value="pr" onchange="onPMTGateModeChange()"> Trực tiếp theo PR (hàng hóa &lt; 2tr)
+                                    <input type="radio" name="pmt_gate_mode" value="pr" onchange="onPMTGateModeChange()"> <span data-i18n="modeByPr">Trực tiếp theo PR (hàng hóa &lt; 2tr)</span>
                                 </label>
                             </div>
                         </div>
@@ -647,36 +647,36 @@
                     <div id="pmt-gate-am">
                         <div class="form-row">
                             <div class="form-group w2">
-                                <label for="am_no_field">Số Biên Bản Nghiệm Thu (AM No) <span class="req">*</span></label>
+                                <label for="am_no_field"><span data-i18n="labelAmNo">Số Biên Bản Nghiệm Thu (AM No)</span> <span class="req">*</span></label>
                                 <div style="display:flex;gap:8px;align-items:flex-start;">
-                                    <input type="text" id="am_no_field" placeholder="Ví dụ: AM-20260618-000001" oninput="onAMNoInput()" style="flex:1;">
+                                    <input type="text" id="am_no_field" placeholder="Ví dụ: AM-20260618-000001" data-i18n-placeholder="phAmNo" oninput="onAMNoInput()" style="flex:1;">
                                     <button type="button" onclick="validateAMNo()" style="white-space:nowrap;flex-shrink:0;padding:9px 14px;font-size:13px;background:rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.12);border-radius:8px;cursor:pointer;font-family:var(--font-body);">
-                                        <i class="fas fa-search"></i> Xác minh
+                                        <i class="fas fa-search"></i> <span data-i18n="verify">Xác minh</span>
                                     </button>
                                 </div>
                                 <p id="am-validation-status" style="font-size:12px;margin-top:5px;color:var(--text-secondary);min-height:16px;"></p>
                             </div>
                             <div class="form-group">
-                                <label>Số PR liên kết</label>
-                                <input type="text" id="pm_pr_no" placeholder="Tự động điền sau khi xác minh AM" readonly style="background:var(--bg);">
+                                <label data-i18n="labelLinkedPr">Số PR liên kết</label>
+                                <input type="text" id="pm_pr_no" placeholder="Tự động điền sau khi xác minh AM" data-i18n-placeholder="phAutoFillAm" readonly style="background:var(--bg);">
                             </div>
                         </div>
                         <div id="payment-progress-panel" style="display:none;margin-top:12px;padding:12px 14px;border-radius:10px;background:rgba(0,122,255,0.06);border:1px solid rgba(0,122,255,0.15);font-size:13px;"></div>
                         <div class="form-row" id="installment-note-row" style="display:none;margin-top:10px;">
                             <div class="form-group full">
-                                <label for="installment_note">Ghi chú đợt thanh toán</label>
-                                <input type="text" id="installment_note" placeholder="VD: 50% sau nghiệm thu giai đoạn 1">
+                                <label for="installment_note" data-i18n="labelInstallmentNote">Ghi chú đợt thanh toán</label>
+                                <input type="text" id="installment_note" placeholder="VD: 50% sau nghiệm thu giai đoạn 1" data-i18n-placeholder="phInstallmentNote">
                             </div>
                         </div>
                     </div>
                     <div id="pmt-gate-pr" style="display:none;">
                         <div class="form-row">
                             <div class="form-group w2">
-                                <label for="direct_pr_no">Số PR (hàng hóa &lt; 2.000.000₫) <span class="req">*</span></label>
+                                <label for="direct_pr_no"><span data-i18n="labelDirectPr">Số PR (hàng hóa &lt; 2.000.000₫)</span> <span class="req">*</span></label>
                                 <div style="display:flex;gap:8px;">
                                     <input type="text" id="direct_pr_no" placeholder="PR-YYYYMMDD-XXXXXX" oninput="onDirectPRInput()" style="flex:1;">
                                     <button type="button" onclick="validateDirectPR()" style="white-space:nowrap;padding:9px 14px;font-size:13px;background:rgba(0,0,0,0.05);border:1px solid rgba(0,0,0,0.12);border-radius:8px;cursor:pointer;">
-                                        <i class="fas fa-search"></i> Xác minh
+                                        <i class="fas fa-search"></i> <span data-i18n="verify">Xác minh</span>
                                     </button>
                                 </div>
                                 <p id="direct-pr-status" style="font-size:12px;margin-top:5px;color:var(--text-secondary);"></p>
@@ -684,15 +684,15 @@
                         </div>
                         <p style="font-size:12px;color:var(--text-secondary);margin-top:8px;padding:8px 12px;background:rgba(255,149,0,0.08);border-radius:8px;">
                             <i class="fas fa-info-circle" style="margin-right:4px;color:var(--warning);"></i>
-                            Biên bản nhận hàng sẽ được tạo sau khi thanh toán được phê duyệt.
+                            <span data-i18n="grnNotice">Biên bản nhận hàng sẽ được tạo sau khi thanh toán được phê duyệt.</span>
                         </p>
                     </div>
                 </div>
             </div>
 
             <div class="step-navigation">
-                <button type="button" class="btn-secondary" disabled>← Quay lại</button>
-                <button type="button" class="btn-primary btn-next" onclick="validateAndNext(1)">Tiếp theo →</button>
+                <button type="button" class="btn-secondary" disabled data-i18n="btnPrev">← Quay lại</button>
+                <button type="button" class="btn-primary btn-next" onclick="validateAndNext(1)" data-i18n="btnNext">Tiếp theo →</button>
             </div>
             </div>
 
@@ -701,23 +701,23 @@
             <div class="form-card">
                 <div class="form-card-header">
                     <i class="fas fa-store" style="color: var(--warning); font-size: 14px;"></i>
-                    <h2>Thông Tin Nhà Cung Cấp (NCC)</h2>
+                    <h2 data-i18n="secVendorInfo">Thông Tin Nhà Cung Cấp (NCC)</h2>
                 </div>
                 <div class="form-card-body">
                     <div class="form-row">
                         <div class="form-group w2">
-                            <label for="vendor_search">NCC từ danh sách</label>
+                            <label for="vendor_search" data-i18n="labelVendorList">NCC từ danh sách</label>
                             <div class="vendor-combobox" id="vendor-combobox">
-                                <input type="text" id="vendor_search" placeholder="Gõ để tìm nhà cung cấp..." autocomplete="off" oninput="onVendorSearch()" onfocus="onVendorSearchFocus()">
+                                <input type="text" id="vendor_search" placeholder="Gõ để tìm nhà cung cấp..." data-i18n-placeholder="phVendorSearch" autocomplete="off" oninput="onVendorSearch()" onfocus="onVendorSearchFocus()">
                                 <div class="vendor-dropdown-list" id="vendor-dropdown-list"></div>
                             </div>
                             <select id="vendor_old" onchange="onVendorOldChange()" style="display:none">
-                                <option value="">-- Chọn công ty trước --</option>
+                                <option value="" data-i18n="optChooseCompanyFirst">-- Chọn công ty trước --</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="vendor_new">Hoặc nhập NCC mới</label>
-                            <input type="text" id="vendor_new" placeholder="Tên NCC nếu không có trong DS" oninput="onVendorNewInput()">
+                            <label for="vendor_new" data-i18n="labelVendorNew">Hoặc nhập NCC mới</label>
+                            <input type="text" id="vendor_new" placeholder="Tên NCC nếu không có trong DS" data-i18n-placeholder="phVendorNew" oninput="onVendorNewInput()">
                         </div>
                     </div>
                     <!-- Hidden inputs keep values for submit payload -->
@@ -733,20 +733,20 @@
                             <div class="vsc-name" id="vsc-name"></div>
                             <div class="vsc-meta" id="vsc-meta"></div>
                         </div>
-                        <button class="vsc-clear" onclick="clearVendorFields()" title="Xóa NCC">×</button>
+                        <button class="vsc-clear" onclick="clearVendorFields()" title="Xóa NCC" data-i18n-title="clearVendor">×</button>
                     </div>
 
                     <!-- New NCC warning -->
                     <div id="new-ncc-warning" style="display:none; margin-top: 8px; padding: 10px 14px; background: rgba(255,149,0,0.08); border: 1px solid rgba(255,149,0,0.3); border-radius: 8px; font-size: 13px; color: #c07000;">
                         <i class="fas fa-triangle-exclamation" style="margin-right: 6px;"></i>
-                        NCC mới chưa có trong danh sách — sẽ được admin xem xét trước khi xử lý
+                        <span data-i18n="newVendorNotice">NCC mới chưa có trong danh sách — sẽ được admin xem xét trước khi xử lý</span>
                     </div>
 
                     <!-- Bank info -->
                     <div style="border-top: 0.5px solid rgba(0,0,0,0.08); margin: 6px 0 14px; padding-top: 14px;">
-                        <p style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px;">Thông tin tài khoản ngân hàng</p>
+                        <p style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px;" data-i18n="bankInfo">Thông tin tài khoản ngân hàng</p>
                         <select id="vendor_bank_pick" onchange="onBankPick()" style="display:none">
-                            <option value="">-- Chọn NCC trước --</option>
+                            <option value="" data-i18n="optChooseVendorFirst">-- Chọn NCC trước --</option>
                         </select>
                         <!-- Hidden inputs keep values for submit payload -->
                         <input type="hidden" id="vendor_account_name">
@@ -763,22 +763,22 @@
                         </div>
                         <div class="form-row">
                             <div class="form-group full">
-                                <label for="vendor_bank_transfer_note">Nội dung chuyển khoản <span class="req">*</span></label>
-                                <input type="text" id="vendor_bank_transfer_note" placeholder="Nội dung chuyển khoản">
+                                <label for="vendor_bank_transfer_note"><span data-i18n="labelTransferNote">Nội dung chuyển khoản</span> <span class="req">*</span></label>
+                                <input type="text" id="vendor_bank_transfer_note" placeholder="Nội dung chuyển khoản" data-i18n-placeholder="labelTransferNote">
                             </div>
                         </div>
                     </div>
 
                     <!-- Vendor detail fields — shown after vendor selected -->
                     <div id="vendor-detail-section" style="display:none; border-top: 0.5px solid rgba(0,0,0,0.08); padding-top: 14px; margin-top: 6px;">
-                        <p style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px;">Thông tin Nhà cung cấp</p>
+                        <p style="font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px;" data-i18n="vendorInfo">Thông tin Nhà cung cấp</p>
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Tên NCC</label>
+                                <label data-i18n="labelVendorName">Tên NCC</label>
                                 <input type="text" id="vd-name" readonly>
                             </div>
                             <div class="form-group">
-                                <label>Loại NCC</label>
+                                <label data-i18n="labelVendorType">Loại NCC</label>
                                 <input type="text" id="vd-type" readonly>
                             </div>
                         </div>
@@ -788,7 +788,7 @@
                                 <input type="text" id="vd-taxid" readonly>
                             </div>
                             <div class="form-group w2">
-                                <label>Địa chỉ NCC</label>
+                                <label data-i18n="labelVendorAddr">Địa chỉ NCC</label>
                                 <input type="text" id="vd-address" readonly>
                             </div>
                         </div>
@@ -797,8 +797,8 @@
             </div>
 
             <div class="step-navigation">
-                <button type="button" class="btn-secondary" onclick="goToStep(1)">← Quay lại</button>
-                <button type="button" class="btn-primary btn-next" onclick="validateAndNext(2)">Tiếp theo →</button>
+                <button type="button" class="btn-secondary" onclick="goToStep(1)" data-i18n="btnPrev">← Quay lại</button>
+                <button type="button" class="btn-primary btn-next" onclick="validateAndNext(2)" data-i18n="btnNext">Tiếp theo →</button>
             </div>
             </div>
 
@@ -807,23 +807,23 @@
             <div class="form-card">
                 <div class="form-card-header">
                     <i class="fas fa-money-bill-wave" style="color: var(--success); font-size: 14px;"></i>
-                    <h2>Thông Tin Thanh Toán</h2>
+                    <h2 data-i18n="secPaymentInfo">Thông Tin Thanh Toán</h2>
                 </div>
                 <div class="form-card-body" style="--input-h: 42px;">
                     <div class="form-row">
                         <div class="form-group" style="flex: 1 1 auto;">
-                            <label for="final_amount">Số tiền đề nghị <span class="req">*</span></label>
+                            <label for="final_amount"><span data-i18n="labelRequestAmount">Số tiền đề nghị</span> <span class="req">*</span></label>
                             <div class="money-wrap">
                                 <input type="number" id="final_amount" min="0" step="1000" placeholder="0" oninput="onAmountInput()" style="height:var(--input-h);">
                                 <span class="money-display" id="final_amount_display"></span>
                             </div>
                         </div>
                         <div class="form-group" style="flex: 0 0 150px; min-width: 150px;">
-                            <label for="due_date">Ngày đáo hạn <span class="req">*</span></label>
+                            <label for="due_date"><span data-i18n="labelDueDatePmt">Ngày đáo hạn</span> <span class="req">*</span></label>
                             <input type="date" id="due_date" style="height:var(--input-h); width:100%;">
                         </div>
                         <div class="form-group" style="flex: 0 0 110px; min-width: 110px;">
-                            <label for="currency">Loại tiền</label>
+                            <label for="currency" data-i18n="currency">Loại tiền</label>
                             <select id="currency" onchange="onCurrencyChange()" style="height:var(--input-h);">
                                 <option value="VND" selected>VND</option>
                                 <option value="USD">USD</option>
@@ -833,24 +833,24 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group" style="flex: 1 1 50%; max-width: 50%;">
-                            <label for="installment_no">Đợt thanh toán</label>
-                            <input type="text" id="installment_no" placeholder="VD: Đợt 1/3" style="height:var(--input-h);">
+                            <label for="installment_no" data-i18n="labelInstallmentNo">Đợt thanh toán</label>
+                            <input type="text" id="installment_no" placeholder="VD: Đợt 1/3" data-i18n-placeholder="phInstallmentNo" style="height:var(--input-h);">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="payment_type_1">Loại thanh toán 1</label>
+                            <label for="payment_type_1" data-i18n="labelPaymentType1">Loại thanh toán 1</label>
                             <select id="payment_type_1" style="height:var(--input-h);">
-                                <option value="">-- Chọn --</option>
+                                <option value="" data-i18n="optChoose">-- Chọn --</option>
                                 <option>Thanh toán hóa đơn</option>
                                 <option>Thanh toán trước</option>
                                 <option>Hoàn ứng</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="payment_type_2">Loại thanh toán 2</label>
+                            <label for="payment_type_2" data-i18n="labelPaymentType2">Loại thanh toán 2</label>
                             <select id="payment_type_2" onchange="toggleInvoiceByType()" style="height:var(--input-h);">
-                                <option value="">-- Chọn --</option>
+                                <option value="" data-i18n="optChoose">-- Chọn --</option>
                                 <option>Thanh toán hóa đơn</option>
                                 <option>Đề nghị tạm ứng</option>
                                 <option>Hoàn ứng</option>
@@ -859,8 +859,8 @@
                     </div>
                     <div class="form-row">
                         <div class="form-group full">
-                            <label for="payment_description">Nội dung đề nghị thanh toán <span class="req">*</span></label>
-                            <textarea id="payment_description" placeholder="Mô tả lý do và nội dung đề nghị thanh toán..." required></textarea>
+                            <label for="payment_description"><span data-i18n="labelPaymentDesc">Nội dung đề nghị thanh toán</span> <span class="req">*</span></label>
+                            <textarea id="payment_description" placeholder="Mô tả lý do và nội dung đề nghị thanh toán..." data-i18n-placeholder="phPaymentDesc" required></textarea>
                         </div>
                     </div>
 
@@ -868,8 +868,8 @@
             </div>
 
             <div class="step-navigation">
-                <button type="button" class="btn-secondary" onclick="goToStep(2)">← Quay lại</button>
-                <button type="button" class="btn-primary btn-next" onclick="validateAndNext(3)">Tiếp theo →</button>
+                <button type="button" class="btn-secondary" onclick="goToStep(2)" data-i18n="btnPrev">← Quay lại</button>
+                <button type="button" class="btn-primary btn-next" onclick="validateAndNext(3)" data-i18n="btnNext">Tiếp theo →</button>
             </div>
             </div>
 
@@ -878,7 +878,7 @@
             <div class="form-card">
                 <div class="form-card-header">
                     <i class="fas fa-paperclip" style="color: #5856D6; font-size: 14px;"></i>
-                    <h2>Tài Liệu Đính Kèm</h2>
+                    <h2 data-i18n="secAttachments">Tài Liệu Đính Kèm</h2>
                 </div>
                 <div class="form-card-body">
                     <!-- Upload zone -->
@@ -886,15 +886,15 @@
                         <div class="form-group">
                             <div class="upload-zone" onclick="document.getElementById('file-input').click()">
                                 <i class="fas fa-cloud-upload-alt" style="font-size: 24px; color: var(--primary); margin-bottom: 6px;"></i>
-                                <p style="font-size: 13px; color: var(--text-secondary);">Nhấn để chọn file hoặc kéo thả vào đây</p>
-                                <p style="font-size: 12px; color: #b0b0b5; margin-top: 4px;">PDF, Word, Excel, ảnh — tối đa 20MB/file</p>
+                                <p style="font-size: 13px; color: var(--text-secondary);" data-i18n="dropHint">Nhấn để chọn file hoặc kéo thả vào đây</p>
+                                <p style="font-size: 12px; color: #b0b0b5; margin-top: 4px;" data-i18n="dropHintTypes">PDF, Word, Excel, ảnh — tối đa 20MB/file</p>
                             </div>
                             <input type="file" id="file-input" multiple style="display:none" onchange="onFilePick(event)">
                             <div class="file-list" id="file-list"></div>
                         </div>
                         <div class="form-group" style="min-width: 140px; max-width: 160px;">
                             <button class="btn-primary btn-sm" id="upload-btn" onclick="doUpload()" disabled>
-                                <i class="fas fa-upload"></i> Upload lên Drive
+                                <i class="fas fa-upload"></i> <span data-i18n="uploadToDrive">Upload lên Drive</span>
                             </button>
                             <div class="drive-status" id="drive-status"></div>
                             <!-- Clickable folder link — shown after folder created -->
@@ -911,15 +911,15 @@
                     <!-- Manual Drive link fallback -->
                     <div class="form-row" style="margin-top: 12px;">
                         <div class="form-group full">
-                            <label for="drive_link_manual">Hoặc dán link Google Drive</label>
+                            <label for="drive_link_manual" data-i18n="labelDriveLink">Hoặc dán link Google Drive</label>
                             <input type="text" id="drive_link_manual"
                                    placeholder="https://drive.google.com/..."
                                    oninput="onDriveLinkPaste(this.value)">
                             <p id="drive-link-warning" style="display:none; font-size: 12px; color: #FF9500; margin-top: 4px;">
-                                ⚠️ Đảm bảo link đã được chia sẻ công khai hoặc với người phê duyệt
+                                <span data-i18n="driveShareHint">⚠️ Đảm bảo link đã được chia sẻ công khai hoặc với người phê duyệt</span>
                             </p>
                             <p id="drive-link-error" style="display:none; font-size: 12px; color: var(--error); margin-top: 4px;">
-                                Link không hợp lệ — vui lòng dán link từ Google Drive
+                                <span data-i18n="driveLinkInvalid">Link không hợp lệ — vui lòng dán link từ Google Drive</span>
                             </p>
                         </div>
                     </div>
@@ -927,8 +927,8 @@
             </div>
 
             <div class="step-navigation">
-                <button type="button" class="btn-secondary" onclick="goToStep(3)">← Quay lại</button>
-                <button type="button" class="btn-primary btn-next" onclick="validateAndNext(4)">Tiếp theo →</button>
+                <button type="button" class="btn-secondary" onclick="goToStep(3)" data-i18n="btnPrev">← Quay lại</button>
+                <button type="button" class="btn-primary btn-next" onclick="validateAndNext(4)" data-i18n="btnNext">Tiếp theo →</button>
             </div>
             </div>
 
@@ -937,7 +937,7 @@
             <div class="form-card" id="invoice-section">
                 <div class="form-card-header">
                     <i class="fas fa-receipt" style="color: var(--warning); font-size: 14px;"></i>
-                    <h2>Bảng Hoá Đơn</h2>
+                    <h2 data-i18n="secInvoiceTable">Bảng Hoá Đơn</h2>
                 </div>
                 <div class="form-card-body" style="padding: 0;">
                     <div class="invoice-wrap">
@@ -945,15 +945,15 @@
                             <thead>
                                 <tr>
                                     <th style="width: 40px;">#</th>
-                                    <th style="min-width: 110px;">Loại chứng từ</th>
-                                    <th style="min-width: 160px;">Mô tả</th>
-                                    <th style="min-width: 110px;">Ngày CT</th>
-                                    <th style="min-width: 110px;">Số CT</th>
-                                    <th style="min-width: 120px;">Ký hiệu HĐ</th>
-                                    <th style="min-width: 120px; text-align: right;">Trước VAT</th>
-                                    <th style="min-width: 90px;">Thuế suất</th>
+                                    <th style="min-width: 110px;" data-i18n="colDocType">Loại chứng từ</th>
+                                    <th style="min-width: 160px;" data-i18n="colDesc">Mô tả</th>
+                                    <th style="min-width: 110px;" data-i18n="colDocDate">Ngày CT</th>
+                                    <th style="min-width: 110px;" data-i18n="colDocNo">Số CT</th>
+                                    <th style="min-width: 120px;" data-i18n="colInvoiceSerial">Ký hiệu HĐ</th>
+                                    <th style="min-width: 120px; text-align: right;" data-i18n="colPreVat">Trước VAT</th>
+                                    <th style="min-width: 90px;" data-i18n="colTaxRate">Thuế suất</th>
                                     <th style="min-width: 100px; text-align: right;">VAT</th>
-                                    <th style="min-width: 120px; text-align: right;">Tổng tiền</th>
+                                    <th style="min-width: 120px; text-align: right;" data-i18n="colGrossTotal">Tổng tiền</th>
                                     <th style="width: 40px;"></th>
                                 </tr>
                             </thead>
@@ -962,10 +962,10 @@
                     </div>
                     <div class="invoice-footer">
                         <button class="btn-secondary btn-sm" onclick="addInvoiceRow()">
-                            <i class="fas fa-plus"></i> Thêm dòng
+                            <i class="fas fa-plus"></i> <span data-i18n="addRow">Thêm dòng</span>
                         </button>
                         <div style="display: flex; gap: 20px; align-items: center;">
-                            <span class="total-lbl">Tổng:</span>
+                            <span class="total-lbl" data-i18n="totalColon">Tổng:</span>
                             <span class="total-val" id="invoice-total">0 đ</span>
                         </div>
                     </div>
@@ -973,13 +973,13 @@
             </div>
 
             <div class="step-navigation">
-                <button type="button" class="btn-secondary" onclick="goToStep(4)">← Quay lại</button>
+                <button type="button" class="btn-secondary" onclick="goToStep(4)" data-i18n="btnPrev">← Quay lại</button>
                 <div class="step-actions">
                     <button type="button" class="btn-secondary" onclick="resetForm()">
-                        <i class="fas fa-redo"></i> Làm mới
+                        <i class="fas fa-redo"></i> <span data-i18n="refresh">Làm mới</span>
                     </button>
                     <button type="button" class="btn-success btn-submit" id="submit-btn" onclick="submitForm()">
-                        <i class="fas fa-paper-plane"></i> Gửi đề nghị
+                        <i class="fas fa-paper-plane"></i> <span data-i18n="submitRequest">Gửi đề nghị</span>
                     </button>
                 </div>
             </div>
@@ -989,12 +989,12 @@
             <div class="form-card" id="po-history-card">
                 <div class="form-card-header" style="cursor:pointer;" onclick="togglePoHistory()">
                     <i class="fas fa-history" style="color: var(--primary); font-size: 14px;"></i>
-                    <h2 style="flex:1;">Lịch Sử Đề Nghị Thanh Toán</h2>
+                    <h2 style="flex:1;" data-i18n="pmtHistory">Lịch Sử Đề Nghị Thanh Toán</h2>
                     <i class="fas fa-chevron-down" id="po-history-chevron" style="color: var(--text-secondary); font-size: 13px; transition: transform 0.2s;"></i>
                 </div>
                 <div id="po-history-body" style="display:none;">
                     <div id="po-history-list" style="padding: 12px 20px;">
-                        <p style="font-size: 14px; color: var(--text-secondary); text-align: center; padding: 16px 0;">Đang tải...</p>
+                        <p style="font-size: 14px; color: var(--text-secondary); text-align: center; padding: 16px 0;" data-i18n="loading">Đang tải...</p>
                     </div>
                 </div>
             </div>
@@ -1004,6 +1004,111 @@
 
     <script src="tlcg_companies_embed.js"></script>
     <script>
+    // Page-specific strings merged into the shared i18n.js layer.
+    TLCI18n.extend({
+        vi: {
+            pmtPageTitle: 'ĐỀ NGHỊ THANH TOÁN',
+            stepVendor: 'Nhà cung cấp',
+            stepPayment: 'Thanh toán',
+            stepDocuments: 'Tài liệu',
+            stepInvoice: 'Hóa đơn',
+            secRefLink: 'Liên Kết Phiếu Tham Chiếu',
+            labelPmtMode: 'Loại đề nghị thanh toán',
+            modeByAm: 'Theo Biên bản nghiệm thu (AM)',
+            modeByPr: 'Trực tiếp theo PR (hàng hóa < 2tr)',
+            labelAmNo: 'Số Biên Bản Nghiệm Thu (AM No)',
+            phAmNo: 'Ví dụ: AM-20260618-000001',
+            verify: 'Xác minh',
+            labelLinkedPr: 'Số PR liên kết',
+            phAutoFillAm: 'Tự động điền sau khi xác minh AM',
+            labelInstallmentNote: 'Ghi chú đợt thanh toán',
+            phInstallmentNote: 'VD: 50% sau nghiệm thu giai đoạn 1',
+            labelDirectPr: 'Số PR (hàng hóa < 2.000.000₫)',
+            grnNotice: 'Biên bản nhận hàng sẽ được tạo sau khi thanh toán được phê duyệt.',
+            secVendorInfo: 'Thông Tin Nhà Cung Cấp (NCC)',
+            optChooseCompanyFirst: '-- Chọn công ty trước --',
+            bankInfo: 'Thông tin tài khoản ngân hàng',
+            labelTransferNote: 'Nội dung chuyển khoản',
+            secPaymentInfo: 'Thông Tin Thanh Toán',
+            labelRequestAmount: 'Số tiền đề nghị',
+            labelDueDatePmt: 'Ngày đáo hạn',
+            labelInstallmentNo: 'Đợt thanh toán',
+            phInstallmentNo: 'VD: Đợt 1/3',
+            labelPaymentType1: 'Loại thanh toán 1',
+            labelPaymentType2: 'Loại thanh toán 2',
+            labelPaymentDesc: 'Nội dung đề nghị thanh toán',
+            phPaymentDesc: 'Mô tả lý do và nội dung đề nghị thanh toán...',
+            dropHint: 'Nhấn để chọn file hoặc kéo thả vào đây',
+            dropHintTypes: 'PDF, Word, Excel, ảnh — tối đa 20MB/file',
+            uploadToDrive: 'Upload lên Drive',
+            labelDriveLink: 'Hoặc dán link Google Drive',
+            driveShareHint: '⚠️ Đảm bảo link đã được chia sẻ công khai hoặc với người phê duyệt',
+            driveLinkInvalid: 'Link không hợp lệ — vui lòng dán link từ Google Drive',
+            secInvoiceTable: 'Bảng Hoá Đơn',
+            colDocType: 'Loại chứng từ',
+            colDesc: 'Mô tả',
+            colDocDate: 'Ngày CT',
+            colDocNo: 'Số CT',
+            colInvoiceSerial: 'Ký hiệu HĐ',
+            colPreVat: 'Trước VAT',
+            colTaxRate: 'Thuế suất',
+            colGrossTotal: 'Tổng tiền',
+            totalColon: 'Tổng:',
+            submitRequest: 'Gửi đề nghị',
+            pmtHistory: 'Lịch Sử Đề Nghị Thanh Toán'
+        },
+        en: {
+            pmtPageTitle: 'PAYMENT REQUEST',
+            stepVendor: 'Vendor',
+            stepPayment: 'Payment',
+            stepDocuments: 'Documents',
+            stepInvoice: 'Invoices',
+            secRefLink: 'Reference Document Link',
+            labelPmtMode: 'Payment request type',
+            modeByAm: 'By Acceptance Minutes (AM)',
+            modeByPr: 'Directly by PR (goods < 2M)',
+            labelAmNo: 'Acceptance Minutes No. (AM No)',
+            phAmNo: 'Example: AM-20260618-000001',
+            verify: 'Verify',
+            labelLinkedPr: 'Linked PR no.',
+            phAutoFillAm: 'Filled automatically after verifying the AM',
+            labelInstallmentNote: 'Installment note',
+            phInstallmentNote: 'e.g. 50% after phase 1 acceptance',
+            labelDirectPr: 'PR no. (goods < 2,000,000₫)',
+            grnNotice: 'A goods receipt note will be created once the payment is approved.',
+            secVendorInfo: 'Vendor Information',
+            optChooseCompanyFirst: '-- Select a company first --',
+            bankInfo: 'Bank account information',
+            labelTransferNote: 'Transfer description',
+            secPaymentInfo: 'Payment Information',
+            labelRequestAmount: 'Requested amount',
+            labelDueDatePmt: 'Due date',
+            labelInstallmentNo: 'Installment',
+            phInstallmentNo: 'e.g. Installment 1/3',
+            labelPaymentType1: 'Payment type 1',
+            labelPaymentType2: 'Payment type 2',
+            labelPaymentDesc: 'Payment request description',
+            phPaymentDesc: 'Describe the reason and details of this payment request...',
+            dropHint: 'Click to choose files or drag and drop here',
+            dropHintTypes: 'PDF, Word, Excel, images — up to 20MB per file',
+            uploadToDrive: 'Upload to Drive',
+            labelDriveLink: 'Or paste a Google Drive link',
+            driveShareHint: '⚠️ Make sure the link is shared publicly or with the approvers',
+            driveLinkInvalid: 'Invalid link — please paste a Google Drive link',
+            secInvoiceTable: 'Invoice Table',
+            colDocType: 'Document type',
+            colDesc: 'Description',
+            colDocDate: 'Doc. date',
+            colDocNo: 'Doc. no.',
+            colInvoiceSerial: 'Invoice serial',
+            colPreVat: 'Pre-VAT',
+            colTaxRate: 'Tax rate',
+            colGrossTotal: 'Gross total',
+            totalColon: 'Total:',
+            submitRequest: 'Submit request',
+            pmtHistory: 'Payment Request History'
+        }
+    });
     // ═══════════════════════════════════════════════════════════════════
     //  CONFIG & STATE
     // ═══════════════════════════════════════════════════════════════════
@@ -1219,7 +1324,7 @@
         const embed = (typeof TLCG_COMPANIES_DATA !== 'undefined' && TLCG_COMPANIES_DATA) || null;
         const arr = (embed && embed.companies_data) || [];
         allCompanies = arr;
-        sel.innerHTML = '<option value="">-- Chọn công ty --</option>';
+        sel.innerHTML = '<option value="" data-i18n="optChooseCompany">-- Chọn công ty --</option>';
         if (arr.length === 0) {
             sel.innerHTML = '<option value="">-- Không có dữ liệu (thiếu tlcg_companies_embed.js) --</option>';
             return;
@@ -1291,7 +1396,7 @@
         const sel = document.getElementById('vendor_bank_pick');
         sel.innerHTML = '<option value="">-- Đang tải... --</option>';
         allBanks = [];
-        if (!vendorName) { sel.innerHTML = '<option value="">-- Chọn NCC trước --</option>'; return; }
+        if (!vendorName) { sel.innerHTML = '<option value="" data-i18n="optChooseVendorFirst">-- Chọn NCC trước --</option>'; return; }
         try {
             const r  = await fetch('/api/voucher', {
                 method: 'POST',
@@ -1461,7 +1566,7 @@
     }
 
     function clearBankFields(clearSel = true) {
-        if (clearSel) document.getElementById('vendor_bank_pick').innerHTML = '<option value="">-- Chọn NCC trước --</option>';
+        if (clearSel) document.getElementById('vendor_bank_pick').innerHTML = '<option value="" data-i18n="optChooseVendorFirst">-- Chọn NCC trước --</option>';
         document.getElementById('vendor_account_name').value       = '';
         document.getElementById('vendor_account_no').value         = '';
         document.getElementById('vendor_bank_name').value          = '';
@@ -1718,13 +1823,13 @@
         if (gateMode === 'am' && (!amNoVal || !_amValidated)) {
             showToast('Vui lòng xác minh Biên Bản Nghiệm Thu trước khi gửi.', 'error');
             isSubmitting = false;
-            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi đề nghị'; }
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> <span data-i18n="submitRequest">Gửi đề nghị</span>'; }
             return;
         }
         if (gateMode === 'pr' && (!directPr || !_directPRValidated)) {
             showToast('Vui lòng xác minh PR trước khi gửi.', 'error');
             isSubmitting = false;
-            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi đề nghị'; }
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> <span data-i18n="submitRequest">Gửi đề nghị</span>'; }
             return;
         }
 
@@ -1783,7 +1888,7 @@
         } finally {
             isSubmitting = false;
             btn.disabled = false;
-            btn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi đề nghị';
+            btn.innerHTML = '<i class="fas fa-paper-plane"></i> <span data-i18n="submitRequest">Gửi đề nghị</span>';
         }
     }
 

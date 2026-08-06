@@ -218,7 +218,7 @@
             <img src="brand_assets/tlc logo transparancy.png" alt="TLC" style="height:32px;width:auto;" decoding="async">
             <span style="font-weight:700;font-size:15px;">TLCGroup</span>
         </div>
-        <button onclick="toggleSidebar()" style="background:transparent;border:none;cursor:pointer;color:#6e6e73;font-size:16px;padding:4px;" title="Thu gọn sidebar">
+        <button onclick="toggleSidebar()" style="background:transparent;border:none;cursor:pointer;color:#6e6e73;font-size:16px;padding:4px;" title="Thu gọn sidebar" data-i18n-title="toggleSidebar">
             <i class="fas fa-bars"></i>
         </button>
     </div>
@@ -235,19 +235,19 @@
         <div class="sidebar-section-title">Workflows</div>
         <button class="sidebar-item" onclick="window.open('purchase_request.html','_blank')">
             <div class="sidebar-icon-box" style="background:#007AFF;"><i class="fas fa-shopping-cart"></i></div>
-            <span>Đề Nghị Mua Hàng</span>
+            <span data-i18n="navPurchaseRequest">Đề Nghị Mua Hàng</span>
         </button>
         <button class="sidebar-item active">
             <div class="sidebar-icon-box" style="background:#34C759;"><i class="fas fa-clipboard-check"></i></div>
-            <span>Biên Bản Nghiệm Thu</span>
+            <span data-i18n="navAcceptance">Biên Bản Nghiệm Thu</span>
         </button>
         <button class="sidebar-item" onclick="window.open('payment_request.html','_blank')">
             <div class="sidebar-icon-box" style="background:#FF9500;"><i class="fas fa-file-invoice-dollar"></i></div>
-            <span>Đề Nghị Thanh Toán</span>
+            <span data-i18n="navPaymentRequest">Đề Nghị Thanh Toán</span>
         </button>
         <button class="sidebar-item" onclick="window.open('voucher.html','_blank')">
             <div class="sidebar-icon-box" style="background:#FF2D55;"><i class="fas fa-receipt"></i></div>
-            <span>Phiếu Thu Chi</span>
+            <span data-i18n="navVoucher">Phiếu Thu Chi</span>
         </button>
     </div>
 
@@ -279,11 +279,11 @@
             </a>
             <div style="display:flex;align-items:center;gap:10px;">
                 <div style="position:relative;display:inline-flex;align-items:center;">
-                    <i class="fas fa-bell" style="font-size:18px;color:#6e6e73;" aria-label="Thông báo"></i>
+                    <i class="fas fa-bell" style="font-size:18px;color:#6e6e73;" aria-label="Thông báo" data-i18n-aria="notifications"></i>
                     <span id="notif-badge-mobile" style="display:none;position:absolute;top:-6px;right:-7px;background:#FF3B30;color:white;border-radius:50%;font-size:10px;font-weight:700;min-width:16px;height:16px;align-items:center;justify-content:center;padding:0 3px;line-height:1;pointer-events:none;">0</span>
                 </div>
                 <button onclick="window.history.back()" style="background:transparent;border:none;color:#6e6e73;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;">
-                    <i class="fas fa-chevron-left"></i> Quay lại
+                    <i class="fas fa-chevron-left"></i> <span data-i18n="backToDash">Quay lại</span>
                 </button>
             </div>
         </div>
@@ -298,10 +298,10 @@
             </a>
             <div id="nav-user-section" data-tlc-lang-switcher class="flex items-center gap-2">
                 <div id="notif-bell-wrapper" onclick="_toggleNotifDropdown()" style="position:relative;display:inline-flex;align-items:center;cursor:pointer;padding:4px;">
-                    <i class="fas fa-bell" style="font-size:18px;color:#6e6e73;" aria-label="Thông báo"></i>
+                    <i class="fas fa-bell" style="font-size:18px;color:#6e6e73;" aria-label="Thông báo" data-i18n-aria="notifications"></i>
                     <span id="notif-badge" style="display:none;position:absolute;top:-6px;right:-7px;background:#FF3B30;color:white;border-radius:50%;font-size:10px;font-weight:700;min-width:16px;height:16px;align-items:center;justify-content:center;padding:0 3px;line-height:1;pointer-events:none;">0</span>
                     <div id="notif-dropdown" style="display:none;position:absolute;top:calc(100% + 10px);right:0;width:280px;background:white;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.12);border:0.5px solid rgba(60,60,67,0.18);z-index:1000;overflow:hidden;">
-                        <div style="padding:10px 14px;border-bottom:0.5px solid #f1f5f9;font-size:12px;font-weight:700;color:#374151;">Việc cần làm của tôi</div>
+                        <div style="padding:10px 14px;border-bottom:0.5px solid #f1f5f9;font-size:12px;font-weight:700;color:#374151;" data-i18n="myTasks">Việc cần làm của tôi</div>
                         <div style="max-height:320px;overflow-y:auto;" id="notif-dropdown-body"></div>
                     </div>
                 </div>
@@ -318,28 +318,28 @@
     <!-- ── Page content ──────────────────────────────────────── -->
     <main class="page-content" id="main-content" tabindex="-1">
 
-        <h1 style="font-family:var(--font-display);font-size:22px;font-weight:700;text-align:center;margin:4px 0 0;">BIÊN BẢN NGHIỆM THU</h1>
-        <p id="am-type-subtitle" style="text-align:center;font-size:13px;color:var(--text-secondary);margin:0 0 8px;">Nghiệm thu dịch vụ / nhận hàng</p>
+        <h1 style="font-family:var(--font-display);font-size:22px;font-weight:700;text-align:center;margin:4px 0 0;" data-i18n="amPageTitle">BIÊN BẢN NGHIỆM THU</h1>
+        <p id="am-type-subtitle" style="text-align:center;font-size:13px;color:var(--text-secondary);margin:0 0 8px;" data-i18n="amSubtitle">Nghiệm thu dịch vụ / nhận hàng</p>
 
         <!-- Progress stepper -->
-        <div class="progress-stepper" role="navigation" aria-label="Các bước biên bản">
+        <div class="progress-stepper" role="navigation" aria-label="Các bước biên bản" data-i18n-aria="amFormSteps">
             <div class="stepper-container">
                 <div class="stepper-line"><div class="stepper-line-progress" id="stepper-progress"></div></div>
-                <button type="button" class="stepper-step active" data-step="1" onclick="goToStep(1)" aria-label="Bước 1 — Công ty & PR">
+                <button type="button" class="stepper-step active" data-step="1" onclick="goToStep(1)" aria-label="Bước 1 — Công ty & PR" data-i18n-aria="amStepAria1">
                     <div class="stepper-circle">1</div>
-                    <span class="stepper-label">Công ty &amp; PR</span>
+                    <span class="stepper-label" data-i18n="amStepCompanyPr">Công ty &amp; PR</span>
                 </button>
-                <button type="button" class="stepper-step" data-step="2" onclick="goToStep(2)" aria-label="Bước 2 — Hàng hóa">
+                <button type="button" class="stepper-step" data-step="2" onclick="goToStep(2)" aria-label="Bước 2 — Hàng hóa" data-i18n-aria="stepAria2">
                     <div class="stepper-circle">2</div>
-                    <span class="stepper-label">Hàng hóa</span>
+                    <span class="stepper-label" data-i18n="stepGoods">Hàng hóa</span>
                 </button>
-                <button type="button" class="stepper-step" data-step="3" onclick="goToStep(3)" aria-label="Bước 3 — Xác nhận & Ký">
+                <button type="button" class="stepper-step" data-step="3" onclick="goToStep(3)" aria-label="Bước 3 — Xác nhận & Ký" data-i18n-aria="amStepAria3">
                     <div class="stepper-circle">3</div>
-                    <span class="stepper-label">Xác nhận &amp; Ký</span>
+                    <span class="stepper-label" data-i18n="amStepConfirmSign">Xác nhận &amp; Ký</span>
                 </button>
-                <button type="button" class="stepper-step" data-step="4" onclick="goToStep(4)" aria-label="Bước 4 — Review">
+                <button type="button" class="stepper-step" data-step="4" onclick="goToStep(4)" aria-label="Bước 4 — Review" data-i18n-aria="amStepAria4">
                     <div class="stepper-circle">4</div>
-                    <span class="stepper-label">Kiểm tra</span>
+                    <span class="stepper-label" data-i18n="amStepReview">Kiểm tra</span>
                 </button>
             </div>
         </div>
@@ -351,40 +351,40 @@
             <div class="form-card">
                 <div class="form-card-header">
                     <i class="fas fa-building" style="color:var(--primary);font-size:14px;"></i>
-                    <h2>Công Ty & Thông Tin Chung</h2>
+                    <h2 data-i18n="secCompanyGeneral">Công Ty & Thông Tin Chung</h2>
                 </div>
                 <div class="form-card-body">
                     <div class="form-row">
                         <div class="form-group w2">
-                            <label>Công Ty <span class="req">*</span></label>
+                            <label><span data-i18n="company">Công Ty</span> <span class="req">*</span></label>
                             <select id="company_code" onchange="onCompanyChange()" required>
-                                <option value="">-- Chọn công ty --</option>
+                                <option value="" data-i18n="optChooseCompany">-- Chọn công ty --</option>
                             </select>
                             <input type="hidden" id="company_name">
                             <input type="hidden" id="company_key_or_taxid">
                         </div>
                         <div class="form-group">
-                            <label>Số Biên Bản (AM No)</label>
-                            <input type="text" id="am_no" placeholder="Tự động tạo" readonly style="background:var(--bg);">
+                            <label data-i18n="amLabelAmNo">Số Biên Bản (AM No)</label>
+                            <input type="text" id="am_no" placeholder="Tự động tạo" data-i18n-placeholder="phAutoGenerated" readonly style="background:var(--bg);">
                         </div>
                     </div>
                     <div class="form-row" style="margin-top:14px;">
                         <div class="form-group w2">
-                            <label>Số Đề Nghị Mua Hàng (PR No) <span class="req">*</span></label>
+                            <label><span data-i18n="amLabelPrNo">Số Đề Nghị Mua Hàng (PR No)</span> <span class="req">*</span></label>
                             <div style="display:flex;gap:8px;align-items:flex-start;">
                                 <div class="pr-combobox" id="pr-combobox" style="flex:1;">
-                                    <input type="text" id="pr_no" placeholder="Nhập hoặc chọn từ danh sách..."
+                                    <input type="text" id="pr_no" placeholder="Nhập hoặc chọn từ danh sách..." data-i18n-placeholder="phEnterOrSelect"
                                            oninput="onPRNoInput()" onfocus="onPRSearchFocus()" autocomplete="off">
                                     <div class="pr-dropdown" id="pr-dropdown"></div>
                                 </div>
-                                <button type="button" class="btn btn-ghost" onclick="lookupPR()" title="Làm mới & tra cứu" style="white-space:nowrap;flex-shrink:0;padding:9px 12px;font-size:13px;">
+                                <button type="button" class="btn btn-ghost" onclick="lookupPR()" title="Làm mới & tra cứu" data-i18n-title="amRefreshLookup" style="white-space:nowrap;flex-shrink:0;padding:9px 12px;font-size:13px;">
                                     <i class="fas fa-rotate-right"></i>
                                 </button>
                             </div>
                             <p id="pr-lookup-status" style="font-size:12px;margin-top:4px;color:var(--text-secondary);"></p>
                         </div>
                         <div class="form-group">
-                            <label for="contract_no">Số Hợp Đồng (Contract No) <span id="contract-no-req" class="req">*</span></label>
+                            <label for="contract_no"><span data-i18n="amLabelContractNo">Số Hợp Đồng (Contract No)</span> <span id="contract-no-req" class="req">*</span></label>
                             <div style="display:flex;gap:8px;">
                                 <input type="text" id="contract_no" placeholder="CT-YYYYMMDD-XXXXXX" oninput="onContractNoInput()" style="flex:1;">
                                 <button type="button" class="btn btn-ghost" onclick="validateContractNo()" style="white-space:nowrap;padding:9px 12px;font-size:13px;">
@@ -396,21 +396,21 @@
                     </div>
                     <div class="form-row" style="margin-top:0;">
                         <div class="form-group">
-                            <label>Ngày Nghiệm Thu <span class="req">*</span></label>
+                            <label><span data-i18n="amLabelDate">Ngày Nghiệm Thu</span> <span class="req">*</span></label>
                             <input type="date" id="am_date" required>
                         </div>
                         <div class="form-group"></div>
                     </div>
                     <div class="form-row" style="margin-top:14px;">
                         <div class="form-group">
-                            <label>Người Nhận Hàng <span class="req">*</span></label>
+                            <label><span data-i18n="amLabelReceiver">Người Nhận Hàng</span> <span class="req">*</span></label>
                             <select id="receiver_name" onchange="onReceiverChange()">
-                                <option value="">-- Chọn người nhận --</option>
+                                <option value="" data-i18n="amOptChooseReceiver">-- Chọn người nhận --</option>
                             </select>
                             <input type="hidden" id="receiver_email">
                         </div>
                         <div class="form-group">
-                            <label>Phòng Ban</label>
+                            <label data-i18n="department">Phòng Ban</label>
                             <input type="text" id="department" readonly>
                         </div>
                     </div>
@@ -420,7 +420,7 @@
             <div class="step-nav">
                 <span></span>
                 <button type="button" class="btn btn-primary" onclick="validateAndNext(1)">
-                    Tiếp theo <i class="fas fa-arrow-right"></i>
+                    <span data-i18n="nextPlain">Tiếp theo</span> <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
         </div>
@@ -432,20 +432,20 @@
             <div class="form-card">
                 <div class="form-card-header">
                     <i class="fas fa-boxes" style="color:var(--primary);font-size:14px;"></i>
-                    <h2>Hàng Hóa Nghiệm Thu</h2>
+                    <h2 data-i18n="amSecGoods">Hàng Hóa Nghiệm Thu</h2>
                 </div>
                 <div class="form-card-body">
-                    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">Kiểm tra từng mặt hàng theo phiếu đặt hàng. Cập nhật số lượng thực nhận và tình trạng.</p>
+                    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;" data-i18n="amGoodsHint">Kiểm tra từng mặt hàng theo phiếu đặt hàng. Cập nhật số lượng thực nhận và tình trạng.</p>
                     <div class="items-wrap">
                         <table class="items-table">
                             <thead>
                                 <tr>
                                     <th class="col-no">#</th>
-                                    <th style="min-width:220px;">Mô Tả Hàng Hóa / Dịch Vụ</th>
-                                    <th style="width:90px;">Đặt hàng</th>
-                                    <th style="width:90px;">Thực nhận <span class="req">*</span></th>
-                                    <th style="width:60px;">Đơn vị</th>
-                                    <th style="min-width:140px;">Tình trạng</th>
+                                    <th style="min-width:220px;" data-i18n="amColDesc">Mô Tả Hàng Hóa / Dịch Vụ</th>
+                                    <th style="width:90px;" data-i18n="amColOrdered">Đặt hàng</th>
+                                    <th style="width:90px;"><span data-i18n="amColReceived">Thực nhận</span> <span class="req">*</span></th>
+                                    <th style="width:60px;" data-i18n="colUnit">Đơn vị</th>
+                                    <th style="min-width:140px;" data-i18n="amColCondition">Tình trạng</th>
                                     <th class="col-acc">✓</th>
                                 </tr>
                             </thead>
@@ -453,17 +453,17 @@
                         </table>
                     </div>
                     <div id="pr-items-empty" style="text-align:center;padding:24px;color:var(--text-secondary);font-size:13px;display:none;">
-                        <i class="fas fa-info-circle" style="margin-right:6px;"></i> Tra cứu số PR ở Bước 1 để tự động nạp danh sách hàng hóa.
+                        <i class="fas fa-info-circle" style="margin-right:6px;"></i> <span data-i18n="amLookupHint">Tra cứu số PR ở Bước 1 để tự động nạp danh sách hàng hóa.</span>
                     </div>
                 </div>
             </div>
 
             <div class="step-nav">
                 <button type="button" class="btn btn-ghost" onclick="goToStep(1)">
-                    <i class="fas fa-arrow-left"></i> Quay lại
+                    <i class="fas fa-arrow-left"></i> <span data-i18n="backPlain">Quay lại</span>
                 </button>
                 <button type="button" class="btn btn-primary" onclick="validateAndNext(2)">
-                    Tiếp theo <i class="fas fa-arrow-right"></i>
+                    <span data-i18n="nextPlain">Tiếp theo</span> <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
         </div>
@@ -475,21 +475,21 @@
             <div class="form-card">
                 <div class="form-card-header">
                     <i class="fas fa-user-check" style="color:var(--primary);font-size:14px;"></i>
-                    <h2>Người Phụ Trách Xác Nhận</h2>
+                    <h2 data-i18n="amSecConfirmer">Người Phụ Trách Xác Nhận</h2>
                 </div>
                 <div class="form-card-body">
                     <div class="form-row">
                         <div class="form-group w2">
-                            <label>Người Phụ Trách Xác Nhận (Trưởng bộ phận) <span class="req">*</span></label>
+                            <label><span data-i18n="amLabelConfirmer">Người Phụ Trách Xác Nhận (Trưởng bộ phận)</span> <span class="req">*</span></label>
                             <select id="dept_head_email">
-                                <option value="">-- Chọn người xác nhận --</option>
+                                <option value="" data-i18n="amOptChooseConfirmer">-- Chọn người xác nhận --</option>
                             </select>
                         </div>
                     </div>
                     <div class="form-row" style="margin-top:14px;">
                         <div class="form-group full">
-                            <label>Ghi chú bổ sung</label>
-                            <textarea id="submission_note" placeholder="Ghi chú về quá trình nhận hàng (không bắt buộc)..."></textarea>
+                            <label data-i18n="amLabelExtraNote">Ghi chú bổ sung</label>
+                            <textarea id="submission_note" placeholder="Ghi chú về quá trình nhận hàng (không bắt buộc)..." data-i18n-placeholder="amPhExtraNote"></textarea>
                         </div>
                     </div>
                 </div>
@@ -498,29 +498,29 @@
             <div class="form-card">
                 <div class="form-card-header">
                     <i class="fas fa-signature" style="color:var(--primary);font-size:14px;"></i>
-                    <h2>Chữ Ký Người Nhận Hàng <span class="req">*</span></h2>
+                    <h2><span data-i18n="amSecSignature">Chữ Ký Người Nhận Hàng</span> <span class="req">*</span></h2>
                 </div>
                 <div class="form-card-body">
                     <div id="receiver-sig-zone" class="sig-upload-zone" onclick="document.getElementById('receiver-sig-input').click()">
                         <i class="fas fa-upload" style="font-size:20px;color:#94a3b8;margin-bottom:8px;"></i>
-                        <p style="font-size:13px;color:var(--text-secondary);">Nhấn để tải lên chữ ký</p>
-                        <p style="font-size:11px;color:#94a3b8;margin-top:4px;">PNG hoặc JPG, tối đa 500 KB</p>
+                        <p style="font-size:13px;color:var(--text-secondary);" data-i18n="amTapToUpload">Nhấn để tải lên chữ ký</p>
+                        <p style="font-size:11px;color:#94a3b8;margin-top:4px;" data-i18n="amSigHint">PNG hoặc JPG, tối đa 500 KB</p>
                         <img id="receiver-sig-preview" class="sig-preview" src="" alt="" style="display:none;">
                     </div>
                     <input type="file" id="receiver-sig-input" accept="image/png,image/jpeg,image/jpg" style="display:none;" onchange="handleReceiverSigUpload(event)">
-                    <p style="font-size:12px;color:var(--text-secondary);margin-top:8px;">Chữ ký này xác nhận rằng bạn đã thực sự nhận hàng và kiểm tra theo danh sách trên.</p>
+                    <p style="font-size:12px;color:var(--text-secondary);margin-top:8px;" data-i18n="amSigConfirmText">Chữ ký này xác nhận rằng bạn đã thực sự nhận hàng và kiểm tra theo danh sách trên.</p>
                 </div>
             </div>
 
             <div class="form-card">
                 <div class="form-card-header">
                     <i class="fas fa-paperclip" style="color:var(--primary);font-size:14px;"></i>
-                    <h2>Tài Liệu Đính Kèm</h2>
+                    <h2 data-i18n="secAttachments">Tài Liệu Đính Kèm</h2>
                 </div>
                 <div class="form-card-body">
-                    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;">Phiếu giao hàng, biên bản kiểm tra chất lượng, ảnh thực tế,... (tối đa 5 file, 30 MB)</p>
+                    <p style="font-size:13px;color:var(--text-secondary);margin-bottom:10px;" data-i18n="amAttachHint">Phiếu giao hàng, biên bản kiểm tra chất lượng, ảnh thực tế,... (tối đa 5 file, 30 MB)</p>
                     <button type="button" class="btn btn-ghost" onclick="document.getElementById('am-attach-input').click()" style="font-size:13px;padding:8px 16px;">
-                        <i class="fas fa-plus"></i> Thêm tệp
+                        <i class="fas fa-plus"></i> <span data-i18n="amAddFile">Thêm tệp</span>
                     </button>
                     <input type="file" id="am-attach-input" multiple style="display:none;" onchange="handleAMAttachment(event)">
                     <div class="attach-list" id="am-attach-list"></div>
@@ -529,10 +529,10 @@
 
             <div class="step-nav">
                 <button type="button" class="btn btn-ghost" onclick="goToStep(2)">
-                    <i class="fas fa-arrow-left"></i> Quay lại
+                    <i class="fas fa-arrow-left"></i> <span data-i18n="backPlain">Quay lại</span>
                 </button>
                 <button type="button" class="btn btn-primary" onclick="validateAndNext(3)">
-                    Kiểm tra <i class="fas fa-arrow-right"></i>
+                    <span data-i18n="amStepReview">Kiểm tra</span> <i class="fas fa-arrow-right"></i>
                 </button>
             </div>
         </div>
@@ -544,7 +544,7 @@
             <div class="form-card">
                 <div class="form-card-header">
                     <i class="fas fa-check-circle" style="color:var(--success);font-size:14px;"></i>
-                    <h2>Kiểm Tra Trước Khi Gửi</h2>
+                    <h2 data-i18n="amSecReview">Kiểm Tra Trước Khi Gửi</h2>
                 </div>
                 <div class="form-card-body" id="summary-content">
                     <!-- Filled by buildSummary() -->
@@ -553,10 +553,10 @@
 
             <div class="step-nav">
                 <button type="button" class="btn btn-ghost" onclick="goToStep(3)">
-                    <i class="fas fa-arrow-left"></i> Quay lại
+                    <i class="fas fa-arrow-left"></i> <span data-i18n="backPlain">Quay lại</span>
                 </button>
                 <button type="button" class="btn btn-success" id="submit-btn" onclick="submitAM()">
-                    <i class="fas fa-paper-plane"></i> Gửi Biên Bản Nghiệm Thu
+                    <i class="fas fa-paper-plane"></i> <span data-i18n="amSubmit">Gửi Biên Bản Nghiệm Thu</span>
                 </button>
             </div>
         </div>
@@ -566,19 +566,19 @@
         ══════════════════════════════════════════════════════ -->
         <div class="am-list-section">
             <div class="am-list-header">
-                <h2 style="font-size:15px;font-weight:600;">Danh Sách Biên Bản Nghiệm Thu</h2>
+                <h2 style="font-size:15px;font-weight:600;" data-i18n="amListTitle">Danh Sách Biên Bản Nghiệm Thu</h2>
                 <button type="button" class="btn btn-ghost" style="font-size:13px;padding:7px 14px;" onclick="loadAMHistory(true)">
-                    <i class="fas fa-sync-alt"></i> Làm mới
+                    <i class="fas fa-sync-alt"></i> <span data-i18n="refresh">Làm mới</span>
                 </button>
             </div>
             <div class="am-list-filters">
-                <button class="am-filter-pill active" onclick="applyAMFilter('')">Tất cả</button>
-                <button class="am-filter-pill" onclick="applyAMFilter('dang-xu-ly')">Chờ xác nhận</button>
-                <button class="am-filter-pill" onclick="applyAMFilter('hoan-thanh')">Đã nghiệm thu</button>
-                <button class="am-filter-pill" onclick="applyAMFilter('tu-choi')">Từ chối</button>
+                <button class="am-filter-pill active" onclick="applyAMFilter('')" data-i18n="statAll">Tất cả</button>
+                <button class="am-filter-pill" onclick="applyAMFilter('dang-xu-ly')" data-i18n="amFilterPending">Chờ xác nhận</button>
+                <button class="am-filter-pill" onclick="applyAMFilter('hoan-thanh')" data-i18n="amFilterAccepted">Đã nghiệm thu</button>
+                <button class="am-filter-pill" onclick="applyAMFilter('tu-choi')" data-i18n="statRejected">Từ chối</button>
             </div>
             <div id="am-list-body">
-                <div class="am-empty"><i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Đang tải...</div>
+                <div class="am-empty"><i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i><span data-i18n="loading">Đang tải...</span></div>
             </div>
         </div>
 
@@ -592,7 +592,7 @@
 <aside class="am-drawer" id="am-drawer" role="dialog" aria-modal="true" aria-labelledby="am-drawer-title">
     <div class="am-drawer-head">
         <h4 id="am-drawer-title" style="font-size:16px;font-weight:700;"></h4>
-        <button onclick="closeAMDrawer()" style="background:transparent;border:none;font-size:18px;cursor:pointer;color:#6e6e73;" aria-label="Đóng"><i class="fas fa-times"></i></button>
+        <button onclick="closeAMDrawer()" style="background:transparent;border:none;font-size:18px;cursor:pointer;color:#6e6e73;" aria-label="Đóng" data-i18n-aria="close"><i class="fas fa-times"></i></button>
     </div>
     <div class="am-drawer-body" id="am-drawer-body"></div>
     <div class="am-drawer-actions" id="am-drawer-actions" style="display:none;"></div>
@@ -603,12 +603,12 @@
 ══════════════════════════════════════════════════════════════ -->
 <div id="am-reject-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:500;align-items:center;justify-content:center;">
     <div style="background:white;border-radius:16px;padding:24px;width:min(420px,92vw);box-shadow:0 20px 60px rgba(0,0,0,0.2);">
-        <h3 style="font-size:16px;font-weight:700;margin-bottom:12px;">Từ Chối Nghiệm Thu</h3>
-        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;">Vui lòng nhập lý do từ chối để người nhận hàng biết cần điều chỉnh gì.</p>
+        <h3 style="font-size:16px;font-weight:700;margin-bottom:12px;" data-i18n="amRejectTitle">Từ Chối Nghiệm Thu</h3>
+        <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px;" data-i18n="amRejectHint">Vui lòng nhập lý do từ chối để người nhận hàng biết cần điều chỉnh gì.</p>
         <textarea id="am-reject-note" style="width:100%;padding:9px 12px;border:1px solid rgba(0,0,0,0.15);border-radius:8px;font-size:14px;font-family:var(--font-body);min-height:90px;" placeholder="Lý do từ chối..."></textarea>
         <div style="display:flex;gap:10px;margin-top:16px;justify-content:flex-end;">
-            <button class="btn btn-ghost" onclick="document.getElementById('am-reject-modal').style.display='none'">Huỷ</button>
-            <button class="btn btn-danger" onclick="confirmRejectAM()">Xác nhận từ chối</button>
+            <button class="btn btn-ghost" onclick="document.getElementById('am-reject-modal').style.display='none'" data-i18n="cancel">Huỷ</button>
+            <button class="btn btn-danger" onclick="confirmRejectAM()" data-i18n="amConfirmReject">Xác nhận từ chối</button>
         </div>
     </div>
 </div>
@@ -618,6 +618,101 @@
 ══════════════════════════════════════════════════════════════ -->
 <script src="tlcg_companies_embed.js"></script>
 <script>
+// Page-specific strings merged into the shared i18n.js layer.
+TLCI18n.extend({
+    vi: {
+        amPageTitle: 'BIÊN BẢN NGHIỆM THU',
+        amSubtitle: 'Nghiệm thu dịch vụ / nhận hàng',
+        amFormSteps: 'Các bước biên bản',
+        amStepAria1: 'Bước 1 — Công ty & PR',
+        amStepAria3: 'Bước 3 — Xác nhận & Ký',
+        amStepAria4: 'Bước 4 — Review',
+        amStepCompanyPr: 'Công ty & PR',
+        amStepConfirmSign: 'Xác nhận & Ký',
+        amStepReview: 'Kiểm tra',
+        amLabelAmNo: 'Số Biên Bản (AM No)',
+        phAutoGenerated: 'Tự động tạo',
+        amLabelPrNo: 'Số Đề Nghị Mua Hàng (PR No)',
+        phEnterOrSelect: 'Nhập hoặc chọn từ danh sách...',
+        amRefreshLookup: 'Làm mới & tra cứu',
+        amLabelContractNo: 'Số Hợp Đồng (Contract No)',
+        amLabelDate: 'Ngày Nghiệm Thu',
+        amLabelReceiver: 'Người Nhận Hàng',
+        amOptChooseReceiver: '-- Chọn người nhận --',
+        amSecGoods: 'Hàng Hóa Nghiệm Thu',
+        amGoodsHint: 'Kiểm tra từng mặt hàng theo phiếu đặt hàng. Cập nhật số lượng thực nhận và tình trạng.',
+        amColDesc: 'Mô Tả Hàng Hóa / Dịch Vụ',
+        amColOrdered: 'Đặt hàng',
+        amColReceived: 'Thực nhận',
+        amColCondition: 'Tình trạng',
+        amLookupHint: 'Tra cứu số PR ở Bước 1 để tự động nạp danh sách hàng hóa.',
+        amSecConfirmer: 'Người Phụ Trách Xác Nhận',
+        amLabelConfirmer: 'Người Phụ Trách Xác Nhận (Trưởng bộ phận)',
+        amOptChooseConfirmer: '-- Chọn người xác nhận --',
+        amLabelExtraNote: 'Ghi chú bổ sung',
+        amPhExtraNote: 'Ghi chú về quá trình nhận hàng (không bắt buộc)...',
+        amSecSignature: 'Chữ Ký Người Nhận Hàng',
+        amTapToUpload: 'Nhấn để tải lên chữ ký',
+        amSigHint: 'PNG hoặc JPG, tối đa 500 KB',
+        amSigConfirmText: 'Chữ ký này xác nhận rằng bạn đã thực sự nhận hàng và kiểm tra theo danh sách trên.',
+        amAttachHint: 'Phiếu giao hàng, biên bản kiểm tra chất lượng, ảnh thực tế,... (tối đa 5 file, 30 MB)',
+        amAddFile: 'Thêm tệp',
+        amSecReview: 'Kiểm Tra Trước Khi Gửi',
+        amSubmit: 'Gửi Biên Bản Nghiệm Thu',
+        amListTitle: 'Danh Sách Biên Bản Nghiệm Thu',
+        amFilterPending: 'Chờ xác nhận',
+        amFilterAccepted: 'Đã nghiệm thu',
+        amRejectTitle: 'Từ Chối Nghiệm Thu',
+        amRejectHint: 'Vui lòng nhập lý do từ chối để người nhận hàng biết cần điều chỉnh gì.',
+        amConfirmReject: 'Xác nhận từ chối'
+    },
+    en: {
+        amPageTitle: 'ACCEPTANCE MINUTES',
+        amSubtitle: 'Service acceptance / goods receipt',
+        amFormSteps: 'Form steps',
+        amStepAria1: 'Step 1 — Company & PR',
+        amStepAria3: 'Step 3 — Confirm & Sign',
+        amStepAria4: 'Step 4 — Review',
+        amStepCompanyPr: 'Company & PR',
+        amStepConfirmSign: 'Confirm & Sign',
+        amStepReview: 'Review',
+        amLabelAmNo: 'Minutes No. (AM No)',
+        phAutoGenerated: 'Generated automatically',
+        amLabelPrNo: 'Purchase Request No. (PR No)',
+        phEnterOrSelect: 'Enter or select from the list...',
+        amRefreshLookup: 'Refresh & look up',
+        amLabelContractNo: 'Contract No.',
+        amLabelDate: 'Acceptance Date',
+        amLabelReceiver: 'Goods Receiver',
+        amOptChooseReceiver: '-- Select receiver --',
+        amSecGoods: 'Accepted Goods',
+        amGoodsHint: 'Check each item against the purchase order. Update the received quantity and condition if they differ.',
+        amColDesc: 'Goods / Service Description',
+        amColOrdered: 'Ordered',
+        amColReceived: 'Received',
+        amColCondition: 'Condition',
+        amLookupHint: 'Look up the PR number in Step 1 to load the goods list automatically.',
+        amSecConfirmer: 'Confirming Officer',
+        amLabelConfirmer: 'Confirming Officer (Department Head)',
+        amOptChooseConfirmer: '-- Select confirmer --',
+        amLabelExtraNote: 'Additional notes',
+        amPhExtraNote: 'Notes about the goods receipt process (optional)...',
+        amSecSignature: 'Goods Receiver Signature',
+        amTapToUpload: 'Click to upload your signature',
+        amSigHint: 'PNG or JPG, up to 500 KB',
+        amSigConfirmText: 'This signature confirms that you have actually received and checked the goods listed above.',
+        amAttachHint: 'Delivery notes, quality inspection reports, photos, etc. (up to 5 files, 30 MB)',
+        amAddFile: 'Add file',
+        amSecReview: 'Review Before Submitting',
+        amSubmit: 'Submit Acceptance Minutes',
+        amListTitle: 'Acceptance Minutes List',
+        amFilterPending: 'Awaiting confirmation',
+        amFilterAccepted: 'Accepted',
+        amRejectTitle: 'Reject Acceptance',
+        amRejectHint: 'Please enter a rejection reason so the receiver knows what needs to change.',
+        amConfirmReject: 'Confirm rejection'
+    }
+});
 // ── Constants (same as purchase_request.html) ─────────────────
 const BACKEND_URL = '/api/voucher';
 const _MASTER_KEY    = 'tlc_master_data';
@@ -771,7 +866,7 @@ function loadCompanies() {
     const sel   = document.getElementById('company_code');
     const embed = (typeof TLCG_COMPANIES_DATA !== 'undefined' && TLCG_COMPANIES_DATA) || null;
     const arr   = (embed && embed.companies_data) || [];
-    sel.innerHTML = '<option value="">-- Chọn công ty --</option>';
+    sel.innerHTML = '<option value="" data-i18n="optChooseCompany">-- Chọn công ty --</option>';
     if (arr.length === 0) {
         sel.innerHTML = '<option value="">-- Không có dữ liệu (thiếu tlcg_companies_embed.js) --</option>';
         return;
@@ -916,7 +1011,7 @@ function makeSearchable(selectElement) {
 function seedReceivers() {
     const sel = document.getElementById('receiver_name');
     const cur = sel.value;
-    sel.innerHTML = '<option value="">-- Chọn người nhận --</option>';
+    sel.innerHTML = '<option value="" data-i18n="amOptChooseReceiver">-- Chọn người nhận --</option>';
     _allEmployees.forEach(e => {
         const name  = (e.full_name || e['Full Name'] || '').trim();
         const email = (e.employee_email || e['Email'] || '').toLowerCase();
@@ -960,7 +1055,7 @@ function onReceiverChange() {
 function seedDeptHeads() {
     const sel = document.getElementById('dept_head_email');
     const cur = sel.value;
-    sel.innerHTML = '<option value="">-- Chọn người xác nhận --</option>';
+    sel.innerHTML = '<option value="" data-i18n="amOptChooseConfirmer">-- Chọn người xác nhận --</option>';
     _allEmployees.forEach(e => {
         const name  = e.full_name || e['Full Name'] || '';
         const email = (e.employee_email || e['Email'] || '').toLowerCase();
@@ -1471,7 +1566,7 @@ async function submitAM() {
     } catch (e) {
         showToast('❌ ' + e.message, 'error', 6000);
         btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Gửi Biên Bản Nghiệm Thu';
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> <span data-i18n="amSubmit">Gửi Biên Bản Nghiệm Thu</span>';
     }
 }
 
