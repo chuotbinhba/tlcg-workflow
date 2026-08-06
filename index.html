@@ -2215,20 +2215,20 @@
             <p class="text-sm text-slate-500 mb-5">Please create a new password before continuing.</p>
             <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Mật khẩu hiện tại</label>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1" data-i18n="ixCurrentPw">Mật khẩu hiện tại</label>
                     <div style="position:relative; display:flex; align-items:center;">
-                        <input type="password" id="chpw-current" placeholder="Nhập mật khẩu hiện tại" autocomplete="current-password"
+                        <input type="password" id="chpw-current" placeholder="Nhập mật khẩu hiện tại" data-i18n-placeholder="ixPhCurrentPw" autocomplete="current-password"
                                class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none" style="padding-right:40px;">
                         <button type="button" onclick="toggleChpwVisibility('chpw-current','chpw-current-icon')"
-                                style="position:absolute;right:10px;background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px;" aria-label="Hiện mật khẩu">
+                                style="position:absolute;right:10px;background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px;" aria-label="Hiện mật khẩu" data-i18n-aria="ixShowPw">
                             <i class="fas fa-eye" id="chpw-current-icon"></i>
                         </button>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Mật khẩu mới</label>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1" data-i18n="ixNewPw">Mật khẩu mới</label>
                     <div style="position: relative; display: flex; align-items: center;">
-                        <input type="password" id="chpw-new" placeholder="Nhập mật khẩu mới" autocomplete="new-password"
+                        <input type="password" id="chpw-new" placeholder="Nhập mật khẩu mới" data-i18n-placeholder="ixPhNewPw" autocomplete="new-password"
                                oninput="updatePasswordStrength(this.value)"
                                class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none" style="padding-right: 40px;">
                         <button type="button" onclick="toggleChpwVisibility('chpw-new','chpw-new-icon')" aria-label="Show password"
@@ -2238,16 +2238,16 @@
                     </div>
                     <!-- Password strength checklist -->
                     <div id="pw-strength-list" class="mt-2 space-y-1" style="display:none;">
-                        <div id="pwr-length"  class="flex items-center gap-2 text-xs"><i class="fas fa-circle-xmark text-red-400"></i> Ít nhất 8 ký tự</div>
-                        <div id="pwr-upper"   class="flex items-center gap-2 text-xs"><i class="fas fa-circle-xmark text-red-400"></i> Ít nhất 1 chữ hoa (A-Z)</div>
-                        <div id="pwr-number"  class="flex items-center gap-2 text-xs"><i class="fas fa-circle-xmark text-red-400"></i> Ít nhất 1 số (0-9)</div>
-                        <div id="pwr-special" class="flex items-center gap-2 text-xs"><i class="fas fa-circle-xmark text-red-400"></i> Ít nhất 1 ký tự đặc biệt (!@#$%^&*)</div>
+                        <div id="pwr-length"  class="flex items-center gap-2 text-xs"><i class="fas fa-circle-xmark text-red-400"></i> <span data-i18n="ixPwLen">Ít nhất 8 ký tự</span></div>
+                        <div id="pwr-upper"   class="flex items-center gap-2 text-xs"><i class="fas fa-circle-xmark text-red-400"></i> <span data-i18n="ixPwUpperFull">Ít nhất 1 chữ hoa (A-Z)</span></div>
+                        <div id="pwr-number"  class="flex items-center gap-2 text-xs"><i class="fas fa-circle-xmark text-red-400"></i> <span data-i18n="ixPwNumFull">Ít nhất 1 số (0-9)</span></div>
+                        <div id="pwr-special" class="flex items-center gap-2 text-xs"><i class="fas fa-circle-xmark text-red-400"></i> <span data-i18n="ixPwSpecFull">Ít nhất 1 ký tự đặc biệt (!@#$%^&*)</span></div>
                     </div>
                 </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1">Xác nhận mật khẩu mới</label>
+                    <label class="block text-xs font-semibold text-slate-500 uppercase mb-1" data-i18n="ixConfirmPw">Xác nhận mật khẩu mới</label>
                     <div style="position: relative; display: flex; align-items: center;">
-                        <input type="password" id="chpw-confirm" placeholder="Nhập lại mật khẩu mới" autocomplete="new-password"
+                        <input type="password" id="chpw-confirm" placeholder="Nhập lại mật khẩu mới" data-i18n-placeholder="ixPhConfirmPw" autocomplete="new-password"
                                class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none" style="padding-right: 40px;">
                         <button type="button" onclick="toggleChpwVisibility('chpw-confirm','chpw-confirm-icon')" aria-label="Show password"
                                 style="position: absolute; right: 10px; background: none; border: none; cursor: pointer; color: #94a3b8; padding: 4px;">
@@ -2259,10 +2259,10 @@
             </div>
             <div class="flex gap-3 mt-5">
                 <button onclick="submitChangePassword()" id="chpw-submit-btn" class="flex-1 bg-blue-600 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-700 transition">
-                    Đặt mật khẩu
+                    <span data-i18n="ixSetPassword">Đặt mật khẩu</span>
                 </button>
                 <button onclick="skipChangePassword()" id="chpw-skip-btn" class="flex-1 bg-slate-100 text-slate-600 py-2.5 rounded-xl font-semibold text-sm hover:bg-slate-200 transition">
-                    Bỏ qua
+                    <span data-i18n="ixSkip">Bỏ qua</span>
                 </button>
             </div>
         </div>
@@ -2273,59 +2273,59 @@
         <div class="bg-white rounded-2xl shadow-2xl p-6 w-full max-w-sm mx-4">
             <!-- Step 1: Email -->
             <div id="fp-step-email">
-                <h2 class="text-lg font-bold text-slate-800 mb-1">Quên Mật Khẩu</h2>
-                <p class="text-sm text-slate-500 mb-4">Nhập email của bạn. Chúng tôi sẽ gửi mã OTP để xác nhận.</p>
-                <input type="email" id="fp-email" placeholder="Email của bạn" autocomplete="email"
+                <h2 class="text-lg font-bold text-slate-800 mb-1" data-i18n="ixForgotTitle">Quên Mật Khẩu</h2>
+                <p class="text-sm text-slate-500 mb-4" data-i18n="ixForgotDesc">Nhập email của bạn. Chúng tôi sẽ gửi mã OTP để xác nhận.</p>
+                <input type="email" id="fp-email" placeholder="Email của bạn" data-i18n-placeholder="ixPhEmail" autocomplete="email"
                        class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none mb-3">
                 <div id="fp-email-error" class="hidden text-sm text-red-600 mb-3"></div>
                 <div class="flex gap-2">
-                    <button onclick="submitForgotEmail()" class="flex-1 bg-blue-600 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-700 transition">Gửi mã OTP</button>
-                    <button onclick="hideForgotPassword()" class="flex-1 bg-slate-100 text-slate-600 py-2.5 rounded-xl font-semibold text-sm hover:bg-slate-200 transition">Hủy</button>
+                    <button onclick="submitForgotEmail()" class="flex-1 bg-blue-600 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-700 transition" data-i18n="ixSendOtp">Gửi mã OTP</button>
+                    <button onclick="hideForgotPassword()" class="flex-1 bg-slate-100 text-slate-600 py-2.5 rounded-xl font-semibold text-sm hover:bg-slate-200 transition" data-i18n="cancel">Hủy</button>
                 </div>
             </div>
             <!-- Step 2: OTP -->
             <div id="fp-step-otp" class="hidden">
-                <h2 class="text-lg font-bold text-slate-800 mb-1">Nhập Mã OTP</h2>
-                <p class="text-sm text-slate-500 mb-4">Mã 6 chữ số đã được gửi đến email của bạn. Có hiệu lực trong 10 phút.</p>
+                <h2 class="text-lg font-bold text-slate-800 mb-1" data-i18n="ixOtpTitle">Nhập Mã OTP</h2>
+                <p class="text-sm text-slate-500 mb-4" data-i18n="ixOtpDesc">Mã 6 chữ số đã được gửi đến email của bạn. Có hiệu lực trong 10 phút.</p>
                 <input type="text" id="fp-otp" placeholder="000000" maxlength="6" inputmode="numeric"
                        class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm text-center text-2xl font-bold tracking-widest focus:border-blue-500 outline-none mb-3">
                 <div id="fp-otp-error" class="hidden text-sm text-red-600 mb-3"></div>
                 <div class="flex gap-2">
-                    <button onclick="submitOTP()" class="flex-1 bg-blue-600 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-700 transition">Xác nhận</button>
-                    <button onclick="hideForgotPassword()" class="flex-1 bg-slate-100 text-slate-600 py-2.5 rounded-xl font-semibold text-sm hover:bg-slate-200 transition">Hủy</button>
+                    <button onclick="submitOTP()" class="flex-1 bg-blue-600 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-700 transition" data-i18n="confirm">Xác nhận</button>
+                    <button onclick="hideForgotPassword()" class="flex-1 bg-slate-100 text-slate-600 py-2.5 rounded-xl font-semibold text-sm hover:bg-slate-200 transition" data-i18n="cancel">Hủy</button>
                 </div>
             </div>
             <!-- Step 3: New Password -->
             <div id="fp-step-newpw" class="hidden">
-                <h2 class="text-lg font-bold text-slate-800 mb-1">Đặt Mật Khẩu Mới</h2>
-                <p class="text-sm text-slate-500 mb-4">Tạo mật khẩu mới cho tài khoản của bạn.</p>
+                <h2 class="text-lg font-bold text-slate-800 mb-1" data-i18n="ixResetTitle">Đặt Mật Khẩu Mới</h2>
+                <p class="text-sm text-slate-500 mb-4" data-i18n="ixResetDesc">Tạo mật khẩu mới cho tài khoản của bạn.</p>
                 <div style="position:relative; display:flex; align-items:center;" class="mb-2">
-                    <input type="password" id="fp-newpw" placeholder="Mật khẩu mới" autocomplete="new-password"
+                    <input type="password" id="fp-newpw" placeholder="Mật khẩu mới" data-i18n-placeholder="ixNewPw" autocomplete="new-password"
                            oninput="updateFpStrength(this.value)"
                            class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none" style="padding-right:40px;">
                     <button type="button" onclick="toggleChpwVisibility('fp-newpw','fp-newpw-icon')"
-                            style="position:absolute;right:10px;background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px;" aria-label="Hiện mật khẩu">
+                            style="position:absolute;right:10px;background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px;" aria-label="Hiện mật khẩu" data-i18n-aria="ixShowPw">
                         <i class="fas fa-eye" id="fp-newpw-icon"></i>
                     </button>
                 </div>
                 <div id="fp-strength-list" class="mb-3 space-y-1" style="display:none;">
-                    <div id="fpr-length"  class="flex items-center gap-2 text-xs"><i class="fas fa-circle-xmark text-red-400"></i> Ít nhất 8 ký tự</div>
-                    <div id="fpr-upper"   class="flex items-center gap-2 text-xs"><i class="fas fa-circle-xmark text-red-400"></i> Ít nhất 1 chữ hoa</div>
-                    <div id="fpr-number"  class="flex items-center gap-2 text-xs"><i class="fas fa-circle-xmark text-red-400"></i> Ít nhất 1 số</div>
-                    <div id="fpr-special" class="flex items-center gap-2 text-xs"><i class="fas fa-circle-xmark text-red-400"></i> Ít nhất 1 ký tự đặc biệt</div>
+                    <div id="fpr-length"  class="flex items-center gap-2 text-xs"><i class="fas fa-circle-xmark text-red-400"></i> <span data-i18n="ixPwLen">Ít nhất 8 ký tự</span></div>
+                    <div id="fpr-upper"   class="flex items-center gap-2 text-xs"><i class="fas fa-circle-xmark text-red-400"></i> <span data-i18n="ixPwUpper">Ít nhất 1 chữ hoa</span></div>
+                    <div id="fpr-number"  class="flex items-center gap-2 text-xs"><i class="fas fa-circle-xmark text-red-400"></i> <span data-i18n="ixPwNum">Ít nhất 1 số</span></div>
+                    <div id="fpr-special" class="flex items-center gap-2 text-xs"><i class="fas fa-circle-xmark text-red-400"></i> <span data-i18n="ixPwSpec">Ít nhất 1 ký tự đặc biệt</span></div>
                 </div>
                 <div style="position:relative; display:flex; align-items:center;" class="mb-3">
-                    <input type="password" id="fp-confirmpw" placeholder="Xác nhận mật khẩu mới" autocomplete="new-password"
+                    <input type="password" id="fp-confirmpw" placeholder="Xác nhận mật khẩu mới" data-i18n-placeholder="ixConfirmPw" autocomplete="new-password"
                            class="w-full border border-slate-200 rounded-lg px-3 py-2 text-sm focus:border-blue-500 outline-none" style="padding-right:40px;">
                     <button type="button" onclick="toggleChpwVisibility('fp-confirmpw','fp-confirmpw-icon')"
-                            style="position:absolute;right:10px;background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px;" aria-label="Hiện mật khẩu">
+                            style="position:absolute;right:10px;background:none;border:none;cursor:pointer;color:#94a3b8;padding:4px;" aria-label="Hiện mật khẩu" data-i18n-aria="ixShowPw">
                         <i class="fas fa-eye" id="fp-confirmpw-icon"></i>
                     </button>
                 </div>
                 <div id="fp-newpw-error" class="hidden text-sm text-red-600 mb-3"></div>
                 <div class="flex gap-2">
-                    <button onclick="submitResetPassword()" class="flex-1 bg-blue-600 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-700 transition">Đặt mật khẩu</button>
-                    <button onclick="hideForgotPassword()" class="flex-1 bg-slate-100 text-slate-600 py-2.5 rounded-xl font-semibold text-sm hover:bg-slate-200 transition">Hủy</button>
+                    <button onclick="submitResetPassword()" class="flex-1 bg-blue-600 text-white py-2.5 rounded-xl font-semibold text-sm hover:bg-blue-700 transition" data-i18n="ixSetPassword">Đặt mật khẩu</button>
+                    <button onclick="hideForgotPassword()" class="flex-1 bg-slate-100 text-slate-600 py-2.5 rounded-xl font-semibold text-sm hover:bg-slate-200 transition" data-i18n="cancel">Hủy</button>
                 </div>
             </div>
         </div>
@@ -2399,7 +2399,7 @@
                         <p class="text-center mt-3 ios-footnote">
                             <button type="button" onclick="showForgotPassword()"
                                     style="background: none; border: none; cursor: pointer; color: var(--ios-blue); font-size: 13px; padding: 0;">
-                                Quên mật khẩu?
+                                <span data-i18n="forgotPassword">Quên mật khẩu?</span>
                             </button>
                         </p>
                     </form>
@@ -3222,37 +3222,37 @@
                     <div class="p2p-sec-label">Parties</div>
                     <div class="p2p-ios-group">
                         <div class="p2p-ios-row">
-                            <span class="p2p-ios-lbl">Bên A</span>
+                            <span class="p2p-ios-lbl" data-i18n="ixPartyA">Bên A</span>
                             <span id="p2p-side-a-name" class="p2p-ios-input" style="color:#8E8E93;">---</span>
                         </div>
                         <div class="p2p-ios-row">
-                            <span class="p2p-ios-lbl">Bên B</span>
-                            <input type="text" class="p2p-ios-input" placeholder="Nhà cung cấp / Supplier…">
+                            <span class="p2p-ios-lbl" data-i18n="ixPartyB">Bên B</span>
+                            <input type="text" class="p2p-ios-input" placeholder="Nhà cung cấp / Supplier…" data-i18n-placeholder="ixPhSupplier">
                         </div>
                     </div>
 
                     <div class="p2p-sec-label">BIÊN BẢN NGHIỆM THU — Signatures</div>
                     <div class="p2p-sig-grid">
                         <div class="p2p-sig-box">
-                            <label>Người lập</label>
+                            <label data-i18n="ixPreparedBy">Người lập</label>
                             <select id="acc-creator"></select>
                             <div class="sig-line">Signature</div>
                             <input type="text" placeholder="Sign…">
                         </div>
                         <div class="p2p-sig-box">
-                            <label>Người nghiệm thu</label>
+                            <label data-i18n="ixAcceptedBy">Người nghiệm thu</label>
                             <select id="acc-acceptor"></select>
                             <div class="sig-line">Signature</div>
                             <input type="text" placeholder="Sign…">
                         </div>
                         <div class="p2p-sig-box">
-                            <label>Kế toán trưởng</label>
+                            <label data-i18n="roleChiefAccountant">Kế toán trưởng</label>
                             <input type="text" id="p2p-acc-accountant" readonly>
                             <div class="sig-line">Signature</div>
                             <input type="text" placeholder="Sign…">
                         </div>
                         <div class="p2p-sig-box">
-                            <label>Giám đốc</label>
+                            <label data-i18n="ixDirector">Giám đốc</label>
                             <input type="text" id="p2p-acc-director" readonly>
                             <div class="sig-line">Signature</div>
                             <input type="text" placeholder="Sign…">
@@ -3457,7 +3457,7 @@
                                         Voucher Workflow Summary
                                     </h3>
                                     <p class="text-sm text-slate-500">
-                                        Xem, tạo mới và theo dõi toàn bộ phiếu thu/chi trong tab mới.
+                                        <span data-i18n="ixVoucherCardDesc">Xem, tạo mới và theo dõi toàn bộ phiếu thu/chi trong tab mới.</span>
                                     </p>
                                 </div>
                                 <div class="flex items-center gap-3">
@@ -3483,7 +3483,7 @@
                                         Cash Book Summary
                                     </h3>
                                     <p class="text-sm text-slate-500">
-                                        Màn hình chi tiết sổ quỹ (bảng giao dịch, lọc, phân trang) sẽ được mở rộng sau.
+                                        <span data-i18n="ixCashCardDesc">Màn hình chi tiết sổ quỹ (bảng giao dịch, lọc, phân trang) sẽ được mở rộng sau.</span>
                                     </p>
                                 </div>
                                 <div class="flex items-center gap-3">
@@ -3522,7 +3522,7 @@
                 <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
                     <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
                         <i class="fas fa-user-circle"></i>
-                        <span>Thông tin cá nhân</span>
+                        <span data-i18n="ixPersonalInfo">Thông tin cá nhân</span>
                     </h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -3530,19 +3530,19 @@
                             <p id="profile-email" class="mt-1 text-slate-800"></p>
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-slate-600 uppercase tracking-wide">Chức vụ</label>
+                            <label class="text-sm font-semibold text-slate-600 uppercase tracking-wide" data-i18n="ixJobTitle">Chức vụ</label>
                             <p id="profile-position" class="mt-1 text-slate-800"></p>
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-slate-600 uppercase tracking-wide">Phòng ban</label>
+                            <label class="text-sm font-semibold text-slate-600 uppercase tracking-wide" data-i18n="department">Phòng ban</label>
                             <p id="profile-department" class="mt-1 text-slate-800"></p>
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-slate-600 uppercase tracking-wide">Công ty</label>
+                            <label class="text-sm font-semibold text-slate-600 uppercase tracking-wide" data-i18n="company">Công ty</label>
                             <p id="profile-company" class="mt-1 text-slate-800"></p>
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-slate-600 uppercase tracking-wide">Điện thoại</label>
+                            <label class="text-sm font-semibold text-slate-600 uppercase tracking-wide" data-i18n="ixPhone">Điện thoại</label>
                             <p id="profile-phone" class="mt-1 text-slate-800"></p>
                         </div>
                         <div>
@@ -3922,6 +3922,90 @@
 
         const employeeNames = ["Lê Ngân Anh", "Nguyễn Văn Chinh", "Lê Thùy Linh", "Nguyễn Lực", "Nguyễn Thị Nhanh", "Nguyễn Văn An", "Phạm Thị Dung", "Hoàng Văn Em", "Lê Minh Cường"];
 
+        // Page-specific strings merged into the shared i18n.js layer.
+        TLCI18n.extend({
+            vi: {
+                ixCurrentPw: 'Mật khẩu hiện tại',
+                ixNewPw: 'Mật khẩu mới',
+                ixConfirmPw: 'Xác nhận mật khẩu mới',
+                ixPhCurrentPw: 'Nhập mật khẩu hiện tại',
+                ixPhNewPw: 'Nhập mật khẩu mới',
+                ixPhConfirmPw: 'Nhập lại mật khẩu mới',
+                ixShowPw: 'Hiện mật khẩu',
+                ixPwLen: 'Ít nhất 8 ký tự',
+                ixPwUpperFull: 'Ít nhất 1 chữ hoa (A-Z)',
+                ixPwNumFull: 'Ít nhất 1 số (0-9)',
+                ixPwSpecFull: 'Ít nhất 1 ký tự đặc biệt (!@#$%^&*)',
+                ixPwUpper: 'Ít nhất 1 chữ hoa',
+                ixPwNum: 'Ít nhất 1 số',
+                ixPwSpec: 'Ít nhất 1 ký tự đặc biệt',
+                ixSetPassword: 'Đặt mật khẩu',
+                ixSkip: 'Bỏ qua',
+                ixSetNewPassword: 'Đặt mật khẩu mới',
+                ixChangePassword: 'Đổi mật khẩu',
+                ixForgotTitle: 'Quên Mật Khẩu',
+                ixForgotDesc: 'Nhập email của bạn. Chúng tôi sẽ gửi mã OTP để xác nhận.',
+                ixPhEmail: 'Email của bạn',
+                ixSendOtp: 'Gửi mã OTP',
+                ixOtpTitle: 'Nhập Mã OTP',
+                ixOtpDesc: 'Mã 6 chữ số đã được gửi đến email của bạn. Có hiệu lực trong 10 phút.',
+                ixResetTitle: 'Đặt Mật Khẩu Mới',
+                ixResetDesc: 'Tạo mật khẩu mới cho tài khoản của bạn.',
+                ixPersonalInfo: 'Thông tin cá nhân',
+                ixJobTitle: 'Chức vụ',
+                ixPhone: 'Điện thoại',
+                ixVoucherCardDesc: 'Xem, tạo mới và theo dõi toàn bộ phiếu thu/chi trong tab mới.',
+                ixCashCardDesc: 'Màn hình chi tiết sổ quỹ (bảng giao dịch, lọc, phân trang) sẽ được mở rộng sau.',
+                ixPartyA: 'Bên A',
+                ixPartyB: 'Bên B',
+                ixPhSupplier: 'Nhà cung cấp / Supplier…',
+                ixPreparedBy: 'Người lập',
+                ixAcceptedBy: 'Người nghiệm thu',
+                ixDirector: 'Giám đốc',
+                roleChiefAccountant: 'Kế toán trưởng'
+            },
+            en: {
+                ixCurrentPw: 'Current password',
+                ixNewPw: 'New password',
+                ixConfirmPw: 'Confirm new password',
+                ixPhCurrentPw: 'Enter your current password',
+                ixPhNewPw: 'Enter a new password',
+                ixPhConfirmPw: 'Re-enter the new password',
+                ixShowPw: 'Show password',
+                ixPwLen: 'At least 8 characters',
+                ixPwUpperFull: 'At least 1 uppercase letter (A-Z)',
+                ixPwNumFull: 'At least 1 number (0-9)',
+                ixPwSpecFull: 'At least 1 special character (!@#$%^&*)',
+                ixPwUpper: 'At least 1 uppercase letter',
+                ixPwNum: 'At least 1 number',
+                ixPwSpec: 'At least 1 special character',
+                ixSetPassword: 'Set password',
+                ixSkip: 'Skip',
+                ixSetNewPassword: 'Set a new password',
+                ixChangePassword: 'Change password',
+                ixForgotTitle: 'Forgot Password',
+                ixForgotDesc: 'Enter your email. We will send an OTP code to confirm.',
+                ixPhEmail: 'Your email',
+                ixSendOtp: 'Send OTP code',
+                ixOtpTitle: 'Enter OTP Code',
+                ixOtpDesc: 'A 6-digit code has been sent to your email. It is valid for 10 minutes.',
+                ixResetTitle: 'Set New Password',
+                ixResetDesc: 'Create a new password for your account.',
+                ixPersonalInfo: 'Personal information',
+                ixJobTitle: 'Job title',
+                ixPhone: 'Phone',
+                ixVoucherCardDesc: 'View, create and track all receipt/payment vouchers in a new tab.',
+                ixCashCardDesc: 'The detailed cash book screen (transaction table, filters, pagination) will be expanded later.',
+                ixPartyA: 'Party A',
+                ixPartyB: 'Party B',
+                ixPhSupplier: 'Supplier…',
+                ixPreparedBy: 'Prepared by',
+                ixAcceptedBy: 'Accepted by',
+                ixDirector: 'Director',
+                roleChiefAccountant: 'Chief Accountant'
+            }
+        });
+
         // Translations live in the shared i18n.js layer (TLCI18n).
         // Re-render the AI welcome bubble whenever the language changes.
         TLCI18n.onChange(function () {
@@ -4250,7 +4334,7 @@
             if (currentPwRow) currentPwRow.style.display = '';
 
             const modal = document.getElementById('change-password-modal');
-            modal.querySelector('h2').textContent = isFirstLogin ? 'Đặt mật khẩu mới' : 'Đổi mật khẩu';
+            modal.querySelector('h2').textContent = isFirstLogin ? TLCI18n.t('ixSetNewPassword') : TLCI18n.t('ixChangePassword');
             modal.querySelector('p').textContent = isFirstLogin
                 ? 'Nhập mật khẩu mặc định và đặt mật khẩu mới trước khi tiếp tục.'
                 : 'Nhập mật khẩu hiện tại và mật khẩu mới.';
