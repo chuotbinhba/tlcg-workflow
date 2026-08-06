@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -18,6 +18,7 @@
     <link href="dist/output.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js" defer></script>
     <script src="https://unpkg.com/xlsx@0.18.5/dist/xlsx.full.min.js" defer></script>
+    <script src="i18n.js"></script>
     <style>
         /* ============================================
            iOS Design System - Apple Human Interface
@@ -2345,8 +2346,8 @@
                     <div class="flex items-center justify-between mb-6">
                         <button type="button" onclick="closeLogin()" class="ios-button-text" style="color: var(--ios-blue); padding: 0;">Cancel</button>
                         <div class="ios-segmented" style="width: auto;">
-                            <button onclick="setLanguage('en')" class="ios-segmented-item active" style="padding: 4px 12px; font-size: 12px;">EN</button>
-                            <button onclick="setLanguage('vi')" class="ios-segmented-item" style="padding: 4px 12px; font-size: 12px;">VI</button>
+                            <button type="button" data-lang="en" onclick="setLanguage('en')" class="ios-segmented-item" style="padding: 4px 12px; font-size: 12px;" aria-label="Switch to English">EN</button>
+                            <button type="button" data-lang="vi" onclick="setLanguage('vi')" class="ios-segmented-item" style="padding: 4px 12px; font-size: 12px;" aria-label="Switch to Vietnamese">VI</button>
                         </div>
                     </div>
 
@@ -2516,8 +2517,8 @@
                     <div class="flex items-center gap-3">
                         <!-- Language Switcher - iOS Segmented Control Style -->
                         <div class="ios-segmented hidden sm:flex">
-                            <button onclick="setLanguage('en')" id="lang-en" class="ios-segmented-item active" aria-label="Switch to English">EN</button>
-                            <button onclick="setLanguage('vi')" id="lang-vi" class="ios-segmented-item" aria-label="Switch to Vietnamese">VI</button>
+                            <button type="button" data-lang="en" onclick="setLanguage('en')" id="lang-en" class="ios-segmented-item" aria-label="Switch to English">EN</button>
+                            <button type="button" data-lang="vi" onclick="setLanguage('vi')" id="lang-vi" class="ios-segmented-item" aria-label="Switch to Vietnamese">VI</button>
                         </div>
 
                         <!-- User Section -->
@@ -3784,7 +3785,6 @@
             }
         }
         
-        let currentLang = 'en';
         let currentUser = null;
         let requestedPage = 'home'; // Store the page user wants to access
         const publicPages = ['home']; // Pages that don't require login
@@ -3922,10 +3922,15 @@
 
         const employeeNames = ["Lê Ngân Anh", "Nguyễn Văn Chinh", "Lê Thùy Linh", "Nguyễn Lực", "Nguyễn Thị Nhanh", "Nguyễn Văn An", "Phạm Thị Dung", "Hoàng Văn Em", "Lê Minh Cường"];
 
-        const translations = {
-            en: { loginTitle: "TLCGroup Login", opsHubTitle: "Group Operations Hub", o2cTitle: "Order to Cash", p2pTitle: "Purchase to Pay", cashTitle: "Cash & Admin", openProcesses: "Launch System", backToDash: "Back", quotation: "Quotation", contract: "Contract", vatInvoice: "VAT Invoice", purchaseRequest: "Purchase Request", acceptance: "Acceptance", paymentRequest: "Payment Request", cashBook: "Cash Book", vouchers: "Vouchers", aiTitle: "✨ Ask TLC AI", aiWelcome: "Hello! I can help with O2C, P2P or Cash." },
-            vi: { loginTitle: "Đăng nhập TLCGroup", opsHubTitle: "Vận hành Nhóm", o2cTitle: "Bán hàng (O2C)", p2pTitle: "Mua hàng (P2P)", cashTitle: "Tiền mặt & Quản trị", openProcesses: "Mở hệ thống", backToDash: "Quay lại", quotation: "Báo giá", contract: "Hợp đồng", vatInvoice: "Hóa đơn VAT", purchaseRequest: "Yêu cầu mua hàng", acceptance: "Biên bản nghiệm thu", paymentRequest: "Đề nghị thanh toán", cashBook: "Sổ quỹ", vouchers: "Phiếu thu/chi", aiTitle: "✨ Hỏi Đáp TLC AI", aiWelcome: "Xin chào! Tôi có thể giúp gì về O2C, P2P hay Tiền mặt?" }
-        };
+        // Translations live in the shared i18n.js layer (TLCI18n).
+        // Re-render the AI welcome bubble whenever the language changes.
+        TLCI18n.onChange(function () {
+            const aiArea = document.getElementById('ai-messages');
+            if (aiArea) {
+                aiArea.innerHTML = `<div class="chat-message bg-blue-100 text-blue-800 p-3 rounded-2xl rounded-tl-none"></div>`;
+                aiArea.firstChild.textContent = TLCI18n.t('aiWelcome');
+            }
+        });
 
         // Mobile Menu Toggle Function
         function toggleMobileMenu() {
@@ -4994,17 +4999,7 @@
             }
         }
 
-        function setLanguage(lang) {
-            currentLang = lang;
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                if (translations[lang][key]) el.innerHTML = translations[lang][key];
-            });
-            const enBtn = document.getElementById('lang-en'); if(enBtn) enBtn.className = `px-2 py-1 text-[10px] font-bold rounded-md transition ${lang === 'en' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400'}`;
-            const viBtn = document.getElementById('lang-vi'); if(viBtn) viBtn.className = `px-2 py-1 text-[10px] font-bold rounded-md transition ${lang === 'vi' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-400'}`;
-            const aiArea = document.getElementById('ai-messages');
-            if (aiArea) aiArea.innerHTML = `<div class="chat-message bg-blue-100 text-blue-800 p-3 rounded-2xl rounded-tl-none">${translations[lang].aiWelcome}</div>`;
-        }
+        // setLanguage() is provided globally by i18n.js.
 
         function toggleAIChat() { document.getElementById('ai-chat-window').classList.toggle('hidden'); }
 
@@ -6041,7 +6036,8 @@
             console.log('🔍 SESSION DEBUG: localStorage available:', typeof localStorage !== 'undefined');
             console.log('🔍 SESSION DEBUG: Current URL:', window.location.href);
 
-            setLanguage('en');
+            // Language is resolved and applied by i18n.js on DOMContentLoaded;
+            // do not reset it here or the user's stored choice is discarded.
 
             // Load master data first
             loadMasterData().then(() => {
