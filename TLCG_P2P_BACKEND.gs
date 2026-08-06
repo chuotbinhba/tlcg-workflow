@@ -12,6 +12,89 @@
  * Version: 2.0  (renamed from PAYMENT_REQUEST_BACKEND.gs, May 2026)
  */
 
+// ==================== I18N (server-side messages) ====================
+
+/**
+ * Server-side message localisation.
+ *
+ * Scope, deliberately narrow:
+ *   - API response messages returned to the browser use the caller's language,
+ *     passed as `lang` on the request payload (the frontend sends its current
+ *     TLCI18n language). Falls back to Vietnamese.
+ *   - Outbound EMAIL is NOT localised by the caller's `lang`. Emails go to
+ *     approvers, not to the submitter, and the backend has no per-recipient
+ *     language preference — using the submitter's language would send a
+ *     Vietnamese approver an English email. Email templates stay Vietnamese;
+ *     see msgBilingual_() for the few places we show both languages.
+ *
+ * Status values, sheet names and column headers are never translated: they are
+ * compared against and written into Sheets.
+ */
+var MSG_ = {
+  vi: {
+    errParse: 'Lỗi parse dữ liệu: ',
+    errServer: 'Lỗi server: ',
+    errSave: 'Lỗi khi lưu đề nghị: ',
+    errApprove: 'Lỗi khi phê duyệt: ',
+    errReject: 'Lỗi khi từ chối: ',
+    errHistory: 'Lỗi khi lấy lịch sử: ',
+    errDetail: 'Lỗi khi lấy chi tiết: ',
+    errGeneric: 'Lỗi: ',
+    amNotFound: 'Biên bản nghiệm thu {0} không tồn tại trong hệ thống.',
+    amNotConfirmed: 'Biên bản nghiệm thu {0} chưa được xác nhận (trạng thái hiện tại: {1}). Vui lòng chờ phê duyệt trước khi tạo đề nghị thanh toán.',
+    amAlreadyUsed: 'Biên bản nghiệm thu này đã được sử dụng trong đề nghị thanh toán khác.',
+    exceedsCeiling: 'Tổng thanh toán vượt quá giá trị hợp đồng/PR ({0} ₫).',
+    prInvalidDirect: 'PR không hợp lệ cho thanh toán trực tiếp.',
+    needAmOrPr: 'Vui lòng nhập số Biên Bản Nghiệm Thu (AM No) hoặc số PR (hàng hóa < 2tr).'
+  },
+  en: {
+    errParse: 'Failed to parse data: ',
+    errServer: 'Server error: ',
+    errSave: 'Failed to save the request: ',
+    errApprove: 'Approval failed: ',
+    errReject: 'Rejection failed: ',
+    errHistory: 'Failed to load history: ',
+    errDetail: 'Failed to load details: ',
+    errGeneric: 'Error: ',
+    amNotFound: 'Acceptance Minutes {0} does not exist in the system.',
+    amNotConfirmed: 'Acceptance Minutes {0} has not been confirmed (current status: {1}). Please wait for approval before creating a payment request.',
+    amAlreadyUsed: 'These Acceptance Minutes have already been used in another payment request.',
+    exceedsCeiling: 'Total payment exceeds the contract/PR value ({0} ₫).',
+    prInvalidDirect: 'This PR is not eligible for direct payment.',
+    needAmOrPr: 'Please enter an Acceptance Minutes number (AM No) or a PR number (goods < 2M).'
+  }
+};
+
+/** Language for the current request; set by doPost from the payload. */
+var REQ_LANG_ = 'vi';
+
+function setReqLang_(lang) {
+  REQ_LANG_ = (lang === 'en') ? 'en' : 'vi';
+  return REQ_LANG_;
+}
+
+/**
+ * Localised message with {0}, {1}… substitution.
+ * Unknown keys return the key itself so nothing is ever blank.
+ */
+function msg_(key, a, b) {
+  var table = MSG_[REQ_LANG_] || MSG_.vi;
+  var text = table[key];
+  if (text == null) text = (MSG_.vi[key] != null) ? MSG_.vi[key] : key;
+  if (a !== undefined) text = text.replace('{0}', a);
+  if (b !== undefined) text = text.replace('{1}', b);
+  return text;
+}
+
+/** Vietnamese + English on one line, for email content sent to mixed audiences. */
+function msgBilingual_(key, a, b) {
+  var prev = REQ_LANG_;
+  REQ_LANG_ = 'vi'; var vi = msg_(key, a, b);
+  REQ_LANG_ = 'en'; var en = msg_(key, a, b);
+  REQ_LANG_ = prev;
+  return vi === en ? vi : (vi + ' / ' + en);
+}
+
 // ==================== CONFIGURATION ====================
 
 /**
@@ -98,9 +181,12 @@ function doPost(e) {
       }
     } catch (parseError) {
       Logger.log('[Payment Request] Parse error: ' + parseError.message);
-      return createResponse(false, 'Lỗi parse dữ liệu: ' + parseError.message);
+      return createResponse(false, msg_('errParse') + parseError.message);
     }
-    
+
+    // Response messages follow the caller's UI language (emails do not).
+    setReqLang_(data.lang);
+
     const action = data.action;
     Logger.log('[Payment Request] Action: ' + action);
     
@@ -190,7 +276,7 @@ function doPost(e) {
   } catch (error) {
     Logger.log('[Payment Request] Error in doPost: ' + error.message);
     Logger.log('[Payment Request] Stack trace: ' + error.stack);
-    return createResponse(false, 'Lỗi server: ' + error.message);
+    return createResponse(false, msg_('errServer') + error.message);
   }
 }
 
@@ -217,7 +303,7 @@ function doGet(e) {
     
   } catch (error) {
     Logger.log('[Payment Request] Error in doGet: ' + error.message);
-    return createResponse(false, 'Lỗi server: ' + error.message);
+    return createResponse(false, msg_('errServer') + error.message);
   }
 }
 
@@ -294,17 +380,17 @@ function handleSendPaymentRequest(data) {
     if (amNo) {
       amRecord = getAMByNo_(amNo);
       if (!amRecord) {
-        return createResponse(false, 'Biên bản nghiệm thu ' + amNo + ' không tồn tại trong hệ thống.');
+        return createResponse(false, msg_('amNotFound', amNo));
       }
       if (amRecord.status !== 'Đã nghiệm thu') {
-        return createResponse(false, 'Biên bản nghiệm thu ' + amNo + ' chưa được xác nhận (trạng thái hiện tại: ' + amRecord.status + '). Vui lòng chờ phê duyệt trước khi tạo đề nghị thanh toán.');
+        return createResponse(false, msg_('amNotConfirmed', amNo, amRecord.status));
       }
       // AM already used by another PMT?
       const existingForAm = getPMTsByPR_(amRecord.prNo || '').filter(function(p) {
         return (p.amNo || '') === amNo && p.status !== 'Rejected' && p.status !== 'Từ chối';
       });
       if (existingForAm.length > 0) {
-        return createResponse(false, 'Biên bản nghiệm thu này đã được sử dụng trong đề nghị thanh toán khác.');
+        return createResponse(false, msg_('amAlreadyUsed'));
       }
       const prInfo = findPRByNo_(amRecord.prNo || '');
       if (prInfo) {
@@ -321,17 +407,17 @@ function handleSendPaymentRequest(data) {
       const thisAmount = parseFloat(data.totalAmount) || 0;
       const paidTotal = sumPaidPMTsForPR_(amRecord.prNo || '');
       if (contractCeiling > 0 && paidTotal + thisAmount > contractCeiling + 0.01) {
-        return createResponse(false, 'Tổng thanh toán vượt quá giá trị hợp đồng/PR (' + contractCeiling.toLocaleString('vi-VN') + ' ₫).');
+        return createResponse(false, msg_('exceedsCeiling', contractCeiling.toLocaleString('vi-VN')));
       }
     } else if (prRequestNo) {
       const directResult = _validatePRForDirectPayment_(prRequestNo);
       if (!directResult.ok) {
-        return createResponse(false, directResult.message || 'PR không hợp lệ cho thanh toán trực tiếp.');
+        return createResponse(false, directResult.message || msg_('prInvalidDirect'));
       }
       p2pBranch = 'simplified';
       contractCeiling = parseFloat(directResult.data.grandTotal) || 0;
     } else {
-      return createResponse(false, 'Vui lòng nhập số Biên Bản Nghiệm Thu (AM No) hoặc số PR (hàng hóa < 2tr).');
+      return createResponse(false, msg_('needAmOrPr'));
     }
 
     // Store metadata
@@ -414,7 +500,7 @@ function handleSendPaymentRequest(data) {
   } catch (error) {
     Logger.log('[Payment Request] Error in handleSendPaymentRequest: ' + error.message);
     Logger.log('[Payment Request] Stack: ' + error.stack);
-    return createResponse(false, 'Lỗi khi lưu đề nghị: ' + error.message);
+    return createResponse(false, msg_('errSave') + error.message);
   }
 }
 
@@ -550,7 +636,7 @@ function handleApprovePaymentRequest(data) {
     
   } catch (error) {
     Logger.log('[Payment Request] Error in handleApprovePaymentRequest: ' + error.message);
-    return createResponse(false, 'Lỗi khi phê duyệt: ' + error.message);
+    return createResponse(false, msg_('errApprove') + error.message);
   }
 }
 
@@ -657,7 +743,7 @@ function handleRejectPaymentRequest(data) {
     
   } catch (error) {
     Logger.log('[Payment Request] Error in handleRejectPaymentRequest: ' + error.message);
-    return createResponse(false, 'Lỗi khi từ chối: ' + error.message);
+    return createResponse(false, msg_('errReject') + error.message);
   }
 }
 
@@ -692,7 +778,7 @@ function handleGetPaymentRequestHistory(data) {
     
   } catch (error) {
     Logger.log('[Payment Request] Error in handleGetPaymentRequestHistory: ' + error.message);
-    return createResponse(false, 'Lỗi khi lấy lịch sử: ' + error.message);
+    return createResponse(false, msg_('errHistory') + error.message);
   }
 }
 
@@ -747,7 +833,7 @@ function handleGetRecentPaymentRequests(data) {
 
   } catch (error) {
     Logger.log('[Payment Request] Error in handleGetRecentPaymentRequests: ' + error.message);
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -807,7 +893,7 @@ function handleGetPaymentRequestDetails(data) {
     
   } catch (error) {
     Logger.log('[Payment Request] Error in handleGetPaymentRequestDetails: ' + error.message);
-    return createResponse(false, 'Lỗi khi lấy chi tiết: ' + error.message);
+    return createResponse(false, msg_('errDetail') + error.message);
   }
 }
 
@@ -1467,7 +1553,7 @@ function handleGetEmployees(requestBody) {
   } catch (error) {
     Logger.log('[Payment Request] ❌ ERROR in handleGetEmployees: ' + error.toString());
     Logger.log('[Payment Request] ❌ Error stack: ' + error.stack);
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -1517,7 +1603,7 @@ function handleGetPurchaseOrderTypes(data) {
   } catch (error) {
     Logger.log('[Payment Request] ❌ ERROR in handleGetPurchaseOrderTypes: ' + error.toString());
     Logger.log('[Payment Request] ❌ Error stack: ' + error.stack);
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -1547,7 +1633,7 @@ function handleGetGoodsCatalog(data) {
     return createResponse(true, 'Goods catalog fetched successfully', { goods: goods });
   } catch (error) {
     Logger.log('[P2P] ❌ ERROR in handleGetGoodsCatalog: ' + error.toString());
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -1641,7 +1727,7 @@ function handleGetP2PMasterData(data) {
 
   } catch (error) {
     Logger.log('[P2P] ❌ ERROR in handleGetP2PMasterData: ' + error.toString());
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -2148,7 +2234,7 @@ function handleGetPurchaseRequestHistory(data) {
 
   } catch (error) {
     Logger.log('[P2P] ❌ ERROR in handleGetPurchaseRequestHistory: ' + error.toString());
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -2435,7 +2521,7 @@ function handleApprovePurchaseRequest(data) {
 
   } catch (error) {
     Logger.log('[P2P] ❌ ERROR in handleApprovePurchaseRequest: ' + error.toString());
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -2532,7 +2618,7 @@ function handleRejectPurchaseRequest(data) {
 
   } catch (error) {
     Logger.log('[P2P] ❌ ERROR in handleRejectPurchaseRequest: ' + error.toString());
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -2684,7 +2770,7 @@ function handleSendBackPurchaseRequest(data) {
 
   } catch (error) {
     Logger.log('[P2P] ❌ ERROR in handleSendBackPurchaseRequest: ' + error.toString());
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -2898,7 +2984,7 @@ function handleResubmitPurchaseRequest(data) {
 
   } catch (error) {
     Logger.log('[P2P] ❌ ERROR in handleResubmitPurchaseRequest: ' + error.toString());
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 

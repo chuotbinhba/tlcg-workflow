@@ -2,6 +2,67 @@
  * GOOGLE APPS SCRIPT - PHIẾU THU CHI
  */
 
+// ==================== I18N (server-side messages) ====================
+
+/**
+ * Server-side message localisation.
+ *
+ * API response messages follow the caller's UI language, passed as `lang` on
+ * the request payload (i18n.js stamps every JSON/FormData action payload).
+ * Falls back to Vietnamese.
+ *
+ * Outbound EMAIL is intentionally NOT localised this way: emails go to
+ * approvers, not the submitter, and the backend has no per-recipient language
+ * preference. Email templates stay Vietnamese.
+ *
+ * Status values, sheet names and column headers are never translated — they are
+ * compared against and written into Sheets.
+ */
+var MSG_ = {
+  vi: {
+    errGeneric: 'Lỗi: ',
+    missingVoucherNo: 'Thiếu số phiếu',
+    voucherNotFound: 'Không tìm thấy phiếu: ',
+    needApproveSignature: 'Vui lòng tải lên chữ ký trước khi phê duyệt',
+    alreadyRejected: 'Phiếu này đã được từ chối trước đó.',
+    accountNotFound: 'Tài khoản không tồn tại',
+    wrongPassword: 'Mật khẩu không đúng',
+    needAckSignature: 'Vui lòng tải lên chữ ký xác nhận',
+    needRejectReason: 'Vui lòng nhập lý do từ chối',
+    missingVoucherNumber: 'Thiếu voucher number',
+  },
+  en: {
+    errGeneric: 'Error: ',
+    missingVoucherNo: 'Missing voucher number',
+    voucherNotFound: 'Voucher not found: ',
+    needApproveSignature: 'Please upload your signature before approving',
+    alreadyRejected: 'This voucher has already been rejected.',
+    accountNotFound: 'Account does not exist',
+    wrongPassword: 'Incorrect password',
+    needAckSignature: 'Please upload a confirmation signature',
+    needRejectReason: 'Please enter a rejection reason',
+    missingVoucherNumber: 'Missing voucher number',
+  }
+};
+
+/** Language for the current request; set by doPost from the payload. */
+var REQ_LANG_ = 'vi';
+
+function setReqLang_(lang) {
+  REQ_LANG_ = (lang === 'en') ? 'en' : 'vi';
+  return REQ_LANG_;
+}
+
+/** Localised message with {0}/{1} substitution; unknown keys return the key. */
+function msg_(key, a, b) {
+  var table = MSG_[REQ_LANG_] || MSG_.vi;
+  var text = table[key];
+  if (text == null) text = (MSG_.vi[key] != null) ? MSG_.vi[key] : key;
+  if (a !== undefined) text = text.replace('{0}', a);
+  if (b !== undefined) text = text.replace('{1}', b);
+  return text;
+}
+
 // Single source of truth for the frontend URL used in all email links.
 // Override via Script Properties: APP_BASE_URL
 const BASE_URL = getCfg_('APP_BASE_URL', 'https://workflow.egg-ventures.com');
@@ -188,7 +249,7 @@ function doGet(e) {
   } catch (error) {
     Logger.log('❌ ERROR in doGet: ' + error.toString());
     Logger.log('❌ Error stack: ' + error.stack);
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
   
   // Default response for direct browser access (not API call)
@@ -295,6 +356,9 @@ function doPost(e) {
       Logger.log('⚠️ WARNING: Action is null or undefined');
       return createResponse(false, 'Không tìm thấy action');
     }
+
+    // Response messages follow the caller's UI language (emails do not).
+    setReqLang_(requestBody && requestBody.lang);
 
     Logger.log('Processing action: ' + action);
     Logger.log('Action type: ' + typeof action);
@@ -974,13 +1038,13 @@ function handleApproveVoucher(requestBody) {
     Logger.log('🟢 Approver Email: ' + approverEmail);
     
     if (!voucherNumber) {
-      return createResponse(false, 'Thiếu số phiếu');
+      return createResponse(false, msg_('missingVoucherNo'));
     }
     
     // Get existing voucher data from history
     const existingVoucher = getVoucherFromHistory(voucherNumber);
     if (!existingVoucher) {
-      return createResponse(false, 'Không tìm thấy phiếu: ' + voucherNumber);
+      return createResponse(false, msg_('voucherNotFound') + voucherNumber);
     }
     
     // Parse MetaJSON — validate required structure after parsing
@@ -1046,7 +1110,7 @@ function handleApproveVoucher(requestBody) {
     
     // 5. Validate signature + verification (must pass BEFORE any state mutation)
     if (!v.approverSignature || v.approverSignature.trim() === '') {
-      return createResponse(false, 'Vui lòng tải lên chữ ký trước khi phê duyệt');
+      return createResponse(false, msg_('needApproveSignature'));
     }
     if (!v.signatureVerification || typeof v.signatureVerification !== 'object') {
       return createResponse(false, 'Thiếu dữ liệu xác thực chữ ký. Vui lòng thử lại hoặc liên hệ quản trị viên.');
@@ -1210,7 +1274,7 @@ function handleApproveVoucher(requestBody) {
     Logger.log('❌❌❌ Error stack: ' + error.stack);
     console.log('❌❌❌ Error at line: ' + (error.lineNumber || 'unknown'));
     Logger.log('❌❌❌ Error at line: ' + (error.lineNumber || 'unknown'));
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -1241,11 +1305,11 @@ function handleApproveVoucherLegacy(requestBody, existingVoucher) {
   }
   
   if (latestStatus === 'Rejected' || latestAction === 'Rejected') {
-    return createResponse(false, 'Phiếu này đã được từ chối trước đó.');
+    return createResponse(false, msg_('alreadyRejected'));
   }
   
   if (!v.approverSignature || v.approverSignature.trim() === '') {
-    return createResponse(false, 'Vui lòng tải lên chữ ký trước khi phê duyệt');
+    return createResponse(false, msg_('needApproveSignature'));
   }
   
   const metaData = {
@@ -1532,11 +1596,11 @@ function handleAcknowledgeReceipt(requestBody) {
     const requesterName = requestBody.requesterName || '';
     const requesterSignature = requestBody.requesterSignature || '';
 
-    if (!voucherNumber) return createResponse(false, 'Thiếu số phiếu');
-    if (!requesterSignature) return createResponse(false, 'Vui lòng tải lên chữ ký xác nhận');
+    if (!voucherNumber) return createResponse(false, msg_('missingVoucherNo'));
+    if (!requesterSignature) return createResponse(false, msg_('needAckSignature'));
 
     const existingVoucher = getVoucherFromHistory(voucherNumber);
-    if (!existingVoucher) return createResponse(false, 'Không tìm thấy phiếu: ' + voucherNumber);
+    if (!existingVoucher) return createResponse(false, msg_('voucherNotFound') + voucherNumber);
 
     // Parse meta first (needed for status check)
     let meta = {};
@@ -1625,7 +1689,7 @@ function handleAcknowledgeReceipt(requestBody) {
 
   } catch (error) {
     Logger.log('❌ Error in handleAcknowledgeReceipt: ' + error.toString());
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -1813,19 +1877,19 @@ function handleRejectVoucher(requestBody) {
     const approverEmail = v.approverEmail || '';
     
     if (!voucherNumber) {
-      return createResponse(false, 'Thiếu số phiếu');
+      return createResponse(false, msg_('missingVoucherNo'));
     }
     
     // Validate reject reason
     const rejectReason = v.rejectReason || '';
     if (!rejectReason || rejectReason.trim() === '') {
-      return createResponse(false, 'Vui lòng nhập lý do từ chối');
+      return createResponse(false, msg_('needRejectReason'));
     }
     
     // Get existing voucher data
     const existingVoucher = getVoucherFromHistory(voucherNumber);
     if (!existingVoucher) {
-      return createResponse(false, 'Không tìm thấy phiếu: ' + voucherNumber);
+      return createResponse(false, msg_('voucherNotFound') + voucherNumber);
     }
     
     // Parse meta (full JSON after "Meta: " from getVoucherFromHistory)
@@ -1867,7 +1931,7 @@ function handleRejectVoucher(requestBody) {
       
       // Check if already rejected
       if (companyApprovers.overallStatus === 'Rejected') {
-        return createResponse(false, 'Phiếu này đã được từ chối trước đó.');
+        return createResponse(false, msg_('alreadyRejected'));
       }
       
       // Update approver status to rejected
@@ -1962,7 +2026,7 @@ function handleRejectVoucher(requestBody) {
       }
       
       if (latestStatus === 'Rejected' || latestAction === 'Rejected') {
-        return createResponse(false, 'Phiếu này đã được từ chối trước đó.');
+        return createResponse(false, msg_('alreadyRejected'));
       }
       
       appendHistory_({
@@ -1989,7 +2053,7 @@ function handleRejectVoucher(requestBody) {
     }
   } catch (error) {
     Logger.log('❌ Error rejecting voucher: ' + error.toString());
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -2818,7 +2882,7 @@ function handleBulkApprove(requestBody) {
 
     // Validate signature
     if (!approverSignature || approverSignature.trim() === '') {
-      return createResponse(false, 'Vui lòng tải lên chữ ký trước khi phê duyệt');
+      return createResponse(false, msg_('needApproveSignature'));
     }
     if (!signatureVerification || typeof signatureVerification !== 'object') {
       return createResponse(false, 'Thiếu dữ liệu xác thực chữ ký. Vui lòng thử lại.');
@@ -2913,13 +2977,13 @@ function handleGetApprovalStatus(requestBody) {
     const voucherNumber = requestBody.voucherNumber || '';
 
     if (!voucherNumber) {
-      return createResponse(false, 'Thiếu số phiếu');
+      return createResponse(false, msg_('missingVoucherNo'));
     }
 
     // Get latest voucher entry from history
     const existingVoucher = getVoucherFromHistory(voucherNumber);
     if (!existingVoucher) {
-      return createResponse(false, 'Không tìm thấy phiếu: ' + voucherNumber);
+      return createResponse(false, msg_('voucherNotFound') + voucherNumber);
     }
 
     // Parse meta from note field (full JSON after "Meta: " from getVoucherFromHistory)
@@ -3141,7 +3205,7 @@ function handleGetApprovalStatus(requestBody) {
     return createResponse(true, 'Thành công', statusData);
   } catch (error) {
     Logger.log('❌ Error in handleGetApprovalStatus: ' + error.toString());
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -3220,7 +3284,7 @@ function handleLogin_(requestBody) {
           const plainHash = hashPassword(storedPlain);
           if (submittedHash !== plainHash) {
             Logger.log('❌ Password mismatch (plain-text migration) for: ' + requestBody.email);
-            return createResponse(false, 'Mật khẩu không đúng');
+            return createResponse(false, msg_('wrongPassword'));
           }
           sheet.getRange(i + 1, 12).setValue(plainHash); // Write hash to column L
           Logger.log('✅ Migrated plain-text password to column L for: ' + data[i][4]);
@@ -3228,7 +3292,7 @@ function handleLogin_(requestBody) {
           // Normal comparison against column L hash
           if (submittedHash !== storedHash) {
             Logger.log('❌ Password mismatch for: ' + requestBody.email);
-            return createResponse(false, 'Mật khẩu không đúng');
+            return createResponse(false, msg_('wrongPassword'));
           }
         }
 
@@ -3242,7 +3306,7 @@ function handleLogin_(requestBody) {
     }
 
     Logger.log('❌ User not found with email: ' + requestBody.email);
-    return createResponse(false, 'Tài khoản không tồn tại');
+    return createResponse(false, msg_('accountNotFound'));
   } catch (error) {
     Logger.log('❌ UNEXPECTED ERROR in handleLogin_: ' + error.toString());
     Logger.log('Error stack: ' + error.stack);
@@ -3293,10 +3357,10 @@ function handleChangePassword(requestBody) {
         return createResponse(true, 'Đổi mật khẩu thành công');
       }
     }
-    return createResponse(false, 'Tài khoản không tồn tại');
+    return createResponse(false, msg_('accountNotFound'));
   } catch (error) {
     Logger.log('❌ ERROR in handleChangePassword: ' + error.toString());
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -3354,7 +3418,7 @@ function handleGetEmployees(requestBody) {
   } catch (error) {
     Logger.log('❌ ERROR in handleGetEmployees: ' + error.toString());
     Logger.log('❌ Error stack: ' + error.stack);
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -3391,7 +3455,7 @@ function handleGetCompanies() {
     return createResponse(true, 'Thành công', { companies_data: companies_data });
   } catch (error) {
     Logger.log('❌ ERROR in handleGetCompanies: ' + error.toString());
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -3601,7 +3665,7 @@ function handleGetCompanyApprovers(requestBody, directCompanyName) {
   } catch (error) {
     Logger.log('❌ ERROR in handleGetCompanyApprovers: ' + error.toString());
     Logger.log('❌ Error stack: ' + error.stack);
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -3889,7 +3953,7 @@ function handleGetVoucherSummary(requestBody) {
       globalStats: globalStats
     });
   } catch (error) {
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -3897,7 +3961,7 @@ function handleGetVoucherHistory(requestBody) {
   try {
     const voucherNumber = (requestBody && requestBody.voucherNumber) || '';
     if (!voucherNumber) {
-      return createResponse(false, 'Thiếu voucher number');
+      return createResponse(false, msg_('missingVoucherNumber'));
     }
     
     const sheet = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID).getSheetByName(VH_SHEET_NAME);
@@ -3959,7 +4023,7 @@ function handleGetVoucherHistory(requestBody) {
     
     return createResponse(true, 'Thành công', history);
   } catch (error) {
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -4348,7 +4412,7 @@ function handleRefreshApproverEmails(requestBody) {
 
   } catch (error) {
     Logger.log('❌ ERROR in handleRefreshApproverEmails: ' + error.toString());
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 

@@ -628,6 +628,61 @@
     return wrap;
   }
 
+  /**
+   * Stamp the current language onto outgoing JSON POST bodies so the backend
+   * can localise its response messages (see msg_() in the .gs backends).
+   *
+   * Done once here rather than at ~25 call sites. Deliberately conservative:
+   * only same-origin-style JSON string bodies that already look like an action
+   * payload are touched, an existing `lang` is never overwritten, and any
+   * parse failure leaves the request byte-for-byte unchanged.
+   */
+  function installFetchLangStamp() {
+    if (!global.fetch || global.__tlcI18nFetchPatched) return;
+    global.__tlcI18nFetchPatched = true;
+
+    var nativeFetch = global.fetch.bind(global);
+
+    // Add lang to a JSON action payload; returns null if it isn't one.
+    function stampJson(text) {
+      if (typeof text !== 'string' || text.indexOf('"action"') === -1) return null;
+      var parsed;
+      try {
+        parsed = JSON.parse(text);
+      } catch (e) {
+        return null;
+      }
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return null;
+      if (parsed.lang != null) return null;
+      parsed.lang = getLang();
+      return JSON.stringify(parsed);
+    }
+
+    global.fetch = function (input, init) {
+      try {
+        if (init && init.body) {
+          var body = init.body;
+
+          // Plain JSON body.
+          var stamped = stampJson(body);
+          if (stamped !== null) {
+            init = Object.assign({}, init, { body: stamped });
+          } else if (
+            global.FormData && body instanceof global.FormData &&
+            typeof body.get === 'function' && typeof body.set === 'function'
+          ) {
+            // Multipart upload: the payload rides in a `data` field.
+            var inner = stampJson(body.get('data'));
+            if (inner !== null) body.set('data', inner);
+          }
+        }
+      } catch (e) {
+        /* not ours — send the original request untouched */
+      }
+      return nativeFetch(input, init);
+    };
+  }
+
   /** Apply the resolved language on load without overwriting the stored one. */
   function init() {
     injectStyles();
@@ -661,6 +716,10 @@
 
   // Existing inline handlers call setLanguage('en') directly.
   global.setLanguage = setLanguage;
+
+  // Patch fetch at load, not in init(): a page may fire a request before
+  // DOMContentLoaded, and those must carry the language too.
+  installFetchLangStamp();
 
   if (global.document) {
     if (global.document.readyState === 'loading') {

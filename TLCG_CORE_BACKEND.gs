@@ -16,6 +16,57 @@
  * - Approve/Reject Voucher
  */
 
+// ==================== I18N (server-side messages) ====================
+
+/**
+ * Server-side message localisation.
+ *
+ * API response messages follow the caller's UI language, passed as `lang` on
+ * the request payload (i18n.js stamps every JSON/FormData action payload).
+ * Falls back to Vietnamese.
+ *
+ * Outbound EMAIL is intentionally NOT localised this way: emails go to
+ * approvers, not the submitter, and the backend has no per-recipient language
+ * preference. Email templates stay Vietnamese.
+ *
+ * Status values, sheet names and column headers are never translated — they are
+ * compared against and written into Sheets.
+ */
+var MSG_ = {
+  vi: {
+    errGeneric: 'Lỗi: ',
+    wrongCurrentPassword: 'Mật khẩu hiện tại không đúng',
+    invalidToken: 'Token không hợp lệ hoặc đã hết hạn. Vui lòng thử lại.',
+    missingRequired: 'Thiếu thông tin bắt buộc',
+    errSendEmail: 'Error sending email: ',
+  },
+  en: {
+    errGeneric: 'Error: ',
+    wrongCurrentPassword: 'Current password is incorrect',
+    invalidToken: 'Invalid or expired token. Please try again.',
+    missingRequired: 'Missing required information',
+    errSendEmail: 'Error sending email: ',
+  }
+};
+
+/** Language for the current request; set by doPost from the payload. */
+var REQ_LANG_ = 'vi';
+
+function setReqLang_(lang) {
+  REQ_LANG_ = (lang === 'en') ? 'en' : 'vi';
+  return REQ_LANG_;
+}
+
+/** Localised message with {0}/{1} substitution; unknown keys return the key. */
+function msg_(key, a, b) {
+  var table = MSG_[REQ_LANG_] || MSG_.vi;
+  var text = table[key];
+  if (text == null) text = (MSG_.vi[key] != null) ? MSG_.vi[key] : key;
+  if (a !== undefined) text = text.replace('{0}', a);
+  if (b !== undefined) text = text.replace('{1}', b);
+  return text;
+}
+
 // ============================================================================
 // CONFIGURATION
 // ============================================================================
@@ -214,8 +265,10 @@ function doPost(e) {
     }
     
     const action = requestBody.action;
-    
-    
+
+    // Response messages follow the caller's UI language (emails do not).
+    setReqLang_(requestBody.lang);
+
     let result;
 
     Logger.log('Routing to handler for action: ' + action);
@@ -766,7 +819,7 @@ function handleRequestPasswordReset(requestBody) {
     return createResponse(true, genericMsg);
   } catch (error) {
     Logger.log('Error in handleRequestPasswordReset: ' + error.toString());
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -808,7 +861,7 @@ function handleVerifyOTP(requestBody) {
     return createResponse(true, 'OTP hợp lệ', { resetToken: resetToken });
   } catch (error) {
     Logger.log('Error in handleVerifyOTP: ' + error.toString());
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -820,7 +873,7 @@ function handleResetPassword(requestBody) {
     const email      = (requestBody.email      || '').toString().trim().toLowerCase();
     const resetToken = (requestBody.resetToken || '').toString().trim();
     const newPassword = (requestBody.newPassword || '').toString();
-    if (!email || !resetToken || !newPassword) return createResponse(false, 'Thiếu thông tin bắt buộc');
+    if (!email || !resetToken || !newPassword) return createResponse(false, msg_('missingRequired'));
 
     // Validate password rules
     const pwValidation = validatePasswordRules(newPassword);
@@ -830,7 +883,7 @@ function handleResetPassword(requestBody) {
     const cache = CacheService.getScriptCache();
     const storedToken = cache.get('reset_token_' + email);
     if (!storedToken || storedToken !== resetToken) {
-      return createResponse(false, 'Token không hợp lệ hoặc đã hết hạn. Vui lòng thử lại.');
+      return createResponse(false, msg_('invalidToken'));
     }
 
     // Update password in sheet
@@ -857,7 +910,7 @@ function handleResetPassword(requestBody) {
     return createResponse(false, 'User not found');
   } catch (error) {
     Logger.log('Error in handleResetPassword: ' + error.toString());
-    return createResponse(false, 'Lỗi: ' + error.message);
+    return createResponse(false, msg_('errGeneric') + error.message);
   }
 }
 
@@ -1084,13 +1137,13 @@ function handleChangePassword(requestBody) {
           // Normal change — verify current password against Column L hash
           if (hashPassword(currentPassword) !== storedHash) {
             Logger.log('Current password mismatch for: ' + email);
-            return createResponse(false, 'Mật khẩu hiện tại không đúng');
+            return createResponse(false, msg_('wrongCurrentPassword'));
           }
         } else if (colKPlainText) {
           // First login — verify current password against Column K plain text
           if (currentPassword !== colKPlainText) {
             Logger.log('Column K mismatch for: ' + email);
-            return createResponse(false, 'Mật khẩu hiện tại không đúng');
+            return createResponse(false, msg_('wrongCurrentPassword'));
           }
           // Prevent setting same password as default
           if (newPassword === colKPlainText) {
