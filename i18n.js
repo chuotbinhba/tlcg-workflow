@@ -370,6 +370,33 @@
     });
   }
 
+  /**
+   * Inject switcher styles so pages without the iOS design system still get a
+   * correctly-styled control. Scoped under [data-tlc-i18n-css] and written so
+   * pages that already define .ios-segmented keep their own look.
+   */
+  function injectStyles() {
+    var doc = global.document;
+    if (!doc || !doc.head || doc.getElementById('tlc-i18n-styles')) return;
+
+    var css =
+      '.tlc-lang-switch{display:inline-flex;background:rgba(118,118,128,0.12);' +
+      'border-radius:8px;padding:2px;gap:0;}' +
+      '.tlc-lang-switch button{flex:1;padding:4px 10px;font-size:12px;' +
+      'font-weight:600;text-align:center;border:none;background:transparent;' +
+      'color:#1c1c1e;cursor:pointer;border-radius:6px;line-height:1.4;' +
+      'transition:background-color .2s,box-shadow .2s;}' +
+      '.tlc-lang-switch button.active{background:#fff;' +
+      'box-shadow:0 1px 2px rgba(0,0,0,.04),0 1px 3px rgba(0,0,0,.08);}' +
+      '.tlc-lang-switch button:focus-visible{outline:2px solid #007AFF;' +
+      'outline-offset:2px;}';
+
+    var style = doc.createElement('style');
+    style.id = 'tlc-i18n-styles';
+    style.textContent = css;
+    doc.head.appendChild(style);
+  }
+
   var listeners = [];
 
   /** Register a callback to re-render dynamic content after a change. */
@@ -401,8 +428,53 @@
     return lang;
   }
 
+  /**
+   * Build an EN/VI switcher and prepend it to `target` (element or selector).
+   * Used by pages that have a nav but no iOS segmented control of their own.
+   * No-op if that container already holds a switcher.
+   */
+  function mountSwitcher(target) {
+    var doc = global.document;
+    if (!doc) return null;
+
+    var host = typeof target === 'string' ? doc.querySelector(target) : target;
+    if (!host || host.querySelector('.tlc-lang-switch')) return null;
+
+    var wrap = doc.createElement('div');
+    wrap.className = 'tlc-lang-switch';
+
+    SUPPORTED.forEach(function (code) {
+      var btn = doc.createElement('button');
+      btn.type = 'button';
+      btn.setAttribute('data-lang', code);
+      btn.textContent = code.toUpperCase();
+      btn.setAttribute(
+        'aria-label',
+        code === 'en' ? 'Switch to English' : 'Switch to Vietnamese'
+      );
+      btn.addEventListener('click', function () {
+        setLanguage(code);
+      });
+      wrap.appendChild(btn);
+    });
+
+    host.insertBefore(wrap, host.firstChild);
+    syncSwitchers(getLang());
+    return wrap;
+  }
+
   /** Apply the resolved language on load without overwriting the stored one. */
   function init() {
+    injectStyles();
+
+    // Pages opt in declaratively with <div data-tlc-lang-switcher></div> or by
+    // marking an existing nav container.
+    var doc = global.document;
+    if (doc && doc.querySelectorAll) {
+      var hosts = doc.querySelectorAll('[data-tlc-lang-switcher]');
+      for (var i = 0; i < hosts.length; i++) mountSwitcher(hosts[i]);
+    }
+
     setLanguage(getLang());
   }
 
@@ -414,6 +486,7 @@
     apply: apply,
     extend: extend,
     onChange: onChange,
+    mountSwitcher: mountSwitcher,
     init: init,
     STORAGE_KEY: STORAGE_KEY,
     SUPPORTED: SUPPORTED
