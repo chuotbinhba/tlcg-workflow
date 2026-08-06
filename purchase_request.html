@@ -818,7 +818,7 @@
     </style>
 </head>
 <body>
-<a href="#main-content" class="skip-to-main">Bỏ qua đến nội dung</a>
+<a href="#main-content" class="skip-to-main" data-i18n="skipToMain">Bỏ qua đến nội dung</a>
 
 <!-- ── Sidebar ──────────────────────────────────────────────────── -->
 <aside class="ipad-sidebar" id="ipad-sidebar">
@@ -830,7 +830,7 @@
         <button id="sidebar-toggle" type="button"
                 onclick="event.stopPropagation(); toggleSidebar();"
                 aria-expanded="true" aria-controls="ipad-sidebar"
-                aria-label="Thu hoặc mở rộng thanh điều hướng"
+                aria-label="Thu hoặc mở rộng thanh điều hướng" data-i18n-aria="toggleSidebar"
                 style="width:28px; height:28px; border-radius:6px; background:rgba(0,0,0,0.05); border:none; cursor:pointer; display:flex; align-items:center; justify-content:center;"
                 onmouseover="this.style.background='rgba(0,0,0,0.1)'" onmouseout="this.style.background='rgba(0,0,0,0.05)'">
             <i id="sidebar-toggle-icon" class="fas fa-chevron-left" style="font-size:11px; color:#8e8e93;" aria-hidden="true"></i>
@@ -851,19 +851,19 @@
         <div class="sidebar-section-title">Workflows</div>
         <button type="button" class="sidebar-item active" aria-current="page">
             <div class="sidebar-icon-box" style="background:#007AFF;"><i class="fas fa-file-pen"></i></div>
-            <span>Đề Nghị Mua Hàng</span>
+            <span data-i18n="navPurchaseRequest">Đề Nghị Mua Hàng</span>
         </button>
         <button type="button" onclick="window.open('acceptance_minutes.html','_blank')" class="sidebar-item">
             <div class="sidebar-icon-box" style="background:#34C759;"><i class="fas fa-clipboard-check"></i></div>
-            <span>Biên Bản Nghiệm Thu</span>
+            <span data-i18n="navAcceptance">Biên Bản Nghiệm Thu</span>
         </button>
         <button type="button" onclick="window.open('payment_request.html','_blank')" class="sidebar-item">
             <div class="sidebar-icon-box" style="background:#5856D6;"><i class="fas fa-file-invoice-dollar"></i></div>
-            <span>Đề Nghị Thanh Toán</span>
+            <span data-i18n="navPaymentRequest">Đề Nghị Thanh Toán</span>
         </button>
         <button type="button" onclick="window.open('voucher.html','_blank')" class="sidebar-item">
             <div class="sidebar-icon-box" style="background:#FF9500;"><i class="fas fa-file-invoice"></i></div>
-            <span>Phiếu Thu Chi</span>
+            <span data-i18n="navVoucher">Phiếu Thu Chi</span>
         </button>
     </div>
     <div class="sidebar-user">
@@ -896,10 +896,10 @@
             <div style="display:flex;align-items:center;gap:10px;">
                 <!-- Notification bell (mobile) -->
                 <div style="position:relative;display:inline-flex;align-items:center;">
-                    <i class="fas fa-bell" style="font-size:18px;color:#6e6e73;" aria-label="Thông báo"></i>
+                    <i class="fas fa-bell" style="font-size:18px;color:#6e6e73;" aria-label="Thông báo" data-i18n-aria="notifications"></i>
                     <span id="notif-badge-mobile" style="display:none;position:absolute;top:-6px;right:-7px;background:#FF3B30;color:white;border-radius:50%;font-size:10px;font-weight:700;min-width:16px;height:16px;align-items:center;justify-content:center;padding:0 3px;line-height:1;pointer-events:none;">0</span>
                 </div>
-                <button type="button" onclick="window.history.back()" aria-label="Quay lại trang trước"
+                <button type="button" onclick="window.history.back()" aria-label="Quay lại trang trước" data-i18n-aria="backToPrev"
                         style="background:transparent;border:none;color:#6e6e73;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;">
                     <i class="fas fa-chevron-left" aria-hidden="true"></i> Quay lại
                 </button>
@@ -917,11 +917,11 @@
             <div id="nav-user-section" data-tlc-lang-switcher class="flex items-center gap-2">
                 <!-- Notification bell -->
                 <div id="notif-bell-wrapper" onclick="_toggleNotifDropdown()" style="position:relative;display:inline-flex;align-items:center;cursor:pointer;padding:4px;">
-                    <i class="fas fa-bell" style="font-size:18px;color:#6e6e73;" aria-label="Thông báo"></i>
+                    <i class="fas fa-bell" style="font-size:18px;color:#6e6e73;" aria-label="Thông báo" data-i18n-aria="notifications"></i>
                     <span id="notif-badge" style="display:none;position:absolute;top:-6px;right:-7px;background:#FF3B30;color:white;border-radius:50%;font-size:10px;font-weight:700;min-width:16px;height:16px;align-items:center;justify-content:center;padding:0 3px;line-height:1;pointer-events:none;">0</span>
                     <!-- Dropdown panel -->
                     <div id="notif-dropdown" style="display:none;position:absolute;top:calc(100% + 10px);right:0;width:280px;background:white;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.12);border:0.5px solid rgba(60,60,67,0.18);z-index:1000;overflow:hidden;">
-                        <div style="padding:10px 14px;border-bottom:0.5px solid #f1f5f9;font-size:12px;font-weight:700;color:#374151;">Việc cần làm của tôi</div>
+                        <div style="padding:10px 14px;border-bottom:0.5px solid #f1f5f9;font-size:12px;font-weight:700;color:#374151;" data-i18n="myTasks">Việc cần làm của tôi</div>
                         <div style="max-height:320px;overflow-y:auto;" id="notif-dropdown-body"></div>
                     </div>
                 </div>
@@ -938,27 +938,27 @@
     <!-- ── Page content ────────────────────────────────────────── -->
     <main class="page-content" id="main-content" tabindex="-1">
 
-        <h1 style="font-family:var(--font-display); font-size:22px; font-weight:700; text-align:center; margin:4px 0 0; text-wrap:balance;">ĐỀ NGHỊ MUA HÀNG</h1>
+        <h1 style="font-family:var(--font-display); font-size:22px; font-weight:700; text-align:center; margin:4px 0 0; text-wrap:balance;" data-i18n="prPageTitle">ĐỀ NGHỊ MUA HÀNG</h1>
 
         <!-- Progress stepper -->
-        <div class="progress-stepper" role="navigation" aria-label="Các bước phiếu">
+        <div class="progress-stepper" role="navigation" aria-label="Các bước phiếu" data-i18n-aria="formSteps">
             <div class="stepper-container">
                 <div class="stepper-line"><div class="stepper-line-progress" id="stepper-progress"></div></div>
-                <button type="button" class="stepper-step active" data-step="1" onclick="goToStep(1)" aria-current="step" aria-label="Bước 1 — Công ty">
+                <button type="button" class="stepper-step active" data-step="1" onclick="goToStep(1)" aria-current="step" aria-label="Bước 1 — Công ty" data-i18n-aria="stepAria1">
                     <div class="stepper-circle" aria-hidden="true">1</div>
-                    <span class="stepper-label" aria-hidden="true">Công ty</span>
+                    <span class="stepper-label" aria-hidden="true" data-i18n="stepCompany">Công ty</span>
                 </button>
-                <button type="button" class="stepper-step" data-step="2" onclick="goToStep(2)" aria-label="Bước 2 — Hàng hóa">
+                <button type="button" class="stepper-step" data-step="2" onclick="goToStep(2)" aria-label="Bước 2 — Hàng hóa" data-i18n-aria="stepAria2">
                     <div class="stepper-circle" aria-hidden="true">2</div>
-                    <span class="stepper-label" aria-hidden="true">Hàng hóa</span>
+                    <span class="stepper-label" aria-hidden="true" data-i18n="stepGoods">Hàng hóa</span>
                 </button>
-                <button type="button" class="stepper-step" data-step="3" onclick="goToStep(3)" aria-label="Bước 3 — Phê duyệt">
+                <button type="button" class="stepper-step" data-step="3" onclick="goToStep(3)" aria-label="Bước 3 — Phê duyệt" data-i18n-aria="stepAria3">
                     <div class="stepper-circle" aria-hidden="true">3</div>
-                    <span class="stepper-label" aria-hidden="true">Phê duyệt</span>
+                    <span class="stepper-label" aria-hidden="true" data-i18n="approval">Phê duyệt</span>
                 </button>
-                <button type="button" class="stepper-step" data-step="4" onclick="goToStep(4)" aria-label="Bước 4 — Xác nhận">
+                <button type="button" class="stepper-step" data-step="4" onclick="goToStep(4)" aria-label="Bước 4 — Xác nhận" data-i18n-aria="stepAria4">
                     <div class="stepper-circle" aria-hidden="true">4</div>
-                    <span class="stepper-label" aria-hidden="true">Xác nhận</span>
+                    <span class="stepper-label" aria-hidden="true" data-i18n="confirm">Xác nhận</span>
                 </button>
             </div>
         </div>
@@ -970,7 +970,7 @@
             <div class="form-card">
                 <div class="form-card-header">
                     <i class="fas fa-building" style="color:var(--primary); font-size:14px;"></i>
-                    <h2>Công Ty & Thông Tin Chung</h2>
+                    <h2 data-i18n="secCompanyGeneral">Công Ty & Thông Tin Chung</h2>
                 </div>
                 <div class="form-card-body">
                     <input type="hidden" id="company_name">
@@ -978,44 +978,44 @@
                     <input type="hidden" id="request_id">
                     <div class="form-row">
                         <div class="form-group full">
-                            <label for="company_code">Công ty <span class="req">*</span></label>
+                            <label for="company_code"><span data-i18n="company">Công ty</span> <span class="req">*</span></label>
                             <select id="company_code" name="company_code" autocomplete="organization" onchange="onCompanyChange()">
-                                <option value="">-- Chọn công ty --</option>
+                                <option value="" data-i18n="optChooseCompany">-- Chọn công ty --</option>
                             </select>
                         </div>
                     </div>
                     <div id="req-no-row" style="display:none; margin-top:8px;">
-                        <span style="font-size:12px; color:var(--text-secondary);">Số phiếu:</span>
+                        <span style="font-size:12px; color:var(--text-secondary);" data-i18n="labelPrNo">Số phiếu:</span>
                         <span id="req-no-pill" class="req-no-pill" style="margin-left:8px;"></span>
                     </div>
                     <div class="form-row" style="margin-top:14px;">
                         <div class="form-group">
-                            <label for="requester_name">Người đề nghị <span class="req">*</span></label>
+                            <label for="requester_name"><span data-i18n="requester">Người đề nghị</span> <span class="req">*</span></label>
                             <select id="requester_name" onchange="onRequesterChange()">
-                                <option value="">-- Chọn người đề nghị --</option>
+                                <option value="" data-i18n="optChooseRequester">-- Chọn người đề nghị --</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="department">Bộ phận / Phòng ban</label>
+                            <label for="department" data-i18n="labelDeptFull">Bộ phận / Phòng ban</label>
                             <input type="text" id="department" name="department" readonly autocomplete="off">
                         </div>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="required_date">Ngày cần hàng <span class="req">*</span></label>
+                            <label for="required_date"><span data-i18n="labelRequiredDate">Ngày cần hàng</span> <span class="req">*</span></label>
                             <input type="date" id="required_date" name="required_date" autocomplete="off">
                         </div>
                         <div class="form-group">
-                            <label>Mức độ ưu tiên</label>
-                            <div class="priority-group" role="group" aria-label="Mức độ ưu tiên" style="margin-top:4px;">
+                            <label data-i18n="labelPriority">Mức độ ưu tiên</label>
+                            <div class="priority-group" role="group" aria-label="Mức độ ưu tiên" data-i18n-aria="labelPriority" style="margin-top:4px;">
                                 <button type="button" class="priority-btn" id="pri-gap" aria-pressed="false" onclick="setPriority('gap')" title="≤ 2 ngày làm việc">
-                                    <i class="fas fa-circle" style="font-size:8px; margin-right:4px;" aria-hidden="true"></i>Gấp
+                                    <i class="fas fa-circle" style="font-size:8px; margin-right:4px;" aria-hidden="true"></i><span data-i18n="priUrgent">Gấp</span>
                                 </button>
                                 <button type="button" class="priority-btn selected-binh_thuong" id="pri-binh_thuong" aria-pressed="true" onclick="setPriority('binh_thuong')" title="3–5 ngày làm việc">
-                                    <i class="fas fa-circle" style="font-size:8px; margin-right:4px;" aria-hidden="true"></i>Bình Thường
+                                    <i class="fas fa-circle" style="font-size:8px; margin-right:4px;" aria-hidden="true"></i><span data-i18n="priNormal">Bình Thường</span>
                                 </button>
                                 <button type="button" class="priority-btn" id="pri-khong_gap" aria-pressed="false" onclick="setPriority('khong_gap')" title="> 5 ngày làm việc">
-                                    <i class="fas fa-circle" style="font-size:8px; margin-right:4px;" aria-hidden="true"></i>Không Gấp
+                                    <i class="fas fa-circle" style="font-size:8px; margin-right:4px;" aria-hidden="true"></i><span data-i18n="priLow">Không Gấp</span>
                                 </button>
                             </div>
                             <input type="hidden" id="priority_value" value="binh_thuong">
@@ -1023,13 +1023,13 @@
                     </div>
                     <div class="form-row" style="margin-top:8px;">
                         <div class="form-group full">
-                            <label>Loại mua hàng <span class="req">*</span></label>
-                            <div class="priority-group" role="group" aria-label="Loại mua hàng" style="margin-top:4px;">
+                            <label><span data-i18n="labelPurchaseType">Loại mua hàng</span> <span class="req">*</span></label>
+                            <div class="priority-group" role="group" aria-label="Loại mua hàng" data-i18n-aria="labelPurchaseType" style="margin-top:4px;">
                                 <button type="button" class="priority-btn selected-binh_thuong" id="ptype-goods" aria-pressed="true" onclick="setPurchaseType('goods')">
-                                    <i class="fas fa-box" style="margin-right:6px;"></i>Hàng hóa
+                                    <i class="fas fa-box" style="margin-right:6px;"></i><span data-i18n="typeGoods">Hàng hóa</span>
                                 </button>
                                 <button type="button" class="priority-btn" id="ptype-services" aria-pressed="false" onclick="setPurchaseType('services')">
-                                    <i class="fas fa-handshake" style="margin-right:6px;"></i>Dịch vụ
+                                    <i class="fas fa-handshake" style="margin-right:6px;"></i><span data-i18n="typeService">Dịch vụ</span>
                                 </button>
                             </div>
                             <input type="hidden" id="purchase_type_value" value="goods">
@@ -1038,8 +1038,8 @@
                 </div>
             </div>
             <div class="step-navigation" style="background:transparent; border:none; padding:16px 0 0;">
-                <button type="button" class="btn-secondary" disabled>← Quay lại</button>
-                <button type="button" class="btn-primary" onclick="validateAndNext(1)">Tiếp theo →</button>
+                <button type="button" class="btn-secondary" disabled data-i18n="btnPrev">← Quay lại</button>
+                <button type="button" class="btn-primary" onclick="validateAndNext(1)" data-i18n="btnNext">Tiếp theo →</button>
             </div>
         </div>
 
@@ -1053,7 +1053,7 @@
                 <div class="form-card-header section-toggle" onclick="toggleSection('hang-hoa')">
                     <div class="section-title">
                         <i class="fas fa-box" style="color:#FF9500;font-size:14px;"></i>
-                        <h2>Hàng Hóa</h2>
+                        <h2 data-i18n="secGoods">Hàng Hóa</h2>
                     </div>
                     <div class="section-meta">
                         <span class="section-subtotal" id="subtotal-hang-hoa">0 ₫</span>
@@ -1063,36 +1063,36 @@
                 <div class="section-body" id="body-hang-hoa">
                     <div class="form-card-body" style="padding:12px;">
                         <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:4px;">
-                            <button type="button" class="catalog-open-btn" onclick="openCatalog()" aria-label="Mở danh mục hàng hóa">
-                                <i class="fas fa-border-all" style="font-size:13px;" aria-hidden="true"></i> Chọn từ danh mục
+                            <button type="button" class="catalog-open-btn" onclick="openCatalog()" aria-label="Mở danh mục hàng hóa" data-i18n-aria="openCatalog">
+                                <i class="fas fa-border-all" style="font-size:13px;" aria-hidden="true"></i> <span data-i18n="chooseFromCatalog">Chọn từ danh mục</span>
                                 <span id="catalog-added-count" class="catalog-count-badge" style="display:none;">0</span>
                             </button>
-                            <span style="font-size:12px;color:var(--text-secondary);font-style:italic;">Danh mục hàng hóa dành riêng cho đơn hàng KTT</span>
+                            <span style="font-size:12px;color:var(--text-secondary);font-style:italic;" data-i18n="kttCatalogHint">Danh mục hàng hóa dành riêng cho đơn hàng KTT</span>
                         </div>
                         <div class="items-wrap">
                             <table class="items-table">
                                 <thead><tr>
                                     <th class="col-no">#</th>
-                                    <th>Tên hàng / Mô tả <span class="req">*</span></th>
-                                    <th class="col-qty">Số lượng</th>
-                                    <th class="col-unit">Đơn vị</th>
+                                    <th><span data-i18n="colGoodsName">Tên hàng / Mô tả</span> <span class="req">*</span></th>
+                                    <th class="col-qty" data-i18n="colQty">Số lượng</th>
+                                    <th class="col-unit" data-i18n="colUnit">Đơn vị</th>
                                     <th class="col-price" style="white-space:nowrap;">Đơn giá
-                                        <select id="currency-select" name="currency" aria-label="Loại tiền tệ đơn giá" onchange="setCurrency(this.value)"
+                                        <select id="currency-select" name="currency" aria-label="Loại tiền tệ đơn giá" data-i18n-aria="unitPriceCurrency" onchange="setCurrency(this.value)"
                                                 style="font-size:11px;border:none;background:transparent;color:var(--primary);font-weight:700;cursor:pointer;margin-left:2px;padding:0;width:3.4em;-webkit-appearance:none;appearance:none;text-align:center;">
                                             <option value="VND">VND</option>
                                             <option value="USD">USD</option>
                                             <option value="EUR">EUR</option>
                                         </select>
                                     </th>
-                                    <th class="col-total">Thành tiền</th>
-                                    <th class="col-note">Ghi chú</th>
+                                    <th class="col-total" data-i18n="colLineTotal">Thành tiền</th>
+                                    <th class="col-note" data-i18n="note">Ghi chú</th>
                                     <th class="col-del"></th>
                                 </tr></thead>
                                 <tbody id="tbody-hang-hoa"></tbody>
                             </table>
                         </div>
                         <button type="button" class="add-row-btn" onclick="addSectionRow('hang-hoa')">
-                            <i class="fas fa-plus" style="font-size:11px;"></i> Thêm dòng
+                            <i class="fas fa-plus" style="font-size:11px;"></i> <span data-i18n="addRow">Thêm dòng</span>
                         </button>
                     </div>
                 </div>
@@ -1103,7 +1103,7 @@
                 <div class="form-card-header section-toggle" onclick="toggleSection('thiet-bi')">
                     <div class="section-title">
                         <i class="fas fa-computer" style="color:#5856D6;font-size:14px;"></i>
-                        <h2>Thiết Bị (TSCĐ/CCDC)</h2>
+                        <h2 data-i18n="secEquipment">Thiết Bị (TSCĐ/CCDC)</h2>
                     </div>
                     <div class="section-meta">
                         <span class="section-subtotal" id="subtotal-thiet-bi">0 ₫</span>
@@ -1116,19 +1116,19 @@
                             <table class="items-table">
                                 <thead><tr>
                                     <th class="col-no">#</th>
-                                    <th>Tên thiết bị / Mô tả <span class="req">*</span></th>
-                                    <th class="col-qty">Số lượng</th>
-                                    <th class="col-unit">Đơn vị</th>
-                                    <th class="col-price price-th">Đơn giá (VND)</th>
-                                    <th class="col-total">Thành tiền</th>
-                                    <th class="col-note">Ghi chú</th>
+                                    <th><span data-i18n="colEquipName">Tên thiết bị / Mô tả</span> <span class="req">*</span></th>
+                                    <th class="col-qty" data-i18n="colQty">Số lượng</th>
+                                    <th class="col-unit" data-i18n="colUnit">Đơn vị</th>
+                                    <th class="col-price price-th" data-i18n="colUnitPriceVnd">Đơn giá (VND)</th>
+                                    <th class="col-total" data-i18n="colLineTotal">Thành tiền</th>
+                                    <th class="col-note" data-i18n="note">Ghi chú</th>
                                     <th class="col-del"></th>
                                 </tr></thead>
                                 <tbody id="tbody-thiet-bi"></tbody>
                             </table>
                         </div>
                         <button type="button" class="add-row-btn" onclick="addSectionRow('thiet-bi')">
-                            <i class="fas fa-plus" style="font-size:11px;"></i> Thêm dòng
+                            <i class="fas fa-plus" style="font-size:11px;"></i> <span data-i18n="addRow">Thêm dòng</span>
                         </button>
                     </div>
                 </div>
@@ -1139,7 +1139,7 @@
                 <div class="form-card-header section-toggle" onclick="toggleSection('dich-vu')">
                     <div class="section-title">
                         <i class="fas fa-handshake" style="color:#34C759;font-size:14px;"></i>
-                        <h2>Dịch Vụ</h2>
+                        <h2 data-i18n="secServices">Dịch Vụ</h2>
                     </div>
                     <div class="section-meta">
                         <span class="section-subtotal" id="subtotal-dich-vu">0 ₫</span>
@@ -1152,19 +1152,19 @@
                             <table class="items-table">
                                 <thead><tr>
                                     <th class="col-no">#</th>
-                                    <th>Tên dịch vụ / Mô tả <span class="req">*</span></th>
-                                    <th class="col-qty">Số lượng</th>
-                                    <th class="col-unit">Đơn vị</th>
-                                    <th class="col-price price-th">Đơn giá (VND)</th>
-                                    <th class="col-total">Thành tiền</th>
-                                    <th class="col-note">Ghi chú</th>
+                                    <th><span data-i18n="colServiceName">Tên dịch vụ / Mô tả</span> <span class="req">*</span></th>
+                                    <th class="col-qty" data-i18n="colQty">Số lượng</th>
+                                    <th class="col-unit" data-i18n="colUnit">Đơn vị</th>
+                                    <th class="col-price price-th" data-i18n="colUnitPriceVnd">Đơn giá (VND)</th>
+                                    <th class="col-total" data-i18n="colLineTotal">Thành tiền</th>
+                                    <th class="col-note" data-i18n="note">Ghi chú</th>
                                     <th class="col-del"></th>
                                 </tr></thead>
                                 <tbody id="tbody-dich-vu"></tbody>
                             </table>
                         </div>
                         <button type="button" class="add-row-btn" onclick="addSectionRow('dich-vu')">
-                            <i class="fas fa-plus" style="font-size:11px;"></i> Thêm dòng
+                            <i class="fas fa-plus" style="font-size:11px;"></i> <span data-i18n="addRow">Thêm dòng</span>
                         </button>
                     </div>
                 </div>
@@ -1175,7 +1175,7 @@
                 <div class="form-card-header section-toggle" onclick="toggleSection('sua-chua')">
                     <div class="section-title">
                         <i class="fas fa-screwdriver-wrench" style="color:#FF3B30;font-size:14px;"></i>
-                        <h2>Sửa Chữa (TSCĐ)</h2>
+                        <h2 data-i18n="secRepairs">Sửa Chữa (TSCĐ)</h2>
                     </div>
                     <div class="section-meta">
                         <span class="section-subtotal" id="subtotal-sua-chua">0 ₫</span>
@@ -1188,19 +1188,19 @@
                             <table class="items-table">
                                 <thead><tr>
                                     <th class="col-no">#</th>
-                                    <th>Tên TSCĐ / Nội dung sửa chữa <span class="req">*</span></th>
-                                    <th class="col-qty">Số lượng</th>
-                                    <th class="col-unit">Đơn vị</th>
-                                    <th class="col-price price-th">Đơn giá (VND)</th>
-                                    <th class="col-total">Thành tiền</th>
-                                    <th class="col-note">Ghi chú</th>
+                                    <th><span data-i18n="colRepairName">Tên TSCĐ / Nội dung sửa chữa</span> <span class="req">*</span></th>
+                                    <th class="col-qty" data-i18n="colQty">Số lượng</th>
+                                    <th class="col-unit" data-i18n="colUnit">Đơn vị</th>
+                                    <th class="col-price price-th" data-i18n="colUnitPriceVnd">Đơn giá (VND)</th>
+                                    <th class="col-total" data-i18n="colLineTotal">Thành tiền</th>
+                                    <th class="col-note" data-i18n="note">Ghi chú</th>
                                     <th class="col-del"></th>
                                 </tr></thead>
                                 <tbody id="tbody-sua-chua"></tbody>
                             </table>
                         </div>
                         <button type="button" class="add-row-btn" onclick="addSectionRow('sua-chua')">
-                            <i class="fas fa-plus" style="font-size:11px;"></i> Thêm dòng
+                            <i class="fas fa-plus" style="font-size:11px;"></i> <span data-i18n="addRow">Thêm dòng</span>
                         </button>
                     </div>
                 </div>
@@ -1208,20 +1208,20 @@
 
             <!-- Grand total -->
             <div class="grand-total-bar">
-                <span class="grand-total-label">Tổng cộng tất cả:</span>
+                <span class="grand-total-label" data-i18n="grandTotalAll">Tổng cộng tất cả:</span>
                 <span class="total-pill" id="grand-total-display">0 ₫</span>
             </div>
 
             <div class="form-card">
                 <div class="form-card-header">
                     <i class="fas fa-align-left" style="color:var(--primary); font-size:14px;"></i>
-                    <h2>Mục Đích & Lý Do</h2>
+                    <h2 data-i18n="secPurpose">Mục Đích & Lý Do</h2>
                 </div>
                 <div class="form-card-body">
                     <div class="form-row">
                         <div class="form-group full">
-                            <label for="purpose">Mục đích mua hàng <span class="req">*</span></label>
-                            <textarea id="purpose" name="purpose" autocomplete="off" placeholder="Mô tả mục đích và lý do cần mua hàng hóa/dịch vụ này…" style="min-height:90px;"></textarea>
+                            <label for="purpose"><span data-i18n="labelPurpose">Mục đích mua hàng</span> <span class="req">*</span></label>
+                            <textarea id="purpose" name="purpose" autocomplete="off" placeholder="Mô tả mục đích và lý do cần mua hàng hóa/dịch vụ này…" data-i18n-placeholder="phPurpose" style="min-height:90px;"></textarea>
                         </div>
                     </div>
                 </div>
@@ -1236,21 +1236,21 @@
                 <div class="form-card-body">
                     <div class="form-row">
                         <div class="form-group w2">
-                            <label for="vendor_search">NCC từ danh sách</label>
+                            <label for="vendor_search" data-i18n="labelVendorList">NCC từ danh sách</label>
                             <div class="vendor-combobox" id="vendor-combobox">
-                                <input type="text" id="vendor_search" name="vendor_search" placeholder="Gõ để tìm nhà cung cấp…" autocomplete="off" spellcheck="false"
+                                <input type="text" id="vendor_search" name="vendor_search" placeholder="Gõ để tìm nhà cung cấp…" data-i18n-placeholder="phVendorSearch" autocomplete="off" spellcheck="false"
                                        aria-expanded="false" aria-controls="vendor-dropdown-list" aria-autocomplete="list"
                                        autocorrect="off" autocapitalize="off"
                                        oninput="onVendorSearch()" onfocus="onVendorSearchFocus()">
                                 <div class="vendor-dropdown-list" id="vendor-dropdown-list"></div>
                             </div>
                             <select id="vendor_old" onchange="onVendorOldChange()" style="display:none">
-                                <option value="">-- Chọn NCC trước --</option>
+                                <option value="" data-i18n="optChooseVendorFirst">-- Chọn NCC trước --</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="vendor_new">Hoặc nhập NCC mới</label>
-                            <input type="text" id="vendor_new" name="vendor_new" autocomplete="off" spellcheck="false" placeholder="Tên NCC nếu không có trong DS…" oninput="onVendorNewInput()">
+                            <label for="vendor_new" data-i18n="labelVendorNew">Hoặc nhập NCC mới</label>
+                            <input type="text" id="vendor_new" name="vendor_new" autocomplete="off" spellcheck="false" placeholder="Tên NCC nếu không có trong DS…" data-i18n-placeholder="phVendorNew" oninput="onVendorNewInput()">
                         </div>
                     </div>
 
@@ -1267,19 +1267,19 @@
                             <div class="vsc-name" id="vsc-name"></div>
                             <div class="vsc-meta" id="vsc-meta"></div>
                         </div>
-                        <button class="vsc-clear" type="button" onclick="clearVendorFields()" title="Xóa NCC" aria-label="Xóa nhà cung cấp đã chọn">×</button>
+                        <button class="vsc-clear" type="button" onclick="clearVendorFields()" title="Xóa NCC" data-i18n-title="clearVendor" aria-label="Xóa nhà cung cấp đã chọn" data-i18n-aria="clearVendorAria">×</button>
                     </div>
 
                     <!-- New NCC warning -->
                     <div id="new-ncc-warning" style="display:none;margin-top:8px;padding:10px 14px;background:rgba(255,149,0,0.08);border:1px solid rgba(255,149,0,0.3);border-radius:8px;font-size:13px;color:#c07000;">
                         <i class="fas fa-triangle-exclamation" style="margin-right:6px;"></i>
-                        NCC mới chưa có trong danh sách — sẽ được admin xem xét trước khi xử lý
+                        <span data-i18n="newVendorNotice">NCC mới chưa có trong danh sách — sẽ được admin xem xét trước khi xử lý</span>
                     </div>
 
                     <!-- Bank info (hidden — kept for payload, not shown in form) -->
                     <div style="display:none;">
                         <select id="vendor_bank_pick" onchange="onBankPick()">
-                            <option value="">-- Chọn NCC trước --</option>
+                            <option value="" data-i18n="optChooseVendorFirst">-- Chọn NCC trước --</option>
                         </select>
                         <input type="hidden" id="vendor_account_name">
                         <input type="hidden" id="vendor_account_no">
@@ -1301,14 +1301,14 @@
 
                     <!-- Vendor detail (read-only, shown after selection) -->
                     <div id="vendor-detail-section" style="display:none;border-top:0.5px solid rgba(0,0,0,0.08);padding-top:14px;margin-top:6px;">
-                        <p style="font-size:13px;font-weight:600;color:var(--text-secondary);margin-bottom:10px;">Thông tin Nhà cung cấp</p>
+                        <p style="font-size:13px;font-weight:600;color:var(--text-secondary);margin-bottom:10px;" data-i18n="vendorInfo">Thông tin Nhà cung cấp</p>
                         <div class="form-row">
                             <div class="form-group">
-                                <label>Tên NCC</label>
+                                <label data-i18n="labelVendorName">Tên NCC</label>
                                 <input type="text" id="vd-name" readonly>
                             </div>
                             <div class="form-group">
-                                <label>Loại NCC</label>
+                                <label data-i18n="labelVendorType">Loại NCC</label>
                                 <input type="text" id="vd-type" readonly>
                             </div>
                         </div>
@@ -1318,7 +1318,7 @@
                                 <input type="text" id="vd-taxid" readonly>
                             </div>
                             <div class="form-group w2">
-                                <label>Địa chỉ NCC</label>
+                                <label data-i18n="labelVendorAddr">Địa chỉ NCC</label>
                                 <input type="text" id="vd-address" readonly>
                             </div>
                         </div>
@@ -1335,21 +1335,21 @@
                 <div class="form-card-body">
                     <div class="attach-zone" id="attach-zone">
                         <label class="attach-input-label" for="attach-input">
-                            <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i> Chọn tài liệu
+                            <i class="fas fa-cloud-upload-alt" aria-hidden="true"></i> <span data-i18n="chooseFiles">Chọn tài liệu</span>
                         </label>
                         <input type="file" id="attach-input" multiple
                                accept=".pdf,.png,.jpg,.jpeg,.xlsx"
                                style="display:none;"
                                onchange="onAttachInputChange(event)">
-                        <p class="attach-hint">PDF, PNG, JPG, XLSX — tối đa 5 file, mỗi file ≤ 10 MB</p>
+                        <p class="attach-hint" data-i18n="attachHint">PDF, PNG, JPG, XLSX — tối đa 5 file, mỗi file ≤ 10 MB</p>
                         <ul class="attach-file-list" id="attach-file-list"></ul>
                     </div>
                 </div>
             </div>
 
             <div class="step-navigation" style="background:transparent; border:none; padding:16px 0 0;">
-                <button type="button" class="btn-secondary" onclick="goToStep(1)">← Quay lại</button>
-                <button type="button" class="btn-primary" onclick="validateAndNext(2)">Tiếp theo →</button>
+                <button type="button" class="btn-secondary" onclick="goToStep(1)" data-i18n="btnPrev">← Quay lại</button>
+                <button type="button" class="btn-primary" onclick="validateAndNext(2)" data-i18n="btnNext">Tiếp theo →</button>
             </div>
         </div>
 
@@ -1360,7 +1360,7 @@
             <div class="form-card">
                 <div class="form-card-header">
                     <i class="fas fa-user-check" style="color:var(--success); font-size:14px;"></i>
-                    <h2>Chuỗi Phê Duyệt</h2>
+                    <h2 data-i18n="secApprovalChain">Chuỗi Phê Duyệt</h2>
                 </div>
                 <div class="form-card-body" style="display:flex; flex-direction:column; gap:12px;">
 
@@ -1371,20 +1371,20 @@
                         <div class="approver-header">
                             <div class="approver-num">1</div>
                             <div>
-                                <div class="approver-title">Người phê duyệt ngân sách <span class="req">*</span></div>
-                                <div class="approver-sub">Chạy song song với Người phê duyệt NCC</div>
+                                <div class="approver-title"><span data-i18n="apprBudget">Người phê duyệt ngân sách</span> <span class="req">*</span></div>
+                                <div class="approver-sub" data-i18n="apprBudgetSub">Chạy song song với Người phê duyệt NCC</div>
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="budget_approver">Chọn người phê duyệt</label>
+                                <label for="budget_approver" data-i18n="labelChooseApprover">Chọn người phê duyệt</label>
                                 <select id="budget_approver">
-                                    <option value="">-- Chọn --</option>
+                                    <option value="" data-i18n="optChoose">-- Chọn --</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="budget_approver_note">Ghi chú cho người phê duyệt</label>
-                                <input type="text" id="budget_approver_note" placeholder="Ghi chú thêm (tuỳ chọn)">
+                                <label for="budget_approver_note" data-i18n="labelApproverNote">Ghi chú cho người phê duyệt</label>
+                                <input type="text" id="budget_approver_note" placeholder="Ghi chú thêm (tuỳ chọn)" data-i18n-placeholder="phExtraNote">
                             </div>
                         </div>
                     </div>
@@ -1394,20 +1394,20 @@
                         <div class="approver-header">
                             <div class="approver-num">2</div>
                             <div>
-                                <div class="approver-title">Người phê duyệt NCC <span class="req">*</span></div>
-                                <div class="approver-sub">Chạy song song với Người phê duyệt ngân sách</div>
+                                <div class="approver-title"><span data-i18n="apprVendor">Người phê duyệt NCC</span> <span class="req">*</span></div>
+                                <div class="approver-sub" data-i18n="apprVendorSub">Chạy song song với Người phê duyệt ngân sách</div>
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="supplier_approver">Chọn người phê duyệt</label>
+                                <label for="supplier_approver" data-i18n="labelChooseApprover">Chọn người phê duyệt</label>
                                 <select id="supplier_approver">
-                                    <option value="">-- Chọn --</option>
+                                    <option value="" data-i18n="optChoose">-- Chọn --</option>
                                 </select>
                             </div>
                             <div class="form-group">
-                                <label for="supplier_approver_note">Ghi chú</label>
-                                <input type="text" id="supplier_approver_note" placeholder="Ghi chú thêm (tuỳ chọn)">
+                                <label for="supplier_approver_note" data-i18n="note">Ghi chú</label>
+                                <input type="text" id="supplier_approver_note" placeholder="Ghi chú thêm (tuỳ chọn)" data-i18n-placeholder="phExtraNote">
                             </div>
                         </div>
                     </div>
@@ -1418,14 +1418,14 @@
                             <div class="approver-num">3</div>
                             <div>
                                 <div class="approver-title">Người thẩm định hợp đồng <span id="contract-approver-req" style="display:none;" class="req">*</span><span id="contract-approver-opt" style="font-size:11px;color:var(--text-secondary);font-weight:400;">(tùy chọn)</span></div>
-                                <div class="approver-sub">Thẩm định hợp đồng sau khi Procurement hoàn tất đàm phán (quy trình đầy đủ)</div>
+                                <div class="approver-sub" data-i18n="apprContractSub">Thẩm định hợp đồng sau khi Procurement hoàn tất đàm phán (quy trình đầy đủ)</div>
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="contract_approver">Chọn người thẩm định</label>
+                                <label for="contract_approver" data-i18n="labelChooseReviewer">Chọn người thẩm định</label>
                                 <select id="contract_approver">
-                                    <option value="">-- Không có --</option>
+                                    <option value="" data-i18n="optNone">-- Không có --</option>
                                 </select>
                             </div>
                         </div>
@@ -1437,14 +1437,14 @@
                             <div class="approver-num">4</div>
                             <div>
                                 <div class="approver-title">Người mua hàng <span style="font-size:11px;color:var(--text-secondary);font-weight:400;">(tùy chọn)</span></div>
-                                <div class="approver-sub">Xác nhận mua hàng cuối cùng</div>
+                                <div class="approver-sub" data-i18n="apprPurchasingSub">Xác nhận mua hàng cuối cùng</div>
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
-                                <label for="purchasing_approver">Chọn người mua hàng</label>
+                                <label for="purchasing_approver" data-i18n="labelChoosePurchaser">Chọn người mua hàng</label>
                                 <select id="purchasing_approver">
-                                    <option value="">-- Không có --</option>
+                                    <option value="" data-i18n="optNone">-- Không có --</option>
                                 </select>
                             </div>
                         </div>
@@ -1469,29 +1469,29 @@
                     <div class="signature-container">
                         <div class="signature-preview-area" id="sig-preview-area">
                             <img id="sig-preview" src="" alt="Chữ ký người đề nghị" style="display:none;max-height:80px;max-width:200px;">
-                            <span id="sig-placeholder" style="color:var(--text-secondary);font-size:13px;">Chưa có chữ ký</span>
+                            <span id="sig-placeholder" style="color:var(--text-secondary);font-size:13px;" data-i18n="noSignature">Chưa có chữ ký</span>
                         </div>
                         <div class="signature-actions">
                             <label class="btn-secondary signature-upload-btn" onclick="document.getElementById('sig-upload').click();return false;">
-                                <i class="fas fa-upload" style="font-size:13px;" aria-hidden="true"></i> Tải chữ ký lên
+                                <i class="fas fa-upload" style="font-size:13px;" aria-hidden="true"></i> <span data-i18n="uploadSignature">Tải chữ ký lên</span>
                             </label>
                             <input type="file" id="sig-upload" accept="image/png,image/jpeg,image/jpg"
                                    style="display:none;" onchange="handleSigUpload(event)">
                             <button type="button" class="btn-secondary" id="sig-clear-btn"
                                     style="display:none;color:var(--error);" onclick="clearSig()">
-                                <i class="fas fa-times" style="font-size:13px;" aria-hidden="true"></i> Xóa
+                                <i class="fas fa-times" style="font-size:13px;" aria-hidden="true"></i> <span data-i18n="delete">Xóa</span>
                             </button>
                         </div>
                         <small style="color:var(--text-secondary);font-size:12px;">
-                            PNG hoặc JPG — chữ ký sẽ được lưu tự động cho các phiếu sau
+                            <span data-i18n="sigHint">PNG hoặc JPG — chữ ký sẽ được lưu tự động cho các phiếu sau</span>
                         </small>
                     </div>
                 </div>
             </div>
 
             <div class="step-navigation" style="background:transparent; border:none; padding:16px 0 0;">
-                <button type="button" class="btn-secondary" onclick="goToStep(2)">← Quay lại</button>
-                <button type="button" class="btn-primary" onclick="validateAndNext(3)">Tiếp theo →</button>
+                <button type="button" class="btn-secondary" onclick="goToStep(2)" data-i18n="btnPrev">← Quay lại</button>
+                <button type="button" class="btn-primary" onclick="validateAndNext(3)" data-i18n="btnNext">Tiếp theo →</button>
             </div>
         </div>
 
@@ -1500,51 +1500,51 @@
         ════════════════════════════════════════════════════════ -->
         <div class="form-step" id="step-4">
             <div class="summary-section">
-                <div class="summary-header"><i class="fas fa-building"></i> Công ty &amp; Thông tin chung</div>
-                <div class="summary-row"><span class="summary-lbl">Số phiếu</span><span class="summary-val" id="sum-pr-no">—</span></div>
-                <div class="summary-row"><span class="summary-lbl">Công ty</span><span class="summary-val" id="sum-company">—</span></div>
-                <div class="summary-row"><span class="summary-lbl">Bộ phận</span><span class="summary-val" id="sum-dept">—</span></div>
-                <div class="summary-row"><span class="summary-lbl">Người đề nghị</span><span class="summary-val" id="sum-requester">—</span></div>
-                <div class="summary-row"><span class="summary-lbl">Ngày cần hàng</span><span class="summary-val" id="sum-date">—</span></div>
-                <div class="summary-row"><span class="summary-lbl">Ưu tiên</span><span class="summary-val" id="sum-priority">—</span></div>
+                <div class="summary-header"><i class="fas fa-building"></i> <span data-i18n="secCompanyGeneral">Công ty &amp; Thông tin chung</span></div>
+                <div class="summary-row"><span class="summary-lbl" data-i18n="sumPrNo">Số phiếu</span><span class="summary-val" id="sum-pr-no">—</span></div>
+                <div class="summary-row"><span class="summary-lbl" data-i18n="company">Công ty</span><span class="summary-val" id="sum-company">—</span></div>
+                <div class="summary-row"><span class="summary-lbl" data-i18n="department">Bộ phận</span><span class="summary-val" id="sum-dept">—</span></div>
+                <div class="summary-row"><span class="summary-lbl" data-i18n="requester">Người đề nghị</span><span class="summary-val" id="sum-requester">—</span></div>
+                <div class="summary-row"><span class="summary-lbl" data-i18n="labelRequiredDate">Ngày cần hàng</span><span class="summary-val" id="sum-date">—</span></div>
+                <div class="summary-row"><span class="summary-lbl" data-i18n="sumPriority">Ưu tiên</span><span class="summary-val" id="sum-priority">—</span></div>
             </div>
 
             <div class="summary-section">
-                <div class="summary-header"><i class="fas fa-boxes-stacked"></i> Hàng hóa / Dịch vụ</div>
+                <div class="summary-header"><i class="fas fa-boxes-stacked"></i> <span data-i18n="sumGoodsServices">Hàng hóa / Dịch vụ</span></div>
                 <div id="sum-items-list"></div>
                 <div class="summary-row" style="background:rgba(0,122,255,0.04);">
-                    <span class="summary-lbl" style="font-weight:600;">Tổng cộng</span>
+                    <span class="summary-lbl" style="font-weight:600;" data-i18n="total">Tổng cộng</span>
                     <span class="summary-val" id="sum-total" style="color:var(--primary); font-size:15px;">—</span>
                 </div>
             </div>
 
             <div class="summary-section">
-                <div class="summary-header"><i class="fas fa-align-left"></i> Mục đích &amp; Lý do</div>
-                <div class="summary-row"><span class="summary-lbl">Mục đích</span><span class="summary-val" id="sum-purpose" style="white-space:pre-wrap;">—</span></div>
-                <div class="summary-row"><span class="summary-lbl">NCC đề xuất</span><span class="summary-val" id="sum-vendor">—</span></div>
+                <div class="summary-header"><i class="fas fa-align-left"></i> <span data-i18n="secPurpose">Mục đích &amp; Lý do</span></div>
+                <div class="summary-row"><span class="summary-lbl" data-i18n="sumPurpose">Mục đích</span><span class="summary-val" id="sum-purpose" style="white-space:pre-wrap;">—</span></div>
+                <div class="summary-row"><span class="summary-lbl" data-i18n="sumVendor">NCC đề xuất</span><span class="summary-val" id="sum-vendor">—</span></div>
                 <div class="summary-row" id="sum-attachments-row" style="display:none;">
-                    <span class="summary-lbl">Tài liệu đính kèm</span>
+                    <span class="summary-lbl" data-i18n="sumAttachments">Tài liệu đính kèm</span>
                     <span class="summary-val" id="sum-attachments">—</span>
                 </div>
             </div>
 
             <div class="summary-section">
-                <div class="summary-header"><i class="fas fa-diagram-project"></i> Chuỗi phê duyệt</div>
+                <div class="summary-header"><i class="fas fa-diagram-project"></i> <span data-i18n="secApprovalChain">Chuỗi phê duyệt</span></div>
                 <div id="sum-approval-chain" style="display:flex;flex-direction:column;gap:0;"></div>
             </div>
 
             <div class="summary-section">
-                <div class="summary-header"><i class="fas fa-pen-nib"></i> Chữ ký người đề nghị</div>
+                <div class="summary-header"><i class="fas fa-pen-nib"></i> <span data-i18n="requesterSignature">Chữ ký người đề nghị</span></div>
                 <div class="summary-row">
                     <span class="summary-val" id="sum-signature">
                         <img id="sum-sig-img" src="" alt="Chữ ký người đề nghị" style="display:none;max-height:48px;max-width:140px;vertical-align:middle;border:1px solid #e2e8f0;border-radius:6px;padding:4px;background:white;">
-                        <span id="sum-sig-placeholder" style="font-size:12px;color:#94a3b8;">Chưa ký</span>
+                        <span id="sum-sig-placeholder" style="font-size:12px;color:#94a3b8;" data-i18n="notSigned">Chưa ký</span>
                     </span>
                 </div>
             </div>
 
             <div class="step-navigation" style="background:transparent; border:none; padding:16px 0 0;">
-                <button type="button" class="btn-secondary" onclick="goToStep(3)">← Quay lại</button>
+                <button type="button" class="btn-secondary" onclick="goToStep(3)" data-i18n="btnPrev">← Quay lại</button>
                 <div class="step-actions">
                     <button type="button" class="btn-secondary" onclick="resetForm()"><i class="fas fa-rotate-left"></i> Làm lại</button>
                     <button type="button" class="btn-success" id="submit-btn" onclick="submitForm()">
@@ -1561,17 +1561,17 @@
             <div class="success-icon">
                 <i class="fas fa-check" style="font-size:36px; color:var(--success);"></i>
             </div>
-            <h2 style="font-family:var(--font-display); font-size:22px; font-weight:700;">Đề Nghị Đã Được Gửi!</h2>
+            <h2 style="font-family:var(--font-display); font-size:22px; font-weight:700;" data-i18n="prSubmitted">Đề Nghị Đã Được Gửi!</h2>
             <p style="color:var(--text-secondary); max-width:400px;">
-                ĐỀ NGHỊ MUA HÀNG của bạn đã được gửi thành công. Người phê duyệt sẽ nhận được thông báo qua email.
+                <span data-i18n="prSubmittedBody">ĐỀ NGHỊ MUA HÀNG của bạn đã được gửi thành công. Người phê duyệt sẽ nhận được thông báo qua email.</span>
             </p>
             <p id="success-pr-no" style="font-size:15px; font-weight:600; color:var(--primary);"></p>
             <div style="display:flex; gap:10px; flex-wrap:wrap; justify-content:center; margin-top:8px;">
                 <button type="button" onclick="resetForm()" class="btn-primary" style="padding:10px 20px; border:none; border-radius:8px; font-family:var(--font-body); font-size:14px; cursor:pointer;">
-                    <i class="fas fa-plus" style="margin-right:6px;" aria-hidden="true"></i> Tạo đề nghị mới
+                    <i class="fas fa-plus" style="margin-right:6px;" aria-hidden="true"></i> <span data-i18n="createNewPr">Tạo đề nghị mới</span>
                 </button>
                 <button type="button" onclick="window.location.href='index.html'" style="padding:10px 20px; border:1px solid rgba(0,0,0,0.15); border-radius:8px; background:white; font-family:var(--font-body); font-size:14px; cursor:pointer;">
-                    <i class="fas fa-house" style="margin-right:6px;" aria-hidden="true"></i> Về Dashboard
+                    <i class="fas fa-house" style="margin-right:6px;" aria-hidden="true"></i> <span data-i18n="toDashboard">Về Dashboard</span>
                 </button>
             </div>
         </div>
@@ -1583,44 +1583,44 @@
         <div class="recent-pr-card">
             <!-- Header -->
             <div class="recent-pr-header">
-                <h3><i class="fas fa-list-check" style="color:var(--primary);margin-right:8px;" aria-hidden="true"></i>ĐỀ NGHỊ MUA HÀNG gần đây</h3>
+                <h3><i class="fas fa-list-check" style="color:var(--primary);margin-right:8px;" aria-hidden="true"></i><span data-i18n="recentPrHeading">ĐỀ NGHỊ MUA HÀNG gần đây</span></h3>
                 <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
                     <span id="pr-last-refresh" style="font-size:12px;color:var(--text-secondary);"></span>
                     <button type="button" id="my-pr-task-btn" onclick="toggleMyPRTaskFilter()"
-                        title="Chỉ hiện việc cần làm của tôi"
+                        title="Chỉ hiện việc cần làm của tôi" data-i18n-title="myTaskFilterTitle"
                         style="display:flex;align-items:center;gap:0.35rem;padding:6px 12px;border:1.5px solid #f97316;border-radius:6px;font-size:13px;font-weight:600;background:white;color:#f97316;cursor:pointer;white-space:nowrap;transition:background 0.15s,color 0.15s;font-family:var(--font-body);">
                         ⚡ Việc của tôi
                     </button>
-                    <button type="button" class="recent-pr-refresh-btn" onclick="loadRecentPR(true)" aria-label="Làm mới danh sách">
-                        <i class="fas fa-rotate-right" style="font-size:12px;" aria-hidden="true"></i> Làm mới
+                    <button type="button" class="recent-pr-refresh-btn" onclick="loadRecentPR(true)" aria-label="Làm mới danh sách" data-i18n-aria="refreshListTitle">
+                        <i class="fas fa-rotate-right" style="font-size:12px;" aria-hidden="true"></i> <span data-i18n="refresh">Làm mới</span>
                     </button>
                 </div>
             </div>
 
             <!-- Status pipeline -->
-            <div class="pr-stats" id="pr-stats" role="group" aria-label="Lọc theo trạng thái">
-                <div class="pr-stat-item stat-all active" onclick="applyPRFilter('')" tabindex="0" role="button" aria-label="Tất cả">
+            <div class="pr-stats" id="pr-stats" role="group" aria-label="Lọc theo trạng thái" data-i18n-aria="filterByStatus">
+                <div class="pr-stat-item stat-all active" onclick="applyPRFilter('')" tabindex="0" role="button" aria-label="Tất cả" data-i18n-aria="statAll">
                     <div class="pr-stat-count" id="pr-stat-all">—</div>
-                    <div class="pr-stat-label">Tất cả</div>
+                    <div class="pr-stat-label" data-i18n="statAll">Tất cả</div>
                 </div>
-                <div class="pr-stat-item stat-pending" onclick="applyPRFilter('dang-xu-ly')" tabindex="0" role="button" aria-label="Đang xử lý">
+                <div class="pr-stat-item stat-pending" onclick="applyPRFilter('dang-xu-ly')" tabindex="0" role="button" aria-label="Đang xử lý" data-i18n-aria="statInProgress">
                     <div class="pr-stat-count" id="pr-stat-pending">—</div>
-                    <div class="pr-stat-label">Đang xử lý</div>
+                    <div class="pr-stat-label" data-i18n="statInProgress">Đang xử lý</div>
                 </div>
-                <div class="pr-stat-item stat-approved" onclick="applyPRFilter('hoan-thanh')" tabindex="0" role="button" aria-label="Hoàn thành">
+                <div class="pr-stat-item stat-approved" onclick="applyPRFilter('hoan-thanh')" tabindex="0" role="button" aria-label="Hoàn thành" data-i18n-aria="statCompleted">
                     <div class="pr-stat-count" id="pr-stat-approved">—</div>
-                    <div class="pr-stat-label">Hoàn thành</div>
+                    <div class="pr-stat-label" data-i18n="statCompleted">Hoàn thành</div>
                 </div>
-                <div class="pr-stat-item stat-rejected" onclick="applyPRFilter('tu-choi')" tabindex="0" role="button" aria-label="Đã từ chối">
+                <div class="pr-stat-item stat-rejected" onclick="applyPRFilter('tu-choi')" tabindex="0" role="button" aria-label="Đã từ chối" data-i18n-aria="statRejected">
                     <div class="pr-stat-count" id="pr-stat-rejected">—</div>
-                    <div class="pr-stat-label">Từ chối</div>
+                    <div class="pr-stat-label" data-i18n="statRejected">Từ chối</div>
                 </div>
             </div>
 
             <!-- Search -->
             <div class="pr-search-bar">
-                <input type="search" id="pr-search" placeholder="Tìm số phiếu, công ty, người đề nghị..."
-                       autocomplete="off" oninput="renderPRList()" aria-label="Tìm kiếm đề nghị">
+                <input type="search" id="pr-search" placeholder="Tìm số phiếu, công ty, người đề nghị..." data-i18n-placeholder="phPrSearch"
+                       autocomplete="off" oninput="renderPRList()" aria-label="Tìm kiếm đề nghị" data-i18n-aria="searchPr">
             </div>
 
             <!-- List -->
@@ -1635,16 +1635,16 @@
 
     <!-- PR Detail Drawer -->
     <div class="pr-drawer-overlay" id="pr-drawer-overlay" onclick="closePRDrawer()"></div>
-    <aside class="pr-drawer" id="pr-drawer" role="dialog" aria-modal="true" aria-label="Chi tiết đề nghị mua hàng">
+    <aside class="pr-drawer" id="pr-drawer" role="dialog" aria-modal="true" aria-label="Chi tiết đề nghị mua hàng" data-i18n-aria="prDetailAria">
         <div class="pr-drawer-head">
-            <h4 id="pr-drawer-title">Chi tiết đề nghị</h4>
-            <button class="pr-drawer-close" onclick="closePRDrawer()" aria-label="Đóng">
+            <h4 id="pr-drawer-title" data-i18n="prDetail">Chi tiết đề nghị</h4>
+            <button class="pr-drawer-close" onclick="closePRDrawer()" aria-label="Đóng" data-i18n-aria="close">
                 <i class="fas fa-xmark" aria-hidden="true"></i>
             </button>
         </div>
         <div class="pr-drawer-body" id="pr-drawer-body">
             <div style="color:#64748b;font-size:13px;text-align:center;padding:40px 16px;">
-                Chọn một đề nghị trong danh sách để xem chi tiết.
+                <span data-i18n="prDrawerEmpty">Chọn một đề nghị trong danh sách để xem chi tiết.</span>
             </div>
         </div>
         <div class="pr-drawer-actions" id="pr-drawer-actions" style="display:none;"></div>
@@ -1653,11 +1653,11 @@
     <!-- Reject reason modal -->
     <div class="pr-reject-overlay" id="pr-reject-overlay">
         <div class="pr-reject-modal">
-            <h4>✕ Lý do từ chối</h4>
-            <textarea id="pr-reject-note" placeholder="Nhập lý do từ chối (không bắt buộc)..."></textarea>
+            <h4 data-i18n="rejectReasonTitle">✕ Lý do từ chối</h4>
+            <textarea id="pr-reject-note" placeholder="Nhập lý do từ chối (không bắt buộc)..." data-i18n-placeholder="phRejectReason"></textarea>
             <div class="pr-reject-modal-actions">
-                <button class="pr-reject-cancel" onclick="closePRRejectModal()">Hủy</button>
-                <button class="pr-reject-confirm" id="pr-reject-confirm-btn" onclick="confirmRejectPR()">Từ chối</button>
+                <button class="pr-reject-cancel" onclick="closePRRejectModal()" data-i18n="cancel">Hủy</button>
+                <button class="pr-reject-confirm" id="pr-reject-confirm-btn" onclick="confirmRejectPR()" data-i18n="reject">Từ chối</button>
             </div>
         </div>
     </div>
@@ -1665,14 +1665,14 @@
     <!-- Send-back modal -->
     <div class="pr-sendback-overlay" id="pr-sendback-overlay">
         <div class="pr-sendback-modal">
-            <h4>↩ Trả lại để chỉnh sửa</h4>
-            <label for="pr-sendback-target">Trả về bước nào?</label>
+            <h4 data-i18n="sendBackTitle">↩ Trả lại để chỉnh sửa</h4>
+            <label for="pr-sendback-target" data-i18n="sendBackTarget">Trả về bước nào?</label>
             <select id="pr-sendback-target"></select>
             <label for="pr-sendback-note">Lý do / Yêu cầu bổ sung <span style="color:#ef4444;">*</span></label>
-            <textarea id="pr-sendback-note" placeholder="Mô tả thông tin còn thiếu, tài liệu cần bổ sung..."></textarea>
+            <textarea id="pr-sendback-note" placeholder="Mô tả thông tin còn thiếu, tài liệu cần bổ sung..." data-i18n-placeholder="phSendBackNote"></textarea>
             <div class="pr-sendback-modal-actions">
-                <button class="pr-sendback-cancel" onclick="closePRSendBackModal()">Hủy</button>
-                <button class="pr-sendback-confirm" id="pr-sendback-confirm-btn" onclick="confirmSendBackPR()">Trả lại</button>
+                <button class="pr-sendback-cancel" onclick="closePRSendBackModal()" data-i18n="cancel">Hủy</button>
+                <button class="pr-sendback-confirm" id="pr-sendback-confirm-btn" onclick="confirmSendBackPR()" data-i18n="sendBack">Trả lại</button>
             </div>
         </div>
     </div>
@@ -1680,6 +1680,219 @@
 </div><!-- /ipad-main -->
 
 <script>
+    // Page-specific strings merged into the shared i18n.js layer.
+    TLCI18n.extend({
+        vi: {
+            prPageTitle: 'ĐỀ NGHỊ MUA HÀNG',
+            formSteps: 'Các bước phiếu',
+            stepAria1: 'Bước 1 — Công ty',
+            stepAria2: 'Bước 2 — Hàng hóa',
+            stepAria3: 'Bước 3 — Phê duyệt',
+            stepAria4: 'Bước 4 — Xác nhận',
+            stepCompany: 'Công ty',
+            stepGoods: 'Hàng hóa',
+            secCompanyGeneral: 'Công Ty & Thông Tin Chung',
+            labelPrNo: 'Số phiếu:',
+            optChooseRequester: '-- Chọn người đề nghị --',
+            labelDeptFull: 'Bộ phận / Phòng ban',
+            labelRequiredDate: 'Ngày cần hàng',
+            labelPriority: 'Mức độ ưu tiên',
+            priUrgent: 'Gấp',
+            priNormal: 'Bình Thường',
+            priLow: 'Không Gấp',
+            labelPurchaseType: 'Loại mua hàng',
+            typeGoods: 'Hàng hóa',
+            typeService: 'Dịch vụ',
+            secGoods: 'Hàng Hóa',
+            secEquipment: 'Thiết Bị (TSCĐ/CCDC)',
+            secServices: 'Dịch Vụ',
+            secRepairs: 'Sửa Chữa (TSCĐ)',
+            openCatalog: 'Mở danh mục hàng hóa',
+            chooseFromCatalog: 'Chọn từ danh mục',
+            kttCatalogHint: 'Danh mục hàng hóa dành riêng cho đơn hàng KTT',
+            colGoodsName: 'Tên hàng / Mô tả',
+            colEquipName: 'Tên thiết bị / Mô tả',
+            colServiceName: 'Tên dịch vụ / Mô tả',
+            colRepairName: 'Tên TSCĐ / Nội dung sửa chữa',
+            colUnitPriceVnd: 'Đơn giá (VND)',
+            unitPriceCurrency: 'Loại tiền tệ đơn giá',
+            grandTotalAll: 'Tổng cộng tất cả:',
+            secPurpose: 'Mục Đích & Lý Do',
+            labelPurpose: 'Mục đích mua hàng',
+            phPurpose: 'Mô tả mục đích và lý do cần mua hàng hóa/dịch vụ này…',
+            labelVendorList: 'NCC từ danh sách',
+            phVendorSearch: 'Gõ để tìm nhà cung cấp…',
+            optChooseVendorFirst: '-- Chọn NCC trước --',
+            labelVendorNew: 'Hoặc nhập NCC mới',
+            phVendorNew: 'Tên NCC nếu không có trong DS…',
+            clearVendor: 'Xóa NCC',
+            clearVendorAria: 'Xóa nhà cung cấp đã chọn',
+            newVendorNotice: 'NCC mới chưa có trong danh sách — sẽ được admin xem xét trước khi xử lý',
+            vendorInfo: 'Thông tin Nhà cung cấp',
+            labelVendorName: 'Tên NCC',
+            labelVendorType: 'Loại NCC',
+            labelVendorAddr: 'Địa chỉ NCC',
+            chooseFiles: 'Chọn tài liệu',
+            attachHint: 'PDF, PNG, JPG, XLSX — tối đa 5 file, mỗi file ≤ 10 MB',
+            secApprovalChain: 'Chuỗi Phê Duyệt',
+            apprBudget: 'Người phê duyệt ngân sách',
+            apprBudgetSub: 'Chạy song song với Người phê duyệt NCC',
+            apprVendor: 'Người phê duyệt NCC',
+            apprVendorSub: 'Chạy song song với Người phê duyệt ngân sách',
+            apprContractSub: 'Thẩm định hợp đồng sau khi Procurement hoàn tất đàm phán (quy trình đầy đủ)',
+            apprPurchasingSub: 'Xác nhận mua hàng cuối cùng',
+            labelChooseApprover: 'Chọn người phê duyệt',
+            labelChooseReviewer: 'Chọn người thẩm định',
+            labelChoosePurchaser: 'Chọn người mua hàng',
+            labelApproverNote: 'Ghi chú cho người phê duyệt',
+            phExtraNote: 'Ghi chú thêm (tuỳ chọn)',
+            sigHint: 'PNG hoặc JPG — chữ ký sẽ được lưu tự động cho các phiếu sau',
+            sumPrNo: 'Số phiếu',
+            sumPriority: 'Ưu tiên',
+            sumPurpose: 'Mục đích',
+            sumVendor: 'NCC đề xuất',
+            sumAttachments: 'Tài liệu đính kèm',
+            sumGoodsServices: 'Hàng hóa / Dịch vụ',
+            prSubmitted: 'Đề Nghị Đã Được Gửi!',
+            prSubmittedBody: 'ĐỀ NGHỊ MUA HÀNG của bạn đã được gửi thành công. Người phê duyệt sẽ nhận được thông báo qua email.',
+            createNewPr: 'Tạo đề nghị mới',
+            toDashboard: 'Về Dashboard',
+            recentPrHeading: 'ĐỀ NGHỊ MUA HÀNG gần đây',
+            filterByStatus: 'Lọc theo trạng thái',
+            phPrSearch: 'Tìm số phiếu, công ty, người đề nghị...',
+            searchPr: 'Tìm kiếm đề nghị',
+            prDetail: 'Chi tiết đề nghị',
+            prDetailAria: 'Chi tiết đề nghị mua hàng',
+            prDrawerEmpty: 'Chọn một đề nghị trong danh sách để xem chi tiết.',
+            rejectReasonTitle: '✕ Lý do từ chối',
+            phRejectReason: 'Nhập lý do từ chối (không bắt buộc)...',
+            sendBackTitle: '↩ Trả lại để chỉnh sửa',
+            sendBackTarget: 'Trả về bước nào?',
+            phSendBackNote: 'Mô tả thông tin còn thiếu, tài liệu cần bổ sung...',
+            catalogTitle: 'Danh mục hàng hóa',
+            gridView: 'Lưới',
+            gridViewAria: 'Xem danh mục dạng lưới',
+            listView: 'Danh sách',
+            listViewAria: 'Xem danh mục dạng danh sách',
+            closeCatalog: 'Đóng danh mục hàng hóa',
+            closeCatalogBack: 'Đóng danh mục và quay lại biểu mẫu',
+            phCatalogSearch: 'Tìm theo tên hoặc mô tả...',
+            prStatusPending: 'Chờ duyệt (1/5)',
+            prStatusBudget: 'Đang duyệt ngân sách & NCC (2/5)',
+            prStatusVendor: 'Đang duyệt nhà cung cấp (3/5)',
+            prStatusContract: 'Thẩm định Hợp đồng (4/5)',
+            prStatusPurchasing: 'Mua hàng (5/5)',
+            prStatusCompleted: 'Hoàn thành',
+            prStatusApproved: 'Đã duyệt',
+            prStatusRejected: 'Đã từ chối',
+            prStatusReturned: 'Trả lại bổ sung'
+        },
+        en: {
+            prPageTitle: 'PURCHASE REQUEST',
+            formSteps: 'Form steps',
+            stepAria1: 'Step 1 — Company',
+            stepAria2: 'Step 2 — Goods',
+            stepAria3: 'Step 3 — Approval',
+            stepAria4: 'Step 4 — Confirm',
+            stepCompany: 'Company',
+            stepGoods: 'Goods',
+            secCompanyGeneral: 'Company & General Information',
+            labelPrNo: 'Request no.:',
+            optChooseRequester: '-- Select requester --',
+            labelDeptFull: 'Department / Division',
+            labelRequiredDate: 'Date required',
+            labelPriority: 'Priority',
+            priUrgent: 'Urgent',
+            priNormal: 'Normal',
+            priLow: 'Not Urgent',
+            labelPurchaseType: 'Purchase type',
+            typeGoods: 'Goods',
+            typeService: 'Services',
+            secGoods: 'Goods',
+            secEquipment: 'Equipment (Fixed Assets/Tools)',
+            secServices: 'Services',
+            secRepairs: 'Repairs (Fixed Assets)',
+            openCatalog: 'Open product catalog',
+            chooseFromCatalog: 'Select from catalog',
+            kttCatalogHint: 'Product catalog reserved for KTT orders',
+            colGoodsName: 'Item name / Description',
+            colEquipName: 'Equipment name / Description',
+            colServiceName: 'Service name / Description',
+            colRepairName: 'Asset name / Repair details',
+            colUnitPriceVnd: 'Unit price (VND)',
+            unitPriceCurrency: 'Unit price currency',
+            grandTotalAll: 'Grand total:',
+            secPurpose: 'Purpose & Justification',
+            labelPurpose: 'Purchase purpose',
+            phPurpose: 'Describe the purpose and reason for this purchase…',
+            labelVendorList: 'Vendor from list',
+            phVendorSearch: 'Type to search vendors…',
+            optChooseVendorFirst: '-- Select a vendor first --',
+            labelVendorNew: 'Or enter a new vendor',
+            phVendorNew: 'Vendor name if not in the list…',
+            clearVendor: 'Clear vendor',
+            clearVendorAria: 'Clear the selected vendor',
+            newVendorNotice: 'New vendor not yet in the list — an admin will review it before processing',
+            vendorInfo: 'Vendor information',
+            labelVendorName: 'Vendor name',
+            labelVendorType: 'Vendor type',
+            labelVendorAddr: 'Vendor address',
+            chooseFiles: 'Choose files',
+            attachHint: 'PDF, PNG, JPG, XLSX — up to 5 files, each ≤ 10 MB',
+            secApprovalChain: 'Approval Chain',
+            apprBudget: 'Budget approver',
+            apprBudgetSub: 'Runs in parallel with the vendor approver',
+            apprVendor: 'Vendor approver',
+            apprVendorSub: 'Runs in parallel with the budget approver',
+            apprContractSub: 'Contract review after Procurement completes negotiation (full process)',
+            apprPurchasingSub: 'Final purchase confirmation',
+            labelChooseApprover: 'Select approver',
+            labelChooseReviewer: 'Select reviewer',
+            labelChoosePurchaser: 'Select purchaser',
+            labelApproverNote: 'Note for the approver',
+            phExtraNote: 'Additional note (optional)',
+            sigHint: 'PNG or JPG — your signature is saved automatically for future requests',
+            sumPrNo: 'Request no.',
+            sumPriority: 'Priority',
+            sumPurpose: 'Purpose',
+            sumVendor: 'Proposed vendor',
+            sumAttachments: 'Attachments',
+            sumGoodsServices: 'Goods / Services',
+            prSubmitted: 'Request Submitted!',
+            prSubmittedBody: 'Your PURCHASE REQUEST was submitted successfully. Approvers will be notified by email.',
+            createNewPr: 'Create new request',
+            toDashboard: 'Back to Dashboard',
+            recentPrHeading: 'Recent PURCHASE REQUESTS',
+            filterByStatus: 'Filter by status',
+            phPrSearch: 'Search request no., company, requester...',
+            searchPr: 'Search requests',
+            prDetail: 'Request details',
+            prDetailAria: 'Purchase request details',
+            prDrawerEmpty: 'Select a request from the list to view its details.',
+            rejectReasonTitle: '✕ Rejection reason',
+            phRejectReason: 'Enter a rejection reason (optional)...',
+            sendBackTitle: '↩ Send back for edits',
+            sendBackTarget: 'Send back to which step?',
+            phSendBackNote: 'Describe the missing information or documents needed...',
+            catalogTitle: 'Product catalog',
+            gridView: 'Grid',
+            gridViewAria: 'View catalog as a grid',
+            listView: 'List',
+            listViewAria: 'View catalog as a list',
+            closeCatalog: 'Close product catalog',
+            closeCatalogBack: 'Close catalog and return to the form',
+            phCatalogSearch: 'Search by name or description...',
+            prStatusPending: 'Pending (1/5)',
+            prStatusBudget: 'Budget & Vendor review (2/5)',
+            prStatusVendor: 'Vendor review (3/5)',
+            prStatusContract: 'Contract review (4/5)',
+            prStatusPurchasing: 'Purchasing (5/5)',
+            prStatusCompleted: 'Completed',
+            prStatusApproved: 'Approved',
+            prStatusRejected: 'Rejected',
+            prStatusReturned: 'Returned for revision'
+        }
+    });
     /* ── Config ─────────────────────────────────────────────────── */
     const BACKEND_URL = '/api/voucher'; // routes via Vercel proxy → TLCG_P2P_BACKEND
 
@@ -2059,7 +2272,7 @@
         const sel   = document.getElementById('company_code');
         const embed = (typeof TLCG_COMPANIES_DATA !== 'undefined' && TLCG_COMPANIES_DATA) || null;
         const arr   = (embed && embed.companies_data) || [];
-        sel.innerHTML = '<option value="">-- Chọn công ty --</option>';
+        sel.innerHTML = '<option value="" data-i18n="optChooseCompany">-- Chọn công ty --</option>';
         if (arr.length === 0) {
             sel.innerHTML = '<option value="">-- Không có dữ liệu (thiếu tlcg_companies_embed.js) --</option>';
             return;
@@ -2103,7 +2316,7 @@
         } else {
             ['budget_approver', 'supplier_approver', 'contract_approver'].forEach(id => {
                 const s = document.getElementById(id);
-                if (s) s.innerHTML = '<option value="">-- Chọn --</option>';
+                if (s) s.innerHTML = '<option value="" data-i18n="optChoose">-- Chọn --</option>';
             });
         }
     }
@@ -2552,7 +2765,7 @@
         if (manual) manual.style.display = 'none';
         allBanks = [];
         if (!vendorName) {
-            sel.innerHTML = '<option value="">-- Chọn NCC trước --</option>';
+            sel.innerHTML = '<option value="" data-i18n="optChooseVendorFirst">-- Chọn NCC trước --</option>';
             sel.style.display = 'none';
             return;
         }
@@ -2644,7 +2857,7 @@
     function clearBankFields(clearSel = true) {
         if (clearSel) {
             const sel = document.getElementById('vendor_bank_pick');
-            sel.innerHTML = '<option value="">-- Chọn NCC trước --</option>';
+            sel.innerHTML = '<option value="" data-i18n="optChooseVendorFirst">-- Chọn NCC trước --</option>';
             sel.style.display = 'none';
         }
         document.getElementById('vendor_account_name').value       = '';
@@ -3248,7 +3461,7 @@
         _allEmployees = employees;
         const sel    = document.getElementById('requester_name');
         const active = employees.filter(e => (e.employee_status || e['Status'] || '').toLowerCase() === 'active');
-        sel.innerHTML = '<option value="">-- Chọn người đề nghị --</option>';
+        sel.innerHTML = '<option value="" data-i18n="optChooseRequester">-- Chọn người đề nghị --</option>';
         active.forEach(e => {
             const name = (e.full_name || e['Họ và tên'] || '').trim();
             const dept = (e.department_name || e['Bộ phận'] || '').trim();
@@ -3293,7 +3506,7 @@
         );
         const sel = document.getElementById('purchasing_approver');
         if (sel) {
-            sel.innerHTML = '<option value="">-- Không có --</option>';
+            sel.innerHTML = '<option value="" data-i18n="optNone">-- Không có --</option>';
             ktChi.forEach(e => {
                 const name  = (e.full_name || e['Họ và tên'] || '').trim();
                 const email = (e.employee_email || e['Email'] || '').trim();
@@ -3343,8 +3556,8 @@
             if (!sel) return;
             const isOptional = id === 'contract_approver';
             sel.innerHTML = isOptional
-                ? '<option value="">-- Không có --</option>'
-                : '<option value="">-- Chọn --</option>';
+                ? '<option value="" data-i18n="optNone">-- Không có --</option>'
+                : '<option value="" data-i18n="optChoose">-- Chọn --</option>';
 
             roles.forEach(r => {
                 // Cross-reference email → proper display name from employee list
@@ -3811,22 +4024,30 @@
         return 'other';
     }
 
-    /** Maps a stored status string to a human-readable Vietnamese label */
+    /**
+     * Maps a stored status string to a human-readable label.
+     *
+     * The lookup keys stay Vietnamese — they match what is stored in Sheets and
+     * what every comparison in this file tests against. Only the returned label
+     * is localised, and only here, because both call sites write straight to the
+     * DOM. Never feed this function's output back into a comparison.
+     */
     function _prStatusLabel(status) {
         const map = {
-            'pending':                             'Chờ duyệt (1/5)',
-            'đang duyệt ngân sách (2/5)':          'Đang duyệt ngân sách & NCC (2/5)',
-            'đang duyệt ngân sách & ncc (2/5)':    'Đang duyệt ngân sách & NCC (2/5)',
-            'đang duyệt nhà cung cấp (3/5)':       'Đang duyệt nhà cung cấp (3/5)',
-            'thẩm định hợp đồng (4/5)':            'Thẩm định Hợp đồng (4/5)',
-            'mua hàng (5/5)':                      'Mua hàng (5/5)',
-            'hoàn thành':                          'Hoàn thành',
-            'approved':                            'Đã duyệt',
-            'rejected':                            'Đã từ chối',
-            'đã từ chối':                          'Đã từ chối',
-            'trả lại bổ sung':                     'Trả lại bổ sung',
+            'pending':                             'prStatusPending',
+            'đang duyệt ngân sách (2/5)':          'prStatusBudget',
+            'đang duyệt ngân sách & ncc (2/5)':    'prStatusBudget',
+            'đang duyệt nhà cung cấp (3/5)':       'prStatusVendor',
+            'thẩm định hợp đồng (4/5)':            'prStatusContract',
+            'mua hàng (5/5)':                      'prStatusPurchasing',
+            'hoàn thành':                          'prStatusCompleted',
+            'approved':                            'prStatusApproved',
+            'rejected':                            'prStatusRejected',
+            'đã từ chối':                          'prStatusRejected',
+            'trả lại bổ sung':                     'prStatusReturned',
         };
-        return map[(status || '').toLowerCase()] || status || '—';
+        const key = map[(status || '').toLowerCase()];
+        return key ? TLCI18n.t(key) : (status || '—');
     }
 
     /**
@@ -5067,21 +5288,21 @@ ${attachUrls.length > 0 ? `<div class="section-title" style="margin-top:18px;">T
 <div class="catalog-panel" id="catalog-panel">
     <div class="catalog-panel-header">
         <div>
-            <div class="catalog-panel-title">Danh mục hàng hóa</div>
+            <div class="catalog-panel-title" data-i18n="catalogTitle">Danh mục hàng hóa</div>
             <div id="catalog-total-label" style="font-size:11px;color:#8e8e93;margin-top:2px;"></div>
         </div>
         <div style="display:flex;align-items:center;gap:8px;">
             <div class="catalog-view-toggle">
                 <button type="button" class="catalog-view-btn active" id="catalog-view-grid"
-                        onclick="toggleCatalogView('grid')" title="Lưới" aria-label="Xem danh mục dạng lưới">
+                        onclick="toggleCatalogView('grid')" title="Lưới" data-i18n-title="gridView" aria-label="Xem danh mục dạng lưới" data-i18n-aria="gridViewAria">
                     <i class="fas fa-border-all" aria-hidden="true"></i>
                 </button>
                 <button type="button" class="catalog-view-btn" id="catalog-view-list"
-                        onclick="toggleCatalogView('list')" title="Danh sách" aria-label="Xem danh mục dạng danh sách">
+                        onclick="toggleCatalogView('list')" title="Danh sách" data-i18n-title="listView" aria-label="Xem danh mục dạng danh sách" data-i18n-aria="listViewAria">
                     <i class="fas fa-list" aria-hidden="true"></i>
                 </button>
             </div>
-            <button type="button" class="catalog-close-btn" onclick="closeCatalog()" aria-label="Đóng danh mục hàng hóa">
+            <button type="button" class="catalog-close-btn" onclick="closeCatalog()" aria-label="Đóng danh mục hàng hóa" data-i18n-aria="closeCatalog">
                 <i class="fas fa-xmark" aria-hidden="true"></i>
             </button>
         </div>
@@ -5090,7 +5311,7 @@ ${attachUrls.length > 0 ? `<div class="section-title" style="margin-top:18px;">T
         <div style="position:relative;">
             <i class="fas fa-magnifying-glass" style="position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#8e8e93;font-size:13px;pointer-events:none;"></i>
             <input type="text" class="catalog-search-input" id="catalog-search"
-                   placeholder="Tìm theo tên hoặc mô tả..." autocomplete="off"
+                   placeholder="Tìm theo tên hoặc mô tả..." data-i18n-placeholder="phCatalogSearch" autocomplete="off"
                    style="padding-left:32px;"
                    oninput="renderCatalogItems(_catalogActiveCat, this.value)">
         </div>
@@ -5101,7 +5322,7 @@ ${attachUrls.length > 0 ? `<div class="section-title" style="margin-top:18px;">T
         <div class="catalog-grid" id="catalog-grid" role="list"></div>
     </div>
     <div class="catalog-panel-footer">
-        <button type="button" class="catalog-done-btn" onclick="closeCatalog()" aria-label="Đóng danh mục và quay lại biểu mẫu">
+        <button type="button" class="catalog-done-btn" onclick="closeCatalog()" aria-label="Đóng danh mục và quay lại biểu mẫu" data-i18n-aria="closeCatalogBack">
             Xong — đã chọn <span id="catalog-done-count">0</span> mặt hàng
         </button>
     </div>
