@@ -128,6 +128,7 @@
       total: 'Tổng cộng',
       note: 'Ghi chú',
       status: 'Trạng thái',
+      atTime: 'lúc',
       requester: 'Người đề nghị',
       department: 'Bộ phận',
 
@@ -202,6 +203,7 @@
       total: 'Total',
       note: 'Note',
       status: 'Status',
+      atTime: 'at',
       requester: 'Requester',
       department: 'Department',
 
@@ -236,6 +238,14 @@
     'Đã hủy': { vi: 'Đã hủy', en: 'Cancelled' },
     'Nháp': { vi: 'Nháp', en: 'Draft' },
     'Đã thanh toán': { vi: 'Đã thanh toán', en: 'Paid' },
+    'Đã từ chối': { vi: 'Đã từ chối', en: 'Rejected' },
+    'Đã nhận': { vi: 'Đã nhận', en: 'Received' },
+    'Đã thu': { vi: 'Đã thu', en: 'Received' },
+    // Composite progress badges from formatApprovalStatusText().
+    'Chờ Duyệt': { vi: 'Chờ Duyệt', en: 'Pending' },
+    'Đang Duyệt': { vi: 'Đang Duyệt', en: 'In Review' },
+    'Đã Duyệt': { vi: 'Đã Duyệt', en: 'Approved' },
+    'Đang chờ phê duyệt': { vi: 'Đang chờ phê duyệt', en: 'Awaiting approval' },
     // English values already present in some backend rows.
     Pending: { vi: 'Chờ duyệt', en: 'Pending' },
     Approved: { vi: 'Đã duyệt', en: 'Approved' },
@@ -261,12 +271,45 @@
     return fallback != null ? fallback : key;
   }
 
-  /** Translate a status for DISPLAY only. Unknown values pass through. */
+  /**
+   * Translate a status for DISPLAY only. Unknown values pass through unchanged.
+   *
+   * Handles the composite badges used by the voucher list, which carry a
+   * progress counter — 'Đã Duyệt (3/3)' -> 'Approved (3/3)'. Matching is
+   * case-insensitive because the same status appears with different casing
+   * ('Đã duyệt' from the backend, 'Đã Duyệt' from formatApprovalStatusText).
+   */
   function tStatus(status) {
     if (status == null || status === '') return status;
-    var entry = statusMap[String(status).trim()];
-    if (!entry) return status;
-    return entry[getLang()] || status;
+
+    var raw = String(status).trim();
+    var lang = getLang();
+
+    var direct = statusMap[raw];
+    if (direct) return direct[lang] || raw;
+
+    // Split a trailing counter/qualifier, e.g. 'Đang Duyệt (2/3)'.
+    var m = raw.match(/^(.*?)\s*(\([^)]*\))\s*$/);
+    var base = m ? m[1].trim() : raw;
+    var suffix = m ? ' ' + m[2] : '';
+
+    var key = lookupCaseInsensitive(base);
+    if (!key) return status;
+
+    var translated = statusMap[key][lang] || base;
+    return translated + suffix;
+  }
+
+  var lowerIndex = null;
+
+  function lookupCaseInsensitive(value) {
+    if (lowerIndex === null) {
+      lowerIndex = {};
+      Object.keys(statusMap).forEach(function (k) {
+        lowerIndex[k.toLowerCase()] = k;
+      });
+    }
+    return lowerIndex[value.toLowerCase()] || null;
   }
 
   /** Merge page-specific strings: extend({vi: {...}, en: {...}}). */

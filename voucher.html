@@ -2467,21 +2467,21 @@
 
         <div class="sidebar-section">
             <div class="sidebar-section-title">Workflows</div>
-            <button onclick="window.location.href='purchase_request.html'" class="sidebar-item" data-tooltip="Đề Nghị Mua Hàng" data-page="purchase-request">
+            <button onclick="window.location.href='purchase_request.html'" class="sidebar-item" data-tooltip="Đề Nghị Mua Hàng" data-i18n-title="navPurchaseRequest" data-page="purchase-request">
                 <div class="sidebar-icon-box" style="background:#007AFF;"><i class="fas fa-file-pen"></i></div>
-                <span>Đề Nghị Mua Hàng</span>
+                <span data-i18n="navPurchaseRequest">Đề Nghị Mua Hàng</span>
             </button>
-            <button onclick="window.location.href='acceptance_minutes.html'" class="sidebar-item" data-tooltip="Biên Bản Nghiệm Thu" data-page="acceptance-minutes">
+            <button onclick="window.location.href='acceptance_minutes.html'" class="sidebar-item" data-tooltip="Biên Bản Nghiệm Thu" data-i18n-title="navAcceptance" data-page="acceptance-minutes">
                 <div class="sidebar-icon-box" style="background:#34C759;"><i class="fas fa-clipboard-check"></i></div>
-                <span>Biên Bản Nghiệm Thu</span>
+                <span data-i18n="navAcceptance">Biên Bản Nghiệm Thu</span>
             </button>
-            <button onclick="window.location.href='payment_request.html'" class="sidebar-item" data-tooltip="Đề Nghị Thanh Toán" data-page="payment-request">
+            <button onclick="window.location.href='payment_request.html'" class="sidebar-item" data-tooltip="Đề Nghị Thanh Toán" data-i18n-title="navPaymentRequest" data-page="payment-request">
                 <div class="sidebar-icon-box" style="background: #5856D6;"><i class="fas fa-file-invoice-dollar"></i></div>
-                <span>Đề Nghị Thanh Toán</span>
+                <span data-i18n="navPaymentRequest">Đề Nghị Thanh Toán</span>
             </button>
-            <button onclick="showPage('voucher-form')" class="sidebar-item active" data-tooltip="Phiếu Thu Chi" data-page="voucher-form">
+            <button onclick="showPage('voucher-form')" class="sidebar-item active" data-tooltip="Phiếu Thu Chi" data-i18n-title="navVoucher" data-page="voucher-form">
                 <div class="sidebar-icon-box" style="background: #FF9500;"><i class="fas fa-file-invoice"></i></div>
-                <span>Phiếu Thu Chi</span>
+                <span data-i18n="navVoucher">Phiếu Thu Chi</span>
             </button>
         </div>
 
@@ -2521,12 +2521,12 @@
                 <div class="flex items-center gap-3">
                     <!-- Notification bell (mobile) -->
                     <div style="position:relative;display:inline-flex;align-items:center;">
-                        <i class="fas fa-bell" style="font-size:18px;color:#6e6e73;" aria-label="Thông báo"></i>
+                        <i class="fas fa-bell" style="font-size:18px;color:#6e6e73;" aria-label="Thông báo" data-i18n-aria="notifications"></i>
                         <span id="notif-badge-mobile" style="display:none;position:absolute;top:-6px;right:-7px;background:#FF3B30;color:white;border-radius:50%;font-size:10px;font-weight:700;min-width:16px;height:16px;align-items:center;justify-content:center;padding:0 3px;line-height:1;pointer-events:none;">0</span>
                     </div>
                     <button onclick="window.location.href='index.html'" class="text-gray-600 hover:text-gray-900 font-medium transition flex items-center gap-2 px-3 py-2" style="background: transparent; border-radius: 8px;">
                         <i class="fas fa-arrow-left text-sm"></i>
-                        <span class="hidden sm:inline">Quay lại</span>
+                        <span class="hidden sm:inline" data-i18n="backToDash">Quay lại</span>
                     </button>
                 </div>
             </div>
@@ -2551,11 +2551,11 @@
                     <div id="nav-user-section" class="flex items-center gap-2">
                         <!-- Notification bell -->
                         <div id="notif-bell-wrapper" onclick="toggleNotifDropdown()" style="position:relative;display:inline-flex;align-items:center;cursor:pointer;padding:4px;">
-                            <i class="fas fa-bell" style="font-size:18px;color:#6e6e73;" aria-label="Thông báo"></i>
+                            <i class="fas fa-bell" style="font-size:18px;color:#6e6e73;" aria-label="Thông báo" data-i18n-aria="notifications"></i>
                             <span id="notif-badge" style="display:none;position:absolute;top:-6px;right:-7px;background:#FF3B30;color:white;border-radius:50%;font-size:10px;font-weight:700;min-width:16px;height:16px;align-items:center;justify-content:center;padding:0 3px;line-height:1;pointer-events:none;">0</span>
                             <!-- Dropdown panel -->
                             <div id="notif-dropdown" style="display:none;position:absolute;top:calc(100% + 10px);right:0;width:280px;background:white;border-radius:12px;box-shadow:0 8px 30px rgba(0,0,0,0.12);border:0.5px solid rgba(60,60,67,0.18);z-index:1000;overflow:hidden;">
-                                <div style="padding:10px 14px;border-bottom:0.5px solid #f1f5f9;font-size:12px;font-weight:700;color:#374151;">Việc cần làm của tôi</div>
+                                <div style="padding:10px 14px;border-bottom:0.5px solid #f1f5f9;font-size:12px;font-weight:700;color:#374151;" data-i18n="myTasks">Việc cần làm của tôi</div>
                                 <div style="max-height:320px;overflow-y:auto;" id="notif-dropdown-body"></div>
                             </div>
                         </div>
@@ -2599,23 +2599,23 @@
                 <div class="stepper-line-progress" id="stepper-progress"></div>
                 <div class="stepper-step active" data-step="1" onclick="goToStep(1)">
                     <div class="stepper-circle">1</div>
-                    <div class="stepper-label">Thông tin cơ bản</div>
+                    <div class="stepper-label" data-i18n="basicInfo">Thông tin cơ bản</div>
                 </div>
                 <div class="stepper-step" data-step="2" onclick="goToStep(2)">
                     <div class="stepper-circle">2</div>
-                    <div class="stepper-label">Thông tin đối tượng</div>
+                    <div class="stepper-label" data-i18n="subjectInfo">Thông tin đối tượng</div>
                 </div>
                 <div class="stepper-step" data-step="3" onclick="goToStep(3)">
                     <div class="stepper-circle">3</div>
-                    <div class="stepper-label">Chi tiết chi phí</div>
+                    <div class="stepper-label" data-i18n="expenseDetails">Chi tiết chi phí</div>
                 </div>
                 <div class="stepper-step" data-step="4" onclick="goToStep(4)">
                     <div class="stepper-circle">4</div>
-                    <div class="stepper-label">Phê duyệt</div>
+                    <div class="stepper-label" data-i18n="approval">Phê duyệt</div>
                 </div>
                 <div class="stepper-step" data-step="5" onclick="goToStep(5)">
                     <div class="stepper-circle">5</div>
-                    <div class="stepper-label">Xem lại & Gửi</div>
+                    <div class="stepper-label" data-i18n="reviewSubmit">Xem lại & Gửi</div>
                 </div>
             </div>
         </div>
@@ -2625,9 +2625,9 @@
         <div class="form-header">
             <div class="company-info">
                 <div class="form-group">
-                    <label for="company">Công ty:</label>
+                    <label for="company" data-i18n="labelCompany">Công ty:</label>
                     <select id="company" name="company" required onchange="updateCompanyDetails()">
-                        <option value="">-- Chọn công ty --</option>
+                        <option value="" data-i18n="optChooseCompany">-- Chọn công ty --</option>
                     </select>
                     <div class="error-message"></div>
                     <div id="company-details" class="company-details">
@@ -2637,18 +2637,18 @@
             </div>
             <div class="voucher-info">
                 <div class="form-group">
-                    <label for="voucher-type">Loại phiếu:</label>
+                    <label for="voucher-type" data-i18n="labelVoucherType">Loại phiếu:</label>
                     <select id="voucher-type" name="voucher-type" required onchange="updateVoucherTitle()">
-                        <option value="">-- Chọn loại phiếu --</option>
+                        <option value="" data-i18n="optChooseVoucherType">-- Chọn loại phiếu --</option>
                     </select>
                     <div class="error-message"></div>
                 </div>
                 <div class="form-group">
-                    <label for="voucher-number">Số phiếu:</label>
+                    <label for="voucher-number" data-i18n="labelVoucherNo">Số phiếu:</label>
                     <input type="text" id="voucher-number" name="voucher-number" value="TL-2023-" required readonly>
                 </div>
                 <div class="form-group">
-                    <label for="voucher-date">Ngày lập phiếu:</label>
+                    <label for="voucher-date" data-i18n="labelVoucherDate">Ngày lập phiếu:</label>
                     <input type="date" id="voucher-date" name="voucher-date" required>
                     <small class="form-hint" style="display: block; margin-top: 0.25rem; color: #6b7280; font-size: 0.875rem;">Chỉ được chọn ngày hiện tại trở đi</small>
                 </div>
@@ -2657,35 +2657,35 @@
         
         <div class="form-row">
             <div class="form-group">
-                <label for="employee">Người đề nghị:</label>
+                <label for="employee" data-i18n="labelRequester">Người đề nghị:</label>
                 <select id="employee" name="employee" required onchange="updateEmployeeDepartment()" autocomplete="name">
-                    <option value="">-- Chọn nhân viên --</option>
+                    <option value="" data-i18n="optChooseEmployee">-- Chọn nhân viên --</option>
                 </select>
                 <div class="error-message"></div>
             </div>
             <div class="form-group">
-                <label for="department">Bộ phận:</label>
+                <label for="department" data-i18n="labelDepartment">Bộ phận:</label>
                 <input type="text" id="department" name="department" readonly autocomplete="organization">
             </div>
         </div>
         <div class="step-navigation">
-            <button type="button" disabled class="btn-prev">← Quay lại</button>
-            <button type="button" class="btn-next" onclick="goToStepAfterEdit(2)">Tiếp theo →</button>
+            <button type="button" disabled class="btn-prev" data-i18n="btnPrev">← Quay lại</button>
+            <button type="button" class="btn-next" onclick="goToStepAfterEdit(2)" data-i18n="btnNext">Tiếp theo →</button>
         </div>
         </div>
         
         <!-- Step 2: Thông tin đối tượng -->
         <div class="form-step" id="step-2">
-        <h2>Thông Tin Đối Tượng</h2>
+        <h2 data-i18n="subjectInfo">Thông Tin Đối Tượng</h2>
         <div class="form-row">
             <div class="form-group">
-                <label for="payee-dropdown">Chọn người nộp/nhận:</label>
+                <label for="payee-dropdown" data-i18n="labelChoosePayee">Chọn người nộp/nhận:</label>
                 <select id="payee-dropdown" name="payee-dropdown" onchange="document.getElementById('payee-name').value = this.value;">
-                    <option value="">-- Chọn người nộp/nhận --</option>
+                    <option value="" data-i18n="optChoosePayee">-- Chọn người nộp/nhận --</option>
                 </select>
             </div>
             <div class="form-group">
-                <label for="payee-name">Họ tên người nộp/nhận:</label>
+                <label for="payee-name" data-i18n="labelPayeeName">Họ tên người nộp/nhận:</label>
                 <input type="text" id="payee-name" name="payee-name" required autocomplete="name">
                 <div class="error-message"></div>
             </div>
@@ -2693,7 +2693,7 @@
         
         <div class="form-row">
             <div class="form-group" style="width: 100%;">
-                <label for="reason">Lý do:</label>
+                <label for="reason" data-i18n="labelReason">Lý do:</label>
                 <textarea id="reason" name="reason" required></textarea>
                 <div class="error-message"></div>
             </div>
@@ -2701,7 +2701,7 @@
         
         <div class="form-row">
             <div class="form-group">
-                <label for="amount">Tổng số tiền:</label>
+                <label for="amount" data-i18n="labelTotalAmount">Tổng số tiền:</label>
                 <input type="text" id="amount" name="amount" required readonly inputmode="numeric">
             </div>
         </div>
@@ -2713,7 +2713,7 @@
                 <div class="signature-container">
                     <div class="signature-preview-area" id="signature-preview-area">
                         <img id="signature-preview" src="" alt="Chữ ký" style="display: none; max-height: 80px;">
-                        <span id="signature-placeholder">Chưa có chữ ký</span>
+                        <span id="signature-placeholder" data-i18n="noSignature">Chưa có chữ ký</span>
                     </div>
                     <div class="signature-actions">
                         <label for="signature-upload" class="btn-secondary signature-upload-btn" onclick="document.getElementById('signature-upload').click(); return false;">
@@ -2735,7 +2735,7 @@
         </div>
 
         <div class="step-navigation">
-            <button type="button" class="btn-prev" onclick="goToStep(1)">← Quay lại</button>
+            <button type="button" class="btn-prev" onclick="goToStep(1)" data-i18n="btnPrev">← Quay lại</button>
             <button type="button" class="btn-next" onclick="goToStepAfterEdit(3)">Tiếp theo →</button>
         </div>
         </div>
@@ -2759,14 +2759,14 @@
         <div class="expense-section-fields">
             <div class="form-row">
                 <div class="form-group">
-                    <label for="currency">Loại tiền:</label>
+                    <label for="currency" data-i18n="labelCurrency">Loại tiền:</label>
                     <select id="currency" name="currency" required>
-                        <option value="">-- Chọn loại tiền --</option>
+                        <option value="" data-i18n="optChooseCurrency">-- Chọn loại tiền --</option>
                     </select>
                     <div class="error-message"></div>
                 </div>
                 <div class="form-group">
-                    <label for="due-date">Ngày thanh toán dự kiến:</label>
+                    <label for="due-date" data-i18n="labelDueDate">Ngày thanh toán dự kiến:</label>
                     <input type="date" id="due-date" name="due-date">
                     <small class="form-hint" style="display: block; margin-top: 0.25rem; color: #6b7280; font-size: 0.875rem;">Để trống nếu chưa xác định</small>
                 </div>
@@ -2796,9 +2796,9 @@
                 <thead>
                     <tr>
                         <th>STT</th>
-                        <th>Nội dung</th>
-                        <th>Số tiền</th>
-                        <th>Đính kèm</th>
+                        <th data-i18n="colDescription">Nội dung</th>
+                        <th data-i18n="colAmount">Số tiền</th>
+                        <th data-i18n="colAttachment">Đính kèm</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -2807,17 +2807,17 @@
             </table>
             <div class="expense-table-footer">
                 <div class="footer-row">
-                    <span>Tổng cộng:</span> <span id="grand-total">0 VNĐ</span>
+                    <span data-i18n="labelGrandTotal">Tổng cộng:</span> <span id="grand-total">0 VNĐ</span>
                 </div>
                 <div class="footer-row">
-                    <span>Số tiền bằng chữ:</span> <span id="amount-in-words-display"></span>
+                    <span data-i18n="labelAmountInWords">Số tiền bằng chữ:</span> <span id="amount-in-words-display"></span>
                 </div>
             </div>
         </div>
         
         <div class="step-navigation">
-            <button type="button" class="btn-prev" onclick="goToStep(2)">← Quay lại</button>
-            <button type="button" class="btn-next" onclick="goToStepAfterEdit(4)">Tiếp theo →</button>
+            <button type="button" class="btn-prev" onclick="goToStep(2)" data-i18n="btnPrev">← Quay lại</button>
+            <button type="button" class="btn-next" onclick="goToStepAfterEdit(4)" data-i18n="btnNext">Tiếp theo →</button>
         </div>
         </div>
         
@@ -2826,54 +2826,54 @@
         <div class="approval-section">
             <div class="form-row">
                 <div class="form-group" style="grid-column: 1 / -1;">
-                    <label>Người phê duyệt (theo thứ tự):</label>
+                    <label data-i18n="labelApprovers">Người phê duyệt (theo thứ tự):</label>
                     <div id="approvers-display" class="approvers-list" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 0.5rem;">
                         <div class="approver-item" style="padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #007AFF;">
                             <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-bottom: 0.25rem;">Bước 1</div>
-                            <div style="font-weight: 600; color: #1e293b; margin-bottom: 0.25rem;">Kế toán trưởng</div>
+                            <div style="font-weight: 600; color: #1e293b; margin-bottom: 0.25rem;" data-i18n="roleChiefAccountant">Kế toán trưởng</div>
                             <div style="font-size: 0.875rem; color: #475569;" id="approver-accountant-name">-</div>
                         </div>
                         <div class="approver-item" style="padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #8b5cf6;">
                             <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-bottom: 0.25rem;">Bước 2</div>
-                            <div style="font-weight: 600; color: #1e293b; margin-bottom: 0.25rem;">Đại diện pháp luật</div>
+                            <div style="font-weight: 600; color: #1e293b; margin-bottom: 0.25rem;" data-i18n="roleLegalRep">Đại diện pháp luật</div>
                             <div style="font-size: 0.875rem; color: #475569;" id="approver-legalrep-name">-</div>
                         </div>
                         <div class="approver-item" style="padding: 1rem; background: #f8fafc; border-radius: 8px; border-left: 4px solid #10b981;">
                             <div style="font-size: 0.75rem; color: #64748b; font-weight: 600; margin-bottom: 0.25rem;">Bước 3</div>
-                            <div style="font-weight: 600; color: #1e293b; margin-bottom: 0.25rem;">Thủ quỹ</div>
+                            <div style="font-weight: 600; color: #1e293b; margin-bottom: 0.25rem;" data-i18n="roleTreasurer">Thủ quỹ</div>
                             <div style="font-size: 0.875rem; color: #475569;" id="approver-treasurer-name">-</div>
                         </div>
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="approval-status-display">Trạng thái phê duyệt:</label>
+                    <label for="approval-status-display" data-i18n="labelApprovalStatus">Trạng thái phê duyệt:</label>
                     <div class="status-indicator status-pending" id="approval-status-display">
                         Pending
                     </div>
                 </div>
             </div>
             <div class="approval-history">
-                <h3>Lịch sử phê duyệt</h3>
+                <h3 data-i18n="approvalHistory">Lịch sử phê duyệt</h3>
                 <ul id="approval-history-list">
-                    <li>Chưa có yêu cầu phê duyệt nào được gửi.</li>
+                    <li data-i18n="noApprovalYet">Chưa có yêu cầu phê duyệt nào được gửi.</li>
                 </ul>
             </div>
         </div>
         
         <div class="step-navigation">
-            <button type="button" class="btn-prev" onclick="goToStep(3)">← Quay lại</button>
-            <button type="button" class="btn-next" onclick="goToStepAfterEdit(5)">Tiếp theo →</button>
+            <button type="button" class="btn-prev" onclick="goToStep(3)" data-i18n="btnPrev">← Quay lại</button>
+            <button type="button" class="btn-next" onclick="goToStepAfterEdit(5)" data-i18n="btnNext">Tiếp theo →</button>
         </div>
         </div>
         
         <!-- Step 5: Xem lại & Gửi -->
         <div class="form-step" id="step-5">
-        <h2>Xem Lại Thông Tin</h2>
+        <h2 data-i18n="reviewInfo">Xem Lại Thông Tin</h2>
         
         <!-- Review Section - Full Details -->
         <div class="review-section" style="background: var(--background); padding: 2rem; border-radius: 8px; margin-bottom: 2rem; border: 1px solid var(--border);">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--border);">
-                <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary); margin: 0;">Thông tin chung</h3>
+                <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary); margin: 0;" data-i18n="generalInfo">Thông tin chung</h3>
                 <button type="button" onclick="editStepFromReview(1)" class="btn-edit-review" style="padding: 0.5rem 1rem; font-size: 0.875rem; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     Chỉnh sửa
@@ -2913,7 +2913,7 @@
                     <div style="font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 0.375rem;">Chữ ký người đề nghị</div>
                     <div style="padding: 0.5rem; background: white; border-radius: 6px; border: 1px solid var(--border); display: inline-block;">
                         <img id="review-signature" src="" alt="Chữ ký" style="max-height: 60px; max-width: 150px; display: none;">
-                        <span id="review-signature-placeholder" style="color: #94a3b8; font-size: 0.875rem;">Chưa có</span>
+                        <span id="review-signature-placeholder" style="color: #94a3b8; font-size: 0.875rem;" data-i18n="none">Chưa có</span>
                     </div>
                 </div>
             </div>
@@ -2921,7 +2921,7 @@
             <!-- Phê duyệt section with edit button -->
             <div style="margin-top: 2rem; padding-top: 1.5rem; border-top: 2px solid var(--border);">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                    <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary); margin: 0;">Thông tin phê duyệt</h3>
+                    <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary); margin: 0;" data-i18n="approvalInfo">Thông tin phê duyệt</h3>
                     <button type="button" onclick="editStepFromReview(4)" class="btn-edit-review" style="padding: 0.5rem 1rem; font-size: 0.875rem; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                         Chỉnh sửa
@@ -2963,7 +2963,7 @@
             
             <!-- Chi tiết các khoản mục -->
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--border);">
-                <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary); margin: 0;">Chi tiết các khoản mục</h3>
+                <h3 style="font-size: 1.125rem; font-weight: 600; color: var(--text-primary); margin: 0;" data-i18n="lineItemDetails">Chi tiết các khoản mục</h3>
                 <button type="button" onclick="editStepFromReview(3)" class="btn-edit-review" style="padding: 0.5rem 1rem; font-size: 0.875rem; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 500; display: flex; align-items: center; gap: 0.5rem;">
                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                     Chỉnh sửa
@@ -2981,7 +2981,7 @@
                     </thead>
                     <tbody id="review-expense-items">
                         <tr>
-                            <td colspan="4" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">Chưa có dữ liệu</td>
+                            <td colspan="4" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);" data-i18n="noData">Chưa có dữ liệu</td>
                         </tr>
                     </tbody>
                 </table>
@@ -3024,8 +3024,8 @@
         </div>
         
         <div class="step-navigation">
-            <button type="button" class="btn-prev" onclick="goToStep(4)">← Quay lại</button>
-            <button type="button" class="btn-submit" onclick="sendForApproval()">Gửi phê duyệt</button>
+            <button type="button" class="btn-prev" onclick="goToStep(4)" data-i18n="btnPrev">← Quay lại</button>
+            <button type="button" class="btn-submit" onclick="sendForApproval()" data-i18n="submit">Gửi phê duyệt</button>
         </div>
         </div>
     </div><!-- Close form-section-container -->
@@ -3035,15 +3035,15 @@
         <div class="recent-vouchers-card">
             <div class="recent-vouchers-header">
                 <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <h3>📋 Phiếu gần đây</h3>
+                    <h3 data-i18n="recentVouchersHeading">📋 Phiếu gần đây</h3>
                     <span id="last-refresh-time" style="font-size: 0.75rem; color: #64748b; font-weight: normal;"></span>
                 </div>
                 <div style="display:flex;gap:0.5rem;align-items:center;">
-                    <button class="refresh-btn" onclick="loadRecentVouchers(true)" title="Làm mới danh sách phiếu">
+                    <button class="refresh-btn" onclick="loadRecentVouchers(true)" title="Làm mới danh sách phiếu" data-i18n-title="refreshListTitle">
                         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
                         Làm mới
                     </button>
-                    <button id="my-task-btn" onclick="toggleMyTaskFilter()" title="Chỉ hiện việc cần làm của tôi"
+                    <button id="my-task-btn" onclick="toggleMyTaskFilter()" title="Chỉ hiện việc cần làm của tôi" data-i18n-title="myTaskFilterTitle"
                         style="display:flex;align-items:center;gap:0.35rem;padding:0.375rem 0.75rem;border:1.5px solid #f97316;border-radius:6px;font-size:0.8125rem;font-weight:600;background:white;color:#f97316;cursor:pointer;white-space:nowrap;transition:background 0.15s,color 0.15s;">
                         ⚡ Việc của tôi
                     </button>
@@ -3062,52 +3062,52 @@
             </div>
             <div class="voucher-stats" id="voucher-stats">
                 <div class="stats-pipeline-header">
-                    <span class="stats-pipeline-title" id="stats-pipeline-title-text">Tiến độ phê duyệt</span>
+                    <span class="stats-pipeline-title" id="stats-pipeline-title-text" data-i18n="approvalPipeline">Tiến độ phê duyệt</span>
                     <span class="stats-pipeline-total" id="stat-total-summary">—</span>
                 </div>
                 <div class="pipeline-steps">
                     <div class="pipe-step ps-pending" onclick="applyStatFilter('Pending')" title="Chờ duyệt (0/3)">
                         <div class="pipe-dot">0</div>
                         <div class="pipe-count" id="stat-pending">0</div>
-                        <div class="pipe-label">Chờ duyệt</div>
-                        <div class="pipe-sub">Bước 0</div>
+                        <div class="pipe-label" data-i18n="pipePending">Chờ duyệt</div>
+                        <div class="pipe-sub" data-i18n="pipeStep0">Bước 0</div>
                     </div>
                     <div class="pipe-step ps-s1" onclick="applyStatFilter('InProgress1')" title="Đang duyệt 1/3 — Kế toán">
                         <div class="pipe-dot">1</div>
                         <div class="pipe-count" id="stat-s1">0</div>
-                        <div class="pipe-label">Duyệt 1/3</div>
-                        <div class="pipe-sub">Kế toán</div>
+                        <div class="pipe-label" data-i18n="pipeStep1">Duyệt 1/3</div>
+                        <div class="pipe-sub" data-i18n="roleAccountant">Kế toán</div>
                     </div>
                     <div class="pipe-step ps-s2" onclick="applyStatFilter('InProgress2')" title="Đang duyệt 2/3 — Pháp lý">
                         <div class="pipe-dot">2</div>
                         <div class="pipe-count" id="stat-s2">0</div>
-                        <div class="pipe-label">Duyệt 2/3</div>
-                        <div class="pipe-sub">Pháp lý</div>
+                        <div class="pipe-label" data-i18n="pipeStep2">Duyệt 2/3</div>
+                        <div class="pipe-sub" data-i18n="roleLegal">Pháp lý</div>
                     </div>
                     <div class="pipe-step ps-s3" onclick="applyStatFilter('InProgress3')" title="Đang duyệt 3/3 — Thủ quỹ">
                         <div class="pipe-dot">3</div>
                         <div class="pipe-count" id="stat-s3">0</div>
-                        <div class="pipe-label">Duyệt 3/3</div>
-                        <div class="pipe-sub">Thủ quỹ</div>
+                        <div class="pipe-label" data-i18n="pipeStep3">Duyệt 3/3</div>
+                        <div class="pipe-sub" data-i18n="roleTreasurer">Thủ quỹ</div>
                     </div>
                     <div class="pipe-step ps-approved" onclick="applyStatFilter('Approved')" title="Đã duyệt — chờ xác nhận">
                         <div class="pipe-dot">✓</div>
                         <div class="pipe-count" id="stat-approved">0</div>
-                        <div class="pipe-label">Đã duyệt</div>
-                        <div class="pipe-sub">Chờ xác nhận</div>
+                        <div class="pipe-label" data-i18n="pipeApproved">Đã duyệt</div>
+                        <div class="pipe-sub" data-i18n="pipeAwaitAck">Chờ xác nhận</div>
                     </div>
                     <div class="pipe-step ps-acknowledged" onclick="applyStatFilter('Acknowledged')" title="Đã xác nhận — hoàn tất">
                         <div class="pipe-dot">✓✓</div>
                         <div class="pipe-count" id="stat-acknowledged">0</div>
-                        <div class="pipe-label">Đã xác nhận</div>
-                        <div class="pipe-sub">Hoàn tất</div>
+                        <div class="pipe-label" data-i18n="pipeAcknowledged">Đã xác nhận</div>
+                        <div class="pipe-sub" data-i18n="pipeDone">Hoàn tất</div>
                     </div>
                 </div>
                 <div class="pipe-bottom-row">
                     <div class="pipe-bottom-item" onclick="applyStatFilter('Rejected')" title="Từ chối">
                         <div class="pipe-bottom-dot" style="background:#f87171;"></div>
                         <span class="pipe-bottom-count" id="stat-rejected">0</span>
-                        <span class="pipe-bottom-label">Từ chối</span>
+                        <span class="pipe-bottom-label" data-i18n="pipeRejected">Từ chối</span>
                     </div>
                     <div class="pipe-bottom-item" id="stat-overdue-wrap" onclick="applyStatFilter('Overdue')" title="Quá hạn > 2 ngày" style="display:none;">
                         <span class="pipe-overdue-badge">⚠ <span id="stat-overdue">0</span> quá hạn</span>
@@ -3124,25 +3124,25 @@
                         style="flex:1;min-width:0;padding:0.4375rem 0.75rem;border:1px solid var(--ios-gray-4);border-radius:var(--ios-radius-sm);font-size:0.8125rem;background:white;outline:none;">
                     <select id="vf-status"
                         style="flex:0 0 140px;padding:0.4375rem 0.5rem;border:1px solid var(--ios-gray-4);border-radius:var(--ios-radius-sm);font-size:0.8125rem;background:white;color:var(--text-primary);outline:none;">
-                        <option value="">Tất cả TT</option>
-                        <option value="Pending">Chờ duyệt</option>
-                        <option value="InProgress1">Đang duyệt (1/3)</option>
-                        <option value="InProgress2">Đang duyệt (2/3)</option>
-                        <option value="InProgress3">Đang duyệt (3/3)</option>
-                        <option value="Approved">Đã duyệt</option>
-                        <option value="Acknowledged">Đã xác nhận</option>
-                        <option value="Rejected">Từ chối</option>
+                        <option value="" data-i18n="filterAllStatus">Tất cả TT</option>
+                        <option value="Pending" data-i18n="filterPending">Chờ duyệt</option>
+                        <option value="InProgress1" data-i18n="filterInProgress1">Đang duyệt (1/3)</option>
+                        <option value="InProgress2" data-i18n="filterInProgress2">Đang duyệt (2/3)</option>
+                        <option value="InProgress3" data-i18n="filterInProgress3">Đang duyệt (3/3)</option>
+                        <option value="Approved" data-i18n="filterApproved">Đã duyệt</option>
+                        <option value="Acknowledged" data-i18n="filterAcknowledged">Đã xác nhận</option>
+                        <option value="Rejected" data-i18n="filterRejected">Từ chối</option>
                     </select>
                     <select id="vf-type"
                         style="flex:0 0 110px;padding:0.4375rem 0.5rem;border:1px solid var(--ios-gray-4);border-radius:var(--ios-radius-sm);font-size:0.8125rem;background:white;color:var(--text-primary);outline:none;">
-                        <option value="">Tất cả loại</option>
-                        <option value="Thu">Phiếu Thu</option>
-                        <option value="Chi">Phiếu Chi</option>
+                        <option value="" data-i18n="filterAllTypes">Tất cả loại</option>
+                        <option value="Thu" data-i18n="receiptVoucher">Phiếu Thu</option>
+                        <option value="Chi" data-i18n="paymentVoucher">Phiếu Chi</option>
                     </select>
-                    <input id="vf-date-from" type="date" title="Từ ngày"
+                    <input id="vf-date-from" type="date" title="Từ ngày" data-i18n-title="dateFrom"
                         style="flex:0 0 130px;padding:0.4375rem 0.5rem;border:1px solid var(--ios-gray-4);border-radius:var(--ios-radius-sm);font-size:0.8125rem;background:white;outline:none;">
                     <span style="color:var(--text-secondary);font-size:0.75rem;flex-shrink:0;">→</span>
-                    <input id="vf-date-to" type="date" title="Đến ngày"
+                    <input id="vf-date-to" type="date" title="Đến ngày" data-i18n-title="dateTo"
                         style="flex:0 0 130px;padding:0.4375rem 0.5rem;border:1px solid var(--ios-gray-4);border-radius:var(--ios-radius-sm);font-size:0.8125rem;background:white;outline:none;">
                     <button onclick="resetVoucherFilter()"
                         style="flex:0 0 auto;padding:0.4375rem 0.75rem;border:1px solid var(--ios-gray-4);border-radius:var(--ios-radius-sm);font-size:0.8125rem;background:white;color:var(--ios-red);cursor:pointer;white-space:nowrap;">✕ Xóa lọc</button>
@@ -3161,7 +3161,7 @@
                 </div>
                 <aside class="voucher-detail-drawer" id="voucher-detail-drawer">
                     <div class="drawer-head">
-                        <h4>Bảng điều khiển phiếu</h4>
+                        <h4 data-i18n="voucherPanel">Bảng điều khiển phiếu</h4>
                     </div>
                     <div class="drawer-content" id="voucher-drawer-content">
                         <div class="drawer-empty">Chọn một phiếu trong danh sách để xem luồng phê duyệt, lịch sử gần nhất và thao tác tiếp theo.</div>
@@ -3178,11 +3178,11 @@
     <!-- Confirmation Dialog -->
     <div class="confirmation-overlay" id="confirmation-overlay">
         <div class="confirmation-dialog">
-            <h3 id="confirmation-title">Xác nhận</h3>
+            <h3 id="confirmation-title" data-i18n="confirm">Xác nhận</h3>
             <p id="confirmation-message"></p>
             <div class="confirmation-actions">
-                <button type="button" class="btn-secondary" id="confirmation-cancel">Hủy</button>
-                <button type="button" class="btn-danger" id="confirmation-confirm">Xác nhận</button>
+                <button type="button" class="btn-secondary" id="confirmation-cancel" data-i18n="cancel">Hủy</button>
+                <button type="button" class="btn-danger" id="confirmation-confirm" data-i18n="confirm">Xác nhận</button>
             </div>
         </div>
     </div>
@@ -3191,7 +3191,7 @@
     <div class="voucher-modal-overlay" id="voucher-modal-overlay" onclick="closeVoucherModal(event)">
         <div class="voucher-modal" onclick="event.stopPropagation()">
             <div class="voucher-modal-header">
-                <h2 id="modal-title">Chi Tiết Phiếu</h2>
+                <h2 id="modal-title" data-i18n="voucherDetail">Chi Tiết Phiếu</h2>
                 <button class="modal-close-btn" onclick="closeVoucherModal()">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                 </button>
@@ -3206,7 +3206,7 @@
                 </div>
             </div>
             <div class="voucher-modal-footer" id="modal-footer">
-                <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
+                <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()" data-i18n="close">Đóng</button>
             </div>
         </div>
     </div>
@@ -3215,7 +3215,7 @@
     <div class="voucher-modal-overlay" id="acknowledge-modal-overlay" onclick="closeAcknowledgeModal(event)">
         <div class="voucher-modal" style="max-width:480px;" onclick="event.stopPropagation()">
             <div class="voucher-modal-header">
-                <h2 id="ack-modal-title">✍️ Xác Nhận Đã Nhận Tiền</h2>
+                <h2 id="ack-modal-title" data-i18n="ackModalTitle">✍️ Xác Nhận Đã Nhận Tiền</h2>
                 <button class="modal-close-btn" onclick="closeAcknowledgeModal()">✕</button>
             </div>
             <div class="voucher-modal-body" style="padding:1.25rem;">
@@ -3234,7 +3234,7 @@
                 </div>
             </div>
             <div class="voucher-modal-footer">
-                <button class="modal-btn modal-btn-secondary" onclick="closeAcknowledgeModal()">Hủy</button>
+                <button class="modal-btn modal-btn-secondary" onclick="closeAcknowledgeModal()" data-i18n="cancel">Hủy</button>
                 <button class="modal-btn" id="ack-confirm-btn" style="background:#10b981;color:white;border:none;" onclick="acknowledgeReceipt()">Xác nhận</button>
             </div>
         </div>
@@ -3252,15 +3252,15 @@
             <div class="voucher-modal-body">
                 <p style="color:#64748b;font-size:0.875rem;margin-bottom:1.25rem;">Vui lòng tải lên chữ ký của bạn để xác nhận phê duyệt tất cả các phiếu đã chọn.</p>
                 <div class="approver-signature-section" id="bulk-signature-section">
-                    <h4>✍️ Chữ ký người phê duyệt</h4>
+                    <h4 data-i18n="approverSignature">✍️ Chữ ký người phê duyệt</h4>
                     <div class="approver-signature-preview" id="bulk-approver-signature-preview">
-                        <span style="color:#94a3b8;font-size:0.875rem;" id="bulk-approver-signature-placeholder">Chưa có chữ ký</span>
+                        <span style="color:#94a3b8;font-size:0.875rem;" id="bulk-approver-signature-placeholder" data-i18n="noSignature">Chưa có chữ ký</span>
                     </div>
                     <div class="signature-actions">
                         <label class="btn-secondary signature-upload-btn" style="padding:0.5rem 1rem;font-size:0.8125rem;">
                             <input type="file" accept="image/png,image/jpeg,image/jpg" style="display:none;" onchange="handleApproverSignatureUpload(event, true)">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
-                            <span id="bulk-sig-upload-label">Tải lên chữ ký</span>
+                            <span id="bulk-sig-upload-label" data-i18n="uploadSignature">Tải lên chữ ký</span>
                         </label>
                         <button type="button" class="btn-secondary" id="bulk-sig-clear-btn" style="display:none;padding:0.5rem 1rem;font-size:0.8125rem;color:#ef4444;" onclick="clearBulkApproverSignature()">
                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -3273,7 +3273,7 @@
                 </div>
             </div>
             <div class="voucher-modal-footer">
-                <button class="modal-btn modal-btn-secondary" onclick="closeBulkApproveModal()">Hủy</button>
+                <button class="modal-btn modal-btn-secondary" onclick="closeBulkApproveModal()" data-i18n="cancel">Hủy</button>
                 <button class="modal-btn modal-btn-primary" id="bulk-modal-confirm-btn" onclick="bulkApproveSelected()" style="background:#0056CC;color:white;border:none;">Xác nhận Duyệt</button>
             </div>
         </div>
@@ -4237,7 +4237,7 @@
                 if (!currentExpenseItems || currentExpenseItems.length === 0) {
                     reviewTableBody.innerHTML = `
                         <tr>
-                            <td colspan="4" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);">Chưa có dữ liệu</td>
+                            <td colspan="4" style="padding: 1.5rem; text-align: center; color: var(--text-secondary);" data-i18n="noData">Chưa có dữ liệu</td>
                         </tr>
                     `;
                 } else {
@@ -5946,7 +5946,9 @@
                     if (statusBadge) {
                         statusBadge.className = `voucher-status ${statusClass}`;
                         if (statusTextSpan) {
-                            statusTextSpan.innerHTML = `<i class="fas ${statusIcon} mr-1"></i>${badgeText}`;
+                            // badgeText stays Vietnamese above (it drives the
+                            // statusClass/icon comparisons); translate only here.
+                            statusTextSpan.innerHTML = `<i class="fas ${statusIcon} mr-1"></i>${TLCI18n.tStatus(badgeText)}`;
                         }
                     }
 
@@ -6150,7 +6152,7 @@
             modal.classList.add('show');
             modalLoading.classList.add('show');
             modalContent.innerHTML = '';
-            modalFooter.innerHTML = '<button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>';
+            modalFooter.innerHTML = '<button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()" data-i18n="close">Đóng</button>';
             
             // Load approver signature from localStorage and compress if needed
             const rawSignature = localStorage.getItem(APPROVER_SIGNATURE_KEY);
@@ -6298,7 +6300,7 @@
                         if (isRequester && !isAlsoCurrentApprover) {
                             // Requester can only view and print their pending request
                             modalFooter.innerHTML = `
-                                <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
+                                <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()" data-i18n="close">Đóng</button>
                                 <button class="modal-btn" style="background: #6366f1; color: white;" onclick="printVoucher()">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                                     In phiếu
@@ -6307,7 +6309,7 @@
                         } else {
                             // Approver can approve or reject
                             modalFooter.innerHTML = `
-                                <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
+                                <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()" data-i18n="close">Đóng</button>
                                 <button class="modal-btn" style="background: #6366f1; color: white;" onclick="printVoucher()">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                                     In phiếu
@@ -6326,7 +6328,7 @@
                         if (isRequester) {
                             // Requester can edit and resubmit their rejected voucher
                             modalFooter.innerHTML = `
-                                <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
+                                <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()" data-i18n="close">Đóng</button>
                                 <button class="modal-btn" style="background: #6366f1; color: white;" onclick="printVoucher()">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                                     In phiếu
@@ -6339,7 +6341,7 @@
                         } else {
                             // Others can only view and print rejected vouchers
                             modalFooter.innerHTML = `
-                                <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
+                                <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()" data-i18n="close">Đóng</button>
                                 <button class="modal-btn" style="background: #6366f1; color: white;" onclick="printVoucher()">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                                     In phiếu
@@ -6349,7 +6351,7 @@
                     } else if ((voucher.status === 'Approved' || voucher.status === 'Đã duyệt' || voucher.status === 'Fully Approved') && isRequester && !currentModalMeta.acknowledgedSignature) {
                         // Fully approved — submitter needs to acknowledge receipt
                         modalFooter.innerHTML = `
-                            <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
+                            <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()" data-i18n="close">Đóng</button>
                             <button class="modal-btn" style="background: #6366f1; color: white;" onclick="printVoucher()">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                                 In phiếu
@@ -6362,7 +6364,7 @@
                     } else {
                         // Approved + already acknowledged (Received), or non-requester viewing approved
                         modalFooter.innerHTML = `
-                            <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()">Đóng</button>
+                            <button class="modal-btn modal-btn-secondary" onclick="closeVoucherModal()" data-i18n="close">Đóng</button>
                             <button class="modal-btn" style="background: #6366f1; color: white;" onclick="printVoucher()">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>
                                 In phiếu
@@ -6510,7 +6512,7 @@
             if ((vStateForSig.bucket === 'pending' || vStateForSig.bucket === 'in-progress') && (!isRequester || isAlsoCurrentApprover)) {
                 approverSignatureSection = `
                     <div class="approver-signature-section">
-                        <h4>✍️ Chữ ký người phê duyệt</h4>
+                        <h4 data-i18n="approverSignature">✍️ Chữ ký người phê duyệt</h4>
                         <div class="approver-signature-preview" id="approver-signature-preview">
                             ${approverSignatureData 
                                 ? `<img src="${approverSignatureData}" alt="Chữ ký" id="approver-signature-img">`
@@ -6584,7 +6586,7 @@
                     <div class="voucher-detail-item">
                         <div class="label">Trạng thái</div>
                         <div class="value">
-                            <span class="voucher-status ${statusClass}" style="display: inline-block;">${statusText}</span>
+                            <span class="voucher-status ${statusClass}" style="display: inline-block;">${TLCI18n.tStatus(statusText)}</span>
                         </div>
                     </div>
                 </div>
@@ -6683,7 +6685,7 @@
                 
                 ${meta.approverSignature ? `
                 <div class="voucher-detail-section">
-                    <h4>✍️ Chữ ký người phê duyệt</h4>
+                    <h4 data-i18n="approverSignature">✍️ Chữ ký người phê duyệt</h4>
                     <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; text-align: center;">
                         <img src="${meta.approverSignature}" alt="Chữ ký người phê duyệt" style="max-height: 80px; max-width: 200px;">
                         <div style="font-size: 0.75rem; color: #64748b; margin-top: 0.5rem;">${voucher.approvedBy || voucher.rejectedBy || ''}</div>
@@ -7629,7 +7631,7 @@
                             <span class="info-colon">:</span>
                             <span class="info-value">
                                 <span class="status-badge status-${(voucher.status || 'pending').toLowerCase()}">
-                                    ${(voucher.status === 'Approved' || voucher.status === 'Đã duyệt' || voucher.status === 'Fully Approved') ? 'Đã duyệt' : (voucher.status === 'Rejected' || voucher.status === 'Đã từ chối') ? 'Từ chối' : (voucher.status === 'Received' || (voucher.status || '').includes('xác nhận')) ? 'Đã xác nhận' : 'Chờ duyệt'}
+                                    ${TLCI18n.tStatus((voucher.status === 'Approved' || voucher.status === 'Đã duyệt' || voucher.status === 'Fully Approved') ? 'Đã duyệt' : (voucher.status === 'Rejected' || voucher.status === 'Đã từ chối') ? 'Từ chối' : (voucher.status === 'Received' || (voucher.status || '').includes('xác nhận')) ? 'Đã xác nhận' : 'Chờ duyệt')}
                                 </span>
                             </span>
                         </div>
@@ -9741,7 +9743,7 @@
             historyList.innerHTML = '';
 
             if (approvalHistory.length === 0) {
-                historyList.innerHTML = '<li>Chưa có yêu cầu phê duyệt nào được gửi.</li>';
+                historyList.innerHTML = '<li data-i18n="noApprovalYet">Chưa có yêu cầu phê duyệt nào được gửi.</li>';
                 return;
             }
 
@@ -10072,7 +10074,7 @@
                     
                     <div class="status-summary" style="background: #f8fafc; padding: 1.25rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid #e2e8f0;">
                         <div class="status-badge status-${getStatusClassForProgress(progressNum)}" style="display: inline-block; padding: 0.5rem 1rem; border-radius: 6px; font-weight: 500; margin-bottom: 1rem; ${getStatusBadgeStyle(progressNum)}">
-                            ${statusData.displayStatus || 'Chờ duyệt'}
+                            ${TLCI18n.tStatus(statusData.displayStatus || 'Chờ duyệt')}
                         </div>
                         <div class="progress-bar-container" style="margin-top: 1rem;">
                             <div class="progress-label" style="font-size: 0.875rem; color: #64748b; margin-bottom: 0.5rem; line-height: 1.5;">${formatApprovalStatusText(statusData).detail || ''}</div>
@@ -10152,9 +10154,9 @@
                             <div class="approver-role" style="font-weight: 600; color: #0f172a; margin-bottom: 0.25rem;">${roleName}</div>
                             <div class="approver-name" style="color: #475569; margin-bottom: 0.5rem;">${approver.name || approver.email || 'N/A'}</div>
                             ${timestamp ? `
-                                <div class="approver-time" style="font-size: 0.75rem; color: #64748b;">${statusText} lúc: ${timestamp}</div>
+                                <div class="approver-time" style="font-size: 0.75rem; color: #64748b;">${TLCI18n.tStatus(statusText)} ${TLCI18n.t('atTime')}: ${timestamp}</div>
                             ` : `
-                                <div class="approver-time" style="font-size: 0.75rem; color: #64748b;">${statusText}</div>
+                                <div class="approver-time" style="font-size: 0.75rem; color: #64748b;">${TLCI18n.tStatus(statusText)}</div>
                             `}
                             ${approver.rejectReason ? `
                                 <div class="reject-reason" style="margin-top: 0.5rem; padding: 0.5rem; background: #fef2f2; border-radius: 4px; font-size: 0.75rem; color: #991b1b;">
@@ -10403,7 +10405,83 @@
                 recentVouchers: 'Recent Vouchers',
                 pending: 'Pending',
                 approved: 'Approved',
-                rejected: 'Rejected'
+                rejected: 'Rejected',
+                navPurchaseRequest: 'Purchase Request',
+                navAcceptance: 'Acceptance Minutes',
+                navPaymentRequest: 'Payment Request',
+                navVoucher: 'Receipt/Payment Voucher',
+                notifications: 'Notifications',
+                myTasks: 'My tasks',
+                labelCompany: 'Company:',
+                labelVoucherType: 'Voucher type:',
+                labelVoucherNo: 'Voucher no.:',
+                labelVoucherDate: 'Voucher date:',
+                labelRequester: 'Requested by:',
+                labelDepartment: 'Department:',
+                optChooseCompany: '-- Select company --',
+                optChooseVoucherType: '-- Select voucher type --',
+                optChooseEmployee: '-- Select employee --',
+                labelChoosePayee: 'Select payer/payee:',
+                optChoosePayee: '-- Select payer/payee --',
+                labelPayeeName: 'Payer/payee full name:',
+                labelReason: 'Reason:',
+                labelTotalAmount: 'Total amount:',
+                noSignature: 'No signature yet',
+                uploadSignature: 'Upload signature',
+                labelCurrency: 'Currency:',
+                optChooseCurrency: '-- Select currency --',
+                labelDueDate: 'Expected payment date:',
+                colDescription: 'Description',
+                colAmount: 'Amount',
+                colAttachment: 'Attachment',
+                labelGrandTotal: 'Grand total:',
+                labelAmountInWords: 'Amount in words:',
+                labelApprovers: 'Approvers (in order):',
+                roleChiefAccountant: 'Chief Accountant',
+                roleLegalRep: 'Legal Representative',
+                roleTreasurer: 'Treasurer',
+                roleAccountant: 'Accounting',
+                roleLegal: 'Legal',
+                labelApprovalStatus: 'Approval status:',
+                approvalHistory: 'Approval history',
+                noApprovalYet: 'No approval request has been sent yet.',
+                reviewInfo: 'Review Information',
+                generalInfo: 'General information',
+                approvalInfo: 'Approval information',
+                lineItemDetails: 'Line item details',
+                none: 'None',
+                noData: 'No data',
+                btnPrev: '\u2190 Back',
+                btnNext: 'Next \u2192',
+                recentVouchersHeading: '\ud83d\udccb Recent Vouchers',
+                refreshListTitle: 'Refresh voucher list',
+                myTaskFilterTitle: 'Show only my tasks',
+                approvalPipeline: 'Approval progress',
+                pipePending: 'Pending',
+                pipeStep0: 'Step 0',
+                pipeStep1: 'Approval 1/3',
+                pipeStep2: 'Approval 2/3',
+                pipeStep3: 'Approval 3/3',
+                pipeApproved: 'Approved',
+                pipeAwaitAck: 'Awaiting confirmation',
+                pipeAcknowledged: 'Confirmed',
+                pipeDone: 'Completed',
+                pipeRejected: 'Rejected',
+                filterAllStatus: 'All statuses',
+                filterPending: 'Pending',
+                filterInProgress1: 'In review (1/3)',
+                filterInProgress2: 'In review (2/3)',
+                filterInProgress3: 'In review (3/3)',
+                filterApproved: 'Approved',
+                filterAcknowledged: 'Confirmed',
+                filterRejected: 'Rejected',
+                filterAllTypes: 'All types',
+                dateFrom: 'From date',
+                dateTo: 'To date',
+                voucherPanel: 'Voucher panel',
+                voucherDetail: 'Voucher Details',
+                approverSignature: '\u270d\ufe0f Approver signature',
+                ackModalTitle: '\u270d\ufe0f Confirm Cash Received'
             },
             vi: {
                 formTitle: 'PHIẾU THU/CHI',
@@ -10435,7 +10513,83 @@
                 recentVouchers: 'Phiếu gần đây',
                 pending: 'Chờ duyệt',
                 approved: 'Đã duyệt',
-                rejected: 'Từ chối'
+                rejected: 'Từ chối',
+                navPurchaseRequest: 'Đề Nghị Mua Hàng',
+                navAcceptance: 'Biên Bản Nghiệm Thu',
+                navPaymentRequest: 'Đề Nghị Thanh Toán',
+                navVoucher: 'Phiếu Thu Chi',
+                notifications: 'Thông báo',
+                myTasks: 'Việc cần làm của tôi',
+                labelCompany: 'Công ty:',
+                labelVoucherType: 'Loại phiếu:',
+                labelVoucherNo: 'Số phiếu:',
+                labelVoucherDate: 'Ngày lập phiếu:',
+                labelRequester: 'Người đề nghị:',
+                labelDepartment: 'Bộ phận:',
+                optChooseCompany: '-- Chọn công ty --',
+                optChooseVoucherType: '-- Chọn loại phiếu --',
+                optChooseEmployee: '-- Chọn nhân viên --',
+                labelChoosePayee: 'Chọn người nộp/nhận:',
+                optChoosePayee: '-- Chọn người nộp/nhận --',
+                labelPayeeName: 'Họ tên người nộp/nhận:',
+                labelReason: 'Lý do:',
+                labelTotalAmount: 'Tổng số tiền:',
+                noSignature: 'Chưa có chữ ký',
+                uploadSignature: 'Tải lên chữ ký',
+                labelCurrency: 'Loại tiền:',
+                optChooseCurrency: '-- Chọn loại tiền --',
+                labelDueDate: 'Ngày thanh toán dự kiến:',
+                colDescription: 'Nội dung',
+                colAmount: 'Số tiền',
+                colAttachment: 'Đính kèm',
+                labelGrandTotal: 'Tổng cộng:',
+                labelAmountInWords: 'Số tiền bằng chữ:',
+                labelApprovers: 'Người phê duyệt (theo thứ tự):',
+                roleChiefAccountant: 'Kế toán trưởng',
+                roleLegalRep: 'Đại diện pháp luật',
+                roleTreasurer: 'Thủ quỹ',
+                roleAccountant: 'Kế toán',
+                roleLegal: 'Pháp lý',
+                labelApprovalStatus: 'Trạng thái phê duyệt:',
+                approvalHistory: 'Lịch sử phê duyệt',
+                noApprovalYet: 'Chưa có yêu cầu phê duyệt nào được gửi.',
+                reviewInfo: 'Xem Lại Thông Tin',
+                generalInfo: 'Thông tin chung',
+                approvalInfo: 'Thông tin phê duyệt',
+                lineItemDetails: 'Chi tiết các khoản mục',
+                none: 'Chưa có',
+                noData: 'Chưa có dữ liệu',
+                btnPrev: '\u2190 Quay lại',
+                btnNext: 'Tiếp theo \u2192',
+                recentVouchersHeading: '\ud83d\udccb Phiếu gần đây',
+                refreshListTitle: 'Làm mới danh sách phiếu',
+                myTaskFilterTitle: 'Chỉ hiện việc cần làm của tôi',
+                approvalPipeline: 'Tiến độ phê duyệt',
+                pipePending: 'Chờ duyệt',
+                pipeStep0: 'Bước 0',
+                pipeStep1: 'Duyệt 1/3',
+                pipeStep2: 'Duyệt 2/3',
+                pipeStep3: 'Duyệt 3/3',
+                pipeApproved: 'Đã duyệt',
+                pipeAwaitAck: 'Chờ xác nhận',
+                pipeAcknowledged: 'Đã xác nhận',
+                pipeDone: 'Hoàn tất',
+                pipeRejected: 'Từ chối',
+                filterAllStatus: 'Tất cả TT',
+                filterPending: 'Chờ duyệt',
+                filterInProgress1: 'Đang duyệt (1/3)',
+                filterInProgress2: 'Đang duyệt (2/3)',
+                filterInProgress3: 'Đang duyệt (3/3)',
+                filterApproved: 'Đã duyệt',
+                filterAcknowledged: 'Đã xác nhận',
+                filterRejected: 'Từ chối',
+                filterAllTypes: 'Tất cả loại',
+                dateFrom: 'Từ ngày',
+                dateTo: 'Đến ngày',
+                voucherPanel: 'Bảng điều khiển phiếu',
+                voucherDetail: 'Chi Tiết Phiếu',
+                approverSignature: '\u270d\ufe0f Chữ ký người phê duyệt',
+                ackModalTitle: '\u270d\ufe0f Xác Nhận Đã Nhận Tiền'
             }
         });
 
