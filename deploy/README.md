@@ -10,15 +10,17 @@ them on Express unchanged.
 Browser
    │  https://workflow.tl-c.us
    ▼
-Cloudflare (DNS + proxy, orange cloud)
-   │
+Cloudflare edge  (TLS terminated here)
+   │  encrypted tunnel, outbound-only — no exposed IP, no open ports
    ▼
-Ubuntu server — nginx / Caddy  ← already fronting n8n
-   ├── n8n.<domain>          → n8n        :5678
-   └── workflow.tl-c.us      → this app   :3000
-                                    │
-                                    ▼
-                    Google Apps Script ×3  →  Sheets / Drive
+cloudflared on the Ubuntu server
+   ├── n8n.theoneplus.co       → :5678   n8n
+   ├── crm.theoneplus.co       → :3000   twenty_crm
+   ├── oneplus.theoneplus.co   → :3100   oneplus-web
+   └── workflow.tl-c.us        → :3001   this app
+                                            │
+                                            ▼
+                            Google Apps Script ×3  →  Sheets / Drive
 ```
 
 The frontend and the API share one origin: the pages call relative
@@ -88,28 +90,42 @@ cd /opt/tlcg-workflow && bash deploy/update.sh
 
 Pulls `main`, syncs prod deps, restarts the service.
 
-## Cloudflare
+## Cloudflare Tunnel
 
-DNS for `workflow.tl-c.us` is managed in Cloudflare.
+This server reaches Cloudflare through **cloudflared** (tunnel
+`theoneplus-tunnel`), not a public IP. That means:
 
-1. **DNS** — `A` record for `workflow` → the server's public IP, proxy
-   **enabled** (orange cloud). That hides the origin IP and gives free DDoS
-   protection.
-2. **SSL/TLS mode** — set to **Full (strict)**. The server holds a real
-   Let's Encrypt certificate (Caddy automatically, nginx via certbot), so
-   Cloudflare should verify it. "Flexible" would leave the Cloudflare →
-   origin hop unencrypted; do not use it.
-3. **Origin firewall** — allow 80/443 from Cloudflare's published IP ranges
-   only, so nobody can reach the origin directly and bypass the proxy.
-4. **Real client IP** — the supplied Caddy and nginx configs forward
-   `CF-Connecting-IP`, so the app's 30 req/min per-IP rate limit sees the
-   visitor rather than Cloudflare's edge. Without this every request shares
-   one bucket.
-5. **Caching** — leave the default. The app sends `no-cache` for HTML and
-   the API is POST, which Cloudflare does not cache. Do not add a blanket
-   "Cache Everything" rule; it would serve stale approval screens.
-6. **Upload size** — Cloudflare's free plan caps request bodies at 100 MB,
-   well above this app's 10 MB limit, so no change needed.
+- no ports open to the internet, and the origin IP is never exposed
+- no certbot and no origin certificate — Cloudflare terminates TLS
+- no origin firewall rules, because there is no inbound path to firewall
+- SSL/TLS mode and "Full (strict)" are irrelevant here
+
+Routing lives in `/etc/cloudflared/config.yml` as ingress rules, one per
+hostname, each pointing at a localhost port. A DNS CNAME per hostname is
+created with:
+
+```bash
+cloudflared tunnel route dns theoneplus-tunnel <hostname>
+```
+
+Always validate before restarting — a bad rule takes down every hostname
+on the tunnel, not just the new one:
+
+```bash
+cloudflared --config /etc/cloudflared/config.yml tunnel ingress validate
+sudo systemctl restart cloudflared
+```
+
+**Caching** — leave at default. The app sends `no-cache` for HTML and the API
+is POST, which Cloudflare does not cache. Do not add a "Cache Everything"
+rule; it would serve stale approval screens.
+
+**Port note** — the app listens on **3001**, not 3000: `twenty_crm` already
+owns 3000 on this host.
+
+**Client IP** — with a tunnel, `CF-Connecting-IP` arrives from the edge and
+the app's `trust proxy` setting picks it up, so the per-IP rate limit sees
+real visitors.
 
 ## Cutover from Vercel
 
