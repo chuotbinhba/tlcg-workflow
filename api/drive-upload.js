@@ -34,8 +34,37 @@ function parseMultipart(req) {
   });
 }
 
+/**
+ * Repair a PEM private key that lost its line breaks.
+ *
+ * systemd's EnvironmentFile interprets backslash escapes, so the `\n`
+ * sequences inside GOOGLE_SERVICE_ACCOUNT_KEY are consumed before the process
+ * ever sees them and the PEM arrives as a single line. Node's crypto then
+ * fails with "DECODER routines::unsupported". Vercel passed the value through
+ * untouched, so this only shows up on a self-hosted/systemd deployment.
+ *
+ * Re-wrap the base64 body at 64 characters when the header and body have been
+ * flattened onto one line. A key that still has real newlines is returned
+ * unchanged.
+ */
+function normalizePrivateKey(pk) {
+  if (typeof pk !== 'string' || pk.includes('\n')) return pk;
+
+  const m = pk.match(/^(-----BEGIN [^-]+-----)\s*(.*?)\s*(-----END [^-]+-----)\s*$/);
+  if (!m) return pk;
+
+  const [, header, body, footer] = m;
+  const wrapped = body.replace(/\s+/g, '').match(/.{1,64}/g) || [];
+  return `${header}\n${wrapped.join('\n')}\n${footer}\n`;
+}
+
 function getDriveClient() {
-  const key = JSON.parse(process.env.GOOGLE_SERVICE_ACCOUNT_KEY);
+  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+  if (!raw) throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY is not set');
+
+  const key = JSON.parse(raw);
+  if (key.private_key) key.private_key = normalizePrivateKey(key.private_key);
+
   const auth = new google.auth.GoogleAuth({
     credentials: key,
     scopes: ['https://www.googleapis.com/auth/drive'],
