@@ -340,9 +340,12 @@ function handleUpdateGasUrl({ oldUrl, newUrl }) {
       if (!content.includes(oldUrl)) { skipped.push(`${relPath} (URL not present)`); continue; }
       newContent = content.split(oldUrl).join(newUrl);
     } else {
-      // Replace all GAS URLs that are NOT the TLCGROUP or PAYMENT_REQUEST backend
-      const TLCGROUP = 'AKfycbzPRHqtSW6JSef5A4tiDJbHnIhm2jhK9c8RH6lOBFPEMLR-EjF0iVJO2ndinMZRwbJ4Xw';
-      const PAYMENT  = 'AKfycbxg_DlOgCCCq4393-OKdinqYt6Onni-YlkYiO6hbq9LuFiXC5oj1AiNgJbbJHih4g';
+      // Replace all GAS URLs that are NOT the TLCGROUP or PAYMENT_REQUEST backend.
+      // These deployment IDs must be kept in step with the ones in
+      // api/voucher.js — if they go stale this guard stops matching and the
+      // bulk update would overwrite the CORE/P2P URLs too.
+      const TLCGROUP = 'AKfycbwoHjoTtE4rPATdp1LO1Of25mSRPm8HVWwbOEgrDpZ07VEz7o38_8Icb1rl235N9VEXnQ';
+      const PAYMENT  = 'AKfycbypmldIGhl4c7XW4I0-MaAHPOkuEnNygoCZozsnetmHk0DEgE6WVkcRAc4IGZ4vqYnw';
       const matches = content.match(GAS_URL_PATTERN) || [];
       const toReplace = matches.filter(u => !u.includes(TLCGROUP) && !u.includes(PAYMENT) && u !== newUrl);
       if (!toReplace.length) { skipped.push(`${relPath} (no matching URLs)`); continue; }

@@ -37,7 +37,7 @@
 
 3. **API routes to backend** (`api/voucher.js` → `TLCGROUP_BACKEND`)
    - Routes `login` action to `TLCGROUP_BACKEND` URL
-   - URL: `https://script.google.com/macros/s/AKfycbzPRHqtSW6JSef5A4tiDJbHnIhm2jhK9c8RH6lOBFPEMLR-EjF0iVJO2ndinMZRwbJ4Xw/exec`
+   - URL: `https://script.google.com/macros/s/AKfycbwoHjoTtE4rPATdp1LO1Of25mSRPm8HVWwbOEgrDpZ07VEz7o38_8Icb1rl235N9VEXnQ/exec`
 
 4. **Backend receives request** (`TLCG_CORE_BACKEND.gs`)
    - `doPost()` function receives the request

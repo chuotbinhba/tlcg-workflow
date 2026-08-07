@@ -109,17 +109,17 @@ export default async function handler(req, res) {
   // TLCG_CASH_BACKEND — Cash & Admin: vouchers, cash book (TLCG_CASH_BACKEND.gs)
   const VOUCHER_BACKEND = process.env.TLCG_CASH_BACKEND_URL ||
     process.env.VOUCHER_BACKEND_URL ||
-    'https://script.google.com/macros/s/AKfycby8ed1o2d7Cf6dU0zZwnDnHYpuoQEo4wVQ99UmgMY0btzTolsC_90QBvb056UZyXMG7/exec';
+    'https://script.google.com/macros/s/AKfycbxyzw_9y4GVkTWvDmcIWOigHI39zYphCMa0JLZUXuTKWTRedIIYETSeBluFUdJrDgbt/exec';
 
   // TLCG_CORE_BACKEND — Shared/Auth: login, getMasterData, changePassword (TLCG_CORE_BACKEND.gs)
   const TLCGROUP_BACKEND = process.env.TLCG_CORE_BACKEND_URL ||
     process.env.TLCGROUP_BACKEND_URL ||
-    'https://script.google.com/macros/s/AKfycbzPRHqtSW6JSef5A4tiDJbHnIhm2jhK9c8RH6lOBFPEMLR-EjF0iVJO2ndinMZRwbJ4Xw/exec';
+    'https://script.google.com/macros/s/AKfycbwoHjoTtE4rPATdp1LO1Of25mSRPm8HVWwbOEgrDpZ07VEz7o38_8Icb1rl235N9VEXnQ/exec';
 
   // TLCG_P2P_BACKEND — P2P: purchaseRequest, paymentRequest (TLCG_P2P_BACKEND.gs)
   const PAYMENT_REQUEST_BACKEND = process.env.TLCG_P2P_BACKEND_URL ||
     process.env.PAYMENT_REQUEST_BACKEND_URL ||
-    'https://script.google.com/macros/s/AKfycbxg_DlOgCCCq4393-OKdinqYt6Onni-YlkYiO6hbq9LuFiXC5oj1AiNgJbbJHih4g/exec';
+    'https://script.google.com/macros/s/AKfycbypmldIGhl4c7XW4I0-MaAHPOkuEnNygoCZozsnetmHk0DEgE6WVkcRAc4IGZ4vqYnw/exec';
 
   // TLCG_O2C_BACKEND — O2C: quotation, contract, VAT invoice, acceptance (future)
   // const O2C_BACKEND = process.env.TLCG_O2C_BACKEND_URL || null;
