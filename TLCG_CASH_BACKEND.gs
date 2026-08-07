@@ -30,6 +30,54 @@ var MSG_ = {
     needAckSignature: 'Vui lòng tải lên chữ ký xác nhận',
     needRejectReason: 'Vui lòng nhập lý do từ chối',
     missingVoucherNumber: 'Thiếu voucher number',
+    noRequestData: 'Internal error: No request data received. Please call this as a Web App, not from editor.',
+    sheetNotInSpreadsheet: 'Lỗi: Không tìm thấy sheet "{0}" trong spreadsheet. Các sheet có sẵn: {1}',
+    failedFetchImage: 'Failed to fetch image: HTTP {0}',
+    voucherAlreadySubmitted: 'Phiếu này đã được gửi trước đó (số phiếu: {0}). Vui lòng kiểm tra lại lịch sử phiếu.',
+    sheetNotFoundCreate: 'Không tìm thấy sheet "{0}". Vui lòng tạo sheet với tên chính xác.',
+    sheetMissingCash: 'Sheet "{0}" không tồn tại',
+    alreadyApprovedByYouCash: 'Bạn đã phê duyệt phiếu này rồi.',
+    approverInfoNotFound: 'Không tìm thấy thông tin người phê duyệt.',
+    busyRetry: 'Hệ thống đang xử lý yêu cầu khác. Vui lòng thử lại sau giây lát.',
+    cannotReadSheetPrefix: 'Không thể đọc dữ liệu từ sheet: ',
+    companyDataNotFound: 'Không tìm thấy dữ liệu công ty',
+    companyNotFoundPrefix: 'Không tìm thấy công ty: ',
+    errBulkApprovePrefix: 'Lỗi duyệt hàng loạt: ',
+    errEmailApproverPrefix: 'Lỗi gửi email đến người phê duyệt: ',
+    errPrefixCash: 'Error: ',
+    errSendMailPrefix: 'Lỗi gửi mail: ',
+    errServerPrefix: 'Lỗi Server: ',
+    errUnexpectedPrefix: 'Lỗi không mong đợi: ',
+    invalidActionPrefixCash: 'Action không hợp lệ: ',
+    invalidGetActionPrefix: 'Action không hợp lệ trong GET: ',
+    noVoucherSelected: 'Không có phiếu nào được chọn.',
+    rejecterInfoNotFound: 'Không tìm thấy thông tin người từ chối.',
+    requiredSheetNotFound: 'Không tìm thấy sheet cần thiết',
+    usersSheetNotFound: 'Không tìm thấy sheet người dùng',
+    wrongCurrentPasswordCash: 'Mật khẩu hiện tại không đúng',
+    actionNotFound: 'Không tìm thấy action',
+    companyNameRequired: 'Tên công ty là bắt buộc. Received requestBody: ',
+    errHistorySheetConfig: 'Lỗi: Không tìm thấy sheet lịch sử. Vui lòng kiểm tra cấu hình.',
+    errHistorySheetMissing: 'Lỗi: Không tìm thấy sheet lịch sử.',
+    errImportData: 'Lỗi nhập dữ liệu: ',
+    errInvalidRequest: 'Lỗi: Request không hợp lệ - thiếu dữ liệu',
+    errNoDataAction: 'Lỗi: Không tìm thấy dữ liệu yêu cầu (no data/action field)',
+    errOpenSpreadsheet: 'Lỗi mở spreadsheet: ',
+    errParseData: 'Lỗi parse dữ liệu: ',
+    errSpreadsheetNotFound: 'Lỗi: Không tìm thấy spreadsheet với ID: ',
+    missingApproverInfo: 'Thiếu thông tin người duyệt.',
+    missingImageUrl: 'Missing image URL',
+    missingRecipient: 'Thiếu người nhận',
+    missingRecipientEmail: 'Thiếu địa chỉ email người nhận. Vui lòng kiểm tra thông tin công ty và người phê duyệt.',
+    missingRequiredInfo: 'Thiếu thông tin bắt buộc',
+    missingSigAuthAdmin: 'Thiếu dữ liệu xác thực chữ ký. Vui lòng thử lại hoặc liên hệ quản trị viên.',
+    missingSigAuthRetry: 'Thiếu dữ liệu xác thực chữ ký. Vui lòng thử lại.',
+    sheetNotExist: 'Sheet không tồn tại',
+    voucherAlreadyAcknowledged: 'Phiếu này đã được xác nhận nhận tiền rồi.',
+    voucherAlreadyApproved: 'Phiếu này đã được duyệt trước đó.',
+    voucherApprovedCannotReject: 'Phiếu này đã được duyệt. Không thể từ chối.',
+    voucherNotFullyApproved: 'Phiếu chưa được duyệt hoàn toàn.',
+    voucherRejectedCannotApprove: 'Phiếu này đã bị từ chối. Không thể phê duyệt.',
   },
   en: {
     errGeneric: 'Error: ',
@@ -42,6 +90,54 @@ var MSG_ = {
     needAckSignature: 'Please upload a confirmation signature',
     needRejectReason: 'Please enter a rejection reason',
     missingVoucherNumber: 'Missing voucher number',
+    noRequestData: 'Internal error: No request data received. Please call this as a Web App, not from editor.',
+    sheetNotInSpreadsheet: 'Error: sheet "{0}" not found in the spreadsheet. Available sheets: {1}',
+    failedFetchImage: 'Failed to fetch image: HTTP {0}',
+    voucherAlreadySubmitted: 'This voucher was already submitted (voucher no: {0}). Please check the voucher history.',
+    sheetNotFoundCreate: 'Sheet "{0}" not found. Please create a sheet with exactly that name.',
+    sheetMissingCash: 'The "{0}" sheet does not exist',
+    alreadyApprovedByYouCash: 'You have already approved this voucher.',
+    approverInfoNotFound: 'Approver information not found.',
+    busyRetry: 'The system is processing another request. Please try again in a moment.',
+    cannotReadSheetPrefix: 'Could not read data from the sheet: ',
+    companyDataNotFound: 'Company data not found',
+    companyNotFoundPrefix: 'Company not found: ',
+    errBulkApprovePrefix: 'Bulk approval error: ',
+    errEmailApproverPrefix: 'Error emailing the approver: ',
+    errPrefixCash: 'Error: ',
+    errSendMailPrefix: 'Error sending mail: ',
+    errServerPrefix: 'Server error: ',
+    errUnexpectedPrefix: 'Unexpected error: ',
+    invalidActionPrefixCash: 'Invalid action: ',
+    invalidGetActionPrefix: 'Invalid action in GET: ',
+    noVoucherSelected: 'No vouchers selected.',
+    rejecterInfoNotFound: 'Rejecter information not found.',
+    requiredSheetNotFound: 'Required sheet not found',
+    usersSheetNotFound: 'Users sheet not found',
+    wrongCurrentPasswordCash: 'Current password is incorrect',
+    actionNotFound: 'No action found',
+    companyNameRequired: 'Company name is required. Received requestBody: ',
+    errHistorySheetConfig: 'Error: history sheet not found. Please check the configuration.',
+    errHistorySheetMissing: 'Error: history sheet not found.',
+    errImportData: 'Data import error: ',
+    errInvalidRequest: 'Error: invalid request — missing data',
+    errNoDataAction: 'Error: no request data found (missing data/action field)',
+    errOpenSpreadsheet: 'Failed to open the spreadsheet: ',
+    errParseData: 'Failed to parse data: ',
+    errSpreadsheetNotFound: 'Error: spreadsheet not found with ID: ',
+    missingApproverInfo: 'Missing approver information.',
+    missingImageUrl: 'Missing image URL',
+    missingRecipient: 'Missing recipient',
+    missingRecipientEmail: 'Missing recipient email address. Please check the company and approver details.',
+    missingRequiredInfo: 'Missing required information',
+    missingSigAuthAdmin: 'Missing signature verification data. Please try again or contact an administrator.',
+    missingSigAuthRetry: 'Missing signature verification data. Please try again.',
+    sheetNotExist: 'The sheet does not exist',
+    voucherAlreadyAcknowledged: 'This voucher has already been acknowledged as received.',
+    voucherAlreadyApproved: 'This voucher was already approved.',
+    voucherApprovedCannotReject: 'This voucher is already approved and cannot be rejected.',
+    voucherNotFullyApproved: 'This voucher is not fully approved yet.',
+    voucherRejectedCannotApprove: 'This voucher was rejected and cannot be approved.',
   }
 };
 
@@ -243,7 +339,7 @@ function doGet(e) {
     // If no action or unknown action, return JSON (not HTML) for API calls
     if (action) {
       Logger.log('⚠️ WARNING: Unknown action in GET: ' + action);
-      return createResponse(false, 'Action không hợp lệ trong GET: ' + action);
+      return createResponse(false, msg_('invalidGetActionPrefix') + action);
     }
     
   } catch (error) {
@@ -266,7 +362,7 @@ function doPost(e) {
   if (!e) {
     console.log('❌❌❌ CRITICAL: Event object is undefined! This is likely a test run from editor.');
     Logger.log('❌❌❌ CRITICAL: Event object is undefined! This is likely a test run from editor.');
-    return createResponse(false, 'Internal error: No request data received. Please call this as a Web App, not from editor.');
+    return createResponse(false, msg_('noRequestData'));
   }
   
   
@@ -312,7 +408,7 @@ function doPost(e) {
         Logger.log('❌ Last 200 chars of data: ' + (e.parameter.data && e.parameter.data.length > 200 ? e.parameter.data.substring(e.parameter.data.length - 200) : 'N/A'));
         
         // Return more detailed error message
-        return createResponse(false, 'Lỗi parse dữ liệu: ' + parseError.message + '. Payload size: ' + (e.parameter.data ? Math.round(e.parameter.data.length / 1024) : 'unknown') + 'KB. Có thể payload quá lớn hoặc bị cắt.');
+        return createResponse(false, msg_('errParseData') + parseError.message + '. Payload size: ' + (e.parameter.data ? Math.round(e.parameter.data.length / 1024) : 'unknown') + 'KB. Có thể payload quá lớn hoặc bị cắt.');
       }
     } else if (e.parameter && e.parameter.action) {
       // Extract action and ensure it's a clean string
@@ -345,16 +441,16 @@ function doPost(e) {
           Logger.log('✅ Action from postData: ' + action);
         } catch (postError) {
           Logger.log('❌ Failed to parse postData.contents: ' + postError.toString());
-          return createResponse(false, 'Lỗi: Không tìm thấy dữ liệu yêu cầu (no data/action field)');
+          return createResponse(false, msg_('errNoDataAction'));
         }
       } else {
-        return createResponse(false, 'Lỗi: Request không hợp lệ - thiếu dữ liệu');
+        return createResponse(false, msg_('errInvalidRequest'));
       }
     }
 
     if (!action) {
       Logger.log('⚠️ WARNING: Action is null or undefined');
-      return createResponse(false, 'Không tìm thấy action');
+      return createResponse(false, msg_('actionNotFound'));
     }
 
     // Response messages follow the caller's UI language (emails do not).
@@ -472,7 +568,7 @@ function doPost(e) {
         }
         
         Logger.log('⚠️ Available actions: login, sendApprovalEmail, approveVoucher, rejectVoucher, getVoucherSummary, getVoucherHistory, getEmployees, getCompanyApprovers, getApprovalStatus, refreshApproverEmails');
-        return createResponse(false, 'Action không hợp lệ: ' + normalizedAction + ' (length: ' + normalizedAction.length + ', expected: ' + 'getCompanyApprovers'.length + ')');
+        return createResponse(false, msg_('invalidActionPrefixCash') + normalizedAction + ' (length: ' + normalizedAction.length + ', expected: ' + 'getCompanyApprovers'.length + ')');
     }
   } catch (error) {
     console.log('❌❌❌ CRITICAL ERROR in doPost: ' + error.toString());
@@ -482,7 +578,7 @@ function doPost(e) {
     console.log('❌❌❌ Error message: ' + error.message);
     Logger.log('❌❌❌ Error message: ' + error.message);
     // Always return JSON, never HTML
-    return createResponse(false, 'Lỗi Server: ' + error.message);
+    return createResponse(false, msg_('errServerPrefix') + error.message);
   }
 }
 
@@ -740,7 +836,7 @@ function handleSendEmail(requestBody) {
     const emailData = requestBody.email;
     const requesterEmailData = requestBody.requesterEmail || null;
     const voucher = requestBody.voucher || {};
-    if (!emailData || !emailData.to) return createResponse(false, 'Thiếu người nhận');
+    if (!emailData || !emailData.to) return createResponse(false, msg_('missingRecipient'));
 
     const voucherNo = voucher.voucherNumber || 'AUTO-' + new Date().getTime();
     
@@ -749,7 +845,7 @@ function handleSendEmail(requestBody) {
     try {
       submitLock.waitLock(10000);
     } catch (lockErr) {
-      return createResponse(false, 'Hệ thống đang xử lý yêu cầu khác. Vui lòng thử lại sau giây lát.');
+      return createResponse(false, msg_('busyRetry'));
     }
 
     try {
@@ -759,7 +855,7 @@ function handleSendEmail(requestBody) {
 
     if (!sheet) {
       Logger.log('❌ ERROR: Sheet "' + VH_SHEET_NAME + '" not found');
-      return createResponse(false, 'Lỗi: Không tìm thấy sheet lịch sử. Vui lòng kiểm tra cấu hình.');
+      return createResponse(false, msg_('errHistorySheetConfig'));
     }
 
     const data = sheet.getDataRange().getValues();
@@ -770,7 +866,7 @@ function handleSendEmail(requestBody) {
       const rowAction = rows[i][11];
       if (rowVoucherNo === voucherNo && (rowAction === 'Đã nộp phiếu' || rowAction === 'Submit')) {
         Logger.log('⚠️ DUPLICATE SUBMISSION DETECTED: ' + voucherNo);
-        return createResponse(false, 'Phiếu này đã được gửi trước đó (số phiếu: ' + voucherNo + '). Vui lòng kiểm tra lại lịch sử phiếu.');
+        return createResponse(false, msg_('voucherAlreadySubmitted', voucherNo));
       }
     }
 
@@ -887,7 +983,7 @@ function handleSendEmail(requestBody) {
     if (!emailData.to || emailData.to.trim() === '') {
       Logger.log('❌ ERROR: emailData.to is empty or invalid');
       Logger.log('emailData:', emailData);
-      return createResponse(false, 'Thiếu địa chỉ email người nhận. Vui lòng kiểm tra thông tin công ty và người phê duyệt.');
+      return createResponse(false, msg_('missingRecipientEmail'));
     }
 
     // Gửi email bằng GmailApp - to approvers
@@ -913,7 +1009,7 @@ function handleSendEmail(requestBody) {
         message: emailError.message,
         stack: emailError.stack
       }));
-      return createResponse(false, 'Lỗi gửi email đến người phê duyệt: ' + emailError.message);
+      return createResponse(false, msg_('errEmailApproverPrefix') + emailError.message);
     }
 
     // Gửi email thông báo cho requester
@@ -1013,7 +1109,7 @@ function handleSendEmail(requestBody) {
       submitLock.releaseLock();
     }
   } catch (error) {
-    return createResponse(false, 'Lỗi gửi mail: ' + error.message);
+    return createResponse(false, msg_('errSendMailPrefix') + error.message);
   }
 }
 
@@ -1083,17 +1179,17 @@ function handleApproveVoucher(requestBody) {
     }
     
     if (!approverRole) {
-      return createResponse(false, 'Không tìm thấy thông tin người phê duyệt.');
+      return createResponse(false, msg_('approverInfoNotFound'));
     }
 
     // 2. Check if this approver already approved
     if (companyApprovers.approvers[approverRole].status === 'approved') {
-      return createResponse(false, 'Bạn đã phê duyệt phiếu này rồi.');
+      return createResponse(false, msg_('alreadyApprovedByYouCash'));
     }
     
     // 3. Check if voucher was already rejected
     if (companyApprovers.overallStatus === 'Rejected') {
-      return createResponse(false, 'Phiếu này đã bị từ chối. Không thể phê duyệt.');
+      return createResponse(false, msg_('voucherRejectedCannotApprove'));
     }
     
     // 4. ✅ VALIDATE APPROVAL ORDER - Check if this is the current approver
@@ -1113,7 +1209,7 @@ function handleApproveVoucher(requestBody) {
       return createResponse(false, msg_('needApproveSignature'));
     }
     if (!v.signatureVerification || typeof v.signatureVerification !== 'object') {
-      return createResponse(false, 'Thiếu dữ liệu xác thực chữ ký. Vui lòng thử lại hoặc liên hệ quản trị viên.');
+      return createResponse(false, msg_('missingSigAuthAdmin'));
     }
     if (v.signatureVerification.verified !== true) {
       return createResponse(false,
@@ -1301,7 +1397,7 @@ function handleApproveVoucherLegacy(requestBody, existingVoucher) {
   }
 
   if (latestStatus === 'Approved' || latestAction === 'Approved') {
-    return createResponse(false, 'Phiếu này đã được duyệt trước đó.');
+    return createResponse(false, msg_('voucherAlreadyApproved'));
   }
   
   if (latestStatus === 'Rejected' || latestAction === 'Rejected') {
@@ -1612,14 +1708,14 @@ function handleAcknowledgeReceipt(requestBody) {
       || existingVoucher.status === 'Đã duyệt'
       || overallStatus === 'Approved';
     if (!isFullyApproved) {
-      return createResponse(false, 'Phiếu chưa được duyệt hoàn toàn.');
+      return createResponse(false, msg_('voucherNotFullyApproved'));
     }
 
     const isThu = (existingVoucher.voucherType || '').toUpperCase().includes('THU');
 
     // Prevent double acknowledgment
     if (meta.acknowledgedSignature) {
-      return createResponse(false, 'Phiếu này đã được xác nhận nhận tiền rồi.');
+      return createResponse(false, msg_('voucherAlreadyAcknowledged'));
     }
 
     // Store acknowledgment signature separately from the original submission signature
@@ -1926,7 +2022,7 @@ function handleRejectVoucher(requestBody) {
       }
       
       if (!approverRole) {
-        return createResponse(false, 'Không tìm thấy thông tin người từ chối.');
+        return createResponse(false, msg_('rejecterInfoNotFound'));
       }
       
       // Check if already rejected
@@ -2022,7 +2118,7 @@ function handleRejectVoucher(requestBody) {
       }
       
       if (latestStatus === 'Approved' || latestAction === 'Approved') {
-        return createResponse(false, 'Phiếu này đã được duyệt. Không thể từ chối.');
+        return createResponse(false, msg_('voucherApprovedCannotReject'));
       }
       
       if (latestStatus === 'Rejected' || latestAction === 'Rejected') {
@@ -2078,7 +2174,7 @@ function handleImportFromVHImport(requestBody) {
     const ss = safeOpenSpreadsheet(TLCG_MASTER_DATA_SHEET_ID, 'handleImportFromVHImport');
     const importSheet = ss.getSheetByName(VH_IMPORT_SHEET_NAME);
     if (!importSheet) {
-      return createResponse(false, 'Không tìm thấy sheet "' + VH_IMPORT_SHEET_NAME + '". Vui lòng tạo sheet với tên chính xác.');
+      return createResponse(false, msg_('sheetNotFoundCreate', VH_IMPORT_SHEET_NAME));
     }
 
     const data = importSheet.getDataRange().getValues();
@@ -2276,7 +2372,7 @@ function handleImportFromVHImport(requestBody) {
     );
   } catch (error) {
     Logger.log('❌ handleImportFromVHImport error: ' + error.toString());
-    return createResponse(false, 'Lỗi nhập dữ liệu: ' + error.message);
+    return createResponse(false, msg_('errImportData') + error.message);
   }
 }
 
@@ -2877,15 +2973,15 @@ function handleBulkApprove(requestBody) {
     const approverSignature   = requestBody.approverSignature   || '';
     const signatureVerification = requestBody.signatureVerification || null;
 
-    if (!voucherNumbers.length) return createResponse(false, 'Không có phiếu nào được chọn.');
-    if (!approverEmail)         return createResponse(false, 'Thiếu thông tin người duyệt.');
+    if (!voucherNumbers.length) return createResponse(false, msg_('noVoucherSelected'));
+    if (!approverEmail)         return createResponse(false, msg_('missingApproverInfo'));
 
     // Validate signature
     if (!approverSignature || approverSignature.trim() === '') {
       return createResponse(false, msg_('needApproveSignature'));
     }
     if (!signatureVerification || typeof signatureVerification !== 'object') {
-      return createResponse(false, 'Thiếu dữ liệu xác thực chữ ký. Vui lòng thử lại.');
+      return createResponse(false, msg_('missingSigAuthRetry'));
     }
     if (signatureVerification.verified !== true) {
       return createResponse(false,
@@ -2906,7 +3002,7 @@ function handleBulkApprove(requestBody) {
     // Open sheet ONCE and read all data ONCE — reused for every voucher to avoid
     // "Too many simultaneous invocations" from repeated openById calls in the loop.
     const _bulkSheet = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID).getSheetByName(VH_SHEET_NAME);
-    if (!_bulkSheet) return createResponse(false, 'Lỗi: Không tìm thấy sheet lịch sử.');
+    if (!_bulkSheet) return createResponse(false, msg_('errHistorySheetMissing'));
     const _bulkData = _bulkSheet.getDataRange().getValues();
 
     const approved = [];
@@ -2967,7 +3063,7 @@ function handleBulkApprove(requestBody) {
     );
   } catch (error) {
     Logger.log('❌ handleBulkApprove error: ' + error.toString());
-    return createResponse(false, 'Lỗi duyệt hàng loạt: ' + error.message);
+    return createResponse(false, msg_('errBulkApprovePrefix') + error.message);
   }
 }
 
@@ -3239,12 +3335,12 @@ function handleLogin_(requestBody) {
       if (openError.message.includes('openById') || openError.message.includes('Unexpected error')) {
         return createResponse(false, 'Lỗi truy cập spreadsheet: Script chưa được cấp quyền truy cập Google Sheets. Vui lòng:\n1. Mở Apps Script editor\n2. Chạy function handleLogin_ một lần\n3. Cấp quyền truy cập khi được yêu cầu\n4. Deploy lại web app với "Execute as: Me"\n\nSpreadsheet ID: ' + USERS_SHEET_ID);
       } else if (openError.message.includes('not found') || openError.message.includes('does not exist')) {
-        return createResponse(false, 'Lỗi: Không tìm thấy spreadsheet với ID: ' + USERS_SHEET_ID + '. Vui lòng kiểm tra lại spreadsheet ID.');
+        return createResponse(false, msg_('errSpreadsheetNotFound') + USERS_SHEET_ID + '. Vui lòng kiểm tra lại spreadsheet ID.');
       } else if (openError.message.includes('permission') || openError.message.includes('access')) {
         return createResponse(false, 'Lỗi quyền truy cập: Script không có quyền truy cập spreadsheet. Vui lòng:\n1. Share spreadsheet với account đang chạy script\n2. Hoặc đặt spreadsheet thành "Anyone with link can view"\n\nSpreadsheet ID: ' + USERS_SHEET_ID);
       }
 
-      return createResponse(false, 'Lỗi mở spreadsheet: ' + openError.message + '\nSpreadsheet ID: ' + USERS_SHEET_ID);
+      return createResponse(false, msg_('errOpenSpreadsheet') + openError.message + '\nSpreadsheet ID: ' + USERS_SHEET_ID);
     }
 
     // Try to get the sheet
@@ -3253,7 +3349,7 @@ function handleLogin_(requestBody) {
       Logger.log('❌ ERROR: Sheet "' + EMPLOYEES_SHEET_NAME + '" not found');
       const availableSheets = ss.getSheets().map(s => s.getName()).join(', ');
       Logger.log('Available sheets: ' + availableSheets);
-      return createResponse(false, 'Lỗi: Không tìm thấy sheet "' + EMPLOYEES_SHEET_NAME + '" trong spreadsheet. Các sheet có sẵn: ' + availableSheets);
+      return createResponse(false, msg_('sheetNotInSpreadsheet', EMPLOYEES_SHEET_NAME, availableSheets));
     }
 
     Logger.log('✅ Successfully got sheet: ' + EMPLOYEES_SHEET_NAME);
@@ -3310,7 +3406,7 @@ function handleLogin_(requestBody) {
   } catch (error) {
     Logger.log('❌ UNEXPECTED ERROR in handleLogin_: ' + error.toString());
     Logger.log('Error stack: ' + error.stack);
-    return createResponse(false, 'Lỗi không mong đợi: ' + error.message + '\n\nVui lòng kiểm tra Apps Script logs để biết chi tiết.');
+    return createResponse(false, msg_('errUnexpectedPrefix') + error.message + '\n\nVui lòng kiểm tra Apps Script logs để biết chi tiết.');
   }
 }
 
@@ -3335,11 +3431,11 @@ function handleChangePassword(requestBody) {
     const currentHash = (requestBody.currentPassword || '').toString().trim();
     const newHash     = (requestBody.newPassword      || '').toString().trim();
 
-    if (!email || !newHash) return createResponse(false, 'Thiếu thông tin bắt buộc');
+    if (!email || !newHash) return createResponse(false, msg_('missingRequiredInfo'));
 
     const ss    = SpreadsheetApp.openById(USERS_SHEET_ID);
     const sheet = ss.getSheetByName(EMPLOYEES_SHEET_NAME);
-    if (!sheet) return createResponse(false, 'Không tìm thấy sheet người dùng');
+    if (!sheet) return createResponse(false, msg_('usersSheetNotFound'));
 
     const data = sheet.getDataRange().getValues();
     for (let i = 1; i < data.length; i++) {
@@ -3348,7 +3444,7 @@ function handleChangePassword(requestBody) {
 
         // If a hash already exists, verify the current one before allowing change
         if (storedHash && currentHash !== storedHash) {
-          return createResponse(false, 'Mật khẩu hiện tại không đúng');
+          return createResponse(false, msg_('wrongCurrentPasswordCash'));
         }
 
         // Write new hash to column L (index 11 → column 12 in 1-based)
@@ -3433,7 +3529,7 @@ function handleGetCompanies() {
     const ss = safeOpenSpreadsheet(TLCG_MASTER_DATA_SHEET_ID, 'handleGetCompanies');
     const sheet = safeGetSheet(ss, COMPANY_SHEET_NAME, 'handleGetCompanies');
     if (!sheet) {
-      return createResponse(false, 'Sheet "' + COMPANY_SHEET_NAME + '" không tồn tại');
+      return createResponse(false, msg_('sheetMissingCash', COMPANY_SHEET_NAME));
     }
     const rows = sheet.getDataRange().getValues();
     if (rows.length < 2) {
@@ -3552,7 +3648,7 @@ function handleGetCompanyApprovers(requestBody, directCompanyName) {
       Logger.log('❌ Company name is missing');
       Logger.log('Debug info - requestBody:', requestBody);
       Logger.log('Debug info - directCompanyName:', directCompanyName);
-      return createResponse(false, 'Tên công ty là bắt buộc. Received requestBody: ' + (requestBody ? 'exists' : 'null/undefined'));
+      return createResponse(false, msg_('companyNameRequired') + (requestBody ? 'exists' : 'null/undefined'));
     }
     
     Logger.log('Looking for company: ' + companyName);
@@ -3563,13 +3659,13 @@ function handleGetCompanyApprovers(requestBody, directCompanyName) {
     
     if (!sheet) {
       Logger.log('❌ Sheet "' + COMPANY_SHEET_NAME + '" not found');
-      return createResponse(false, 'Sheet "' + COMPANY_SHEET_NAME + '" không tồn tại');
+      return createResponse(false, msg_('sheetMissingCash', COMPANY_SHEET_NAME));
     }
     
     const data = sheet.getDataRange().getValues();
     if (data.length < 2) {
       Logger.log('⚠️ No company data found (only header row)');
-      return createResponse(false, 'Không tìm thấy dữ liệu công ty');
+      return createResponse(false, msg_('companyDataNotFound'));
     }
     
     // Column mapping based on new "Master Company" sheet structure:
@@ -3623,7 +3719,7 @@ function handleGetCompanyApprovers(requestBody, directCompanyName) {
     
     if (!companyRow) {
       Logger.log('❌ Company not found: ' + companyName);
-      return createResponse(false, 'Không tìm thấy công ty: ' + companyName);
+      return createResponse(false, msg_('companyNotFoundPrefix') + companyName);
     }
     
     // Extract approver data
@@ -3706,7 +3802,7 @@ function handleGetVoucherSummary(requestBody) {
       data = sheet.getRange(1, 1, lastRow, 17).getValues();
     } catch (dataError) {
       Logger.log('Error getting data: ' + dataError.toString());
-      return createResponse(false, 'Không thể đọc dữ liệu từ sheet: ' + dataError.message);
+      return createResponse(false, msg_('cannotReadSheetPrefix') + dataError.message);
     }
 
     if (!data || data.length <= 1) {
@@ -3966,7 +4062,7 @@ function handleGetVoucherHistory(requestBody) {
     
     const sheet = SpreadsheetApp.openById(VOUCHER_HISTORY_SHEET_ID).getSheetByName(VH_SHEET_NAME);
     if (!sheet) {
-      return createResponse(false, 'Sheet không tồn tại');
+      return createResponse(false, msg_('sheetNotExist'));
     }
     
     const data = sheet.getDataRange().getValues();
@@ -4268,7 +4364,7 @@ function handleRefreshApproverEmails(requestBody) {
     const companySheet = ss.getSheetByName(COMPANY_SHEET_NAME);
 
     if (!voucherSheet || !companySheet) {
-      return createResponse(false, 'Không tìm thấy sheet cần thiết');
+      return createResponse(false, msg_('requiredSheetNotFound'));
     }
 
     const voucherData = voucherSheet.getDataRange().getValues();
@@ -4434,7 +4530,7 @@ function handleFetchSignatureImage(requestBody) {
     const imageUrl = requestBody.imageUrl || '';
     if (!imageUrl) {
       Logger.log('❌ fetchSignatureImage: Missing image URL');
-      return createResponse(false, 'Missing image URL');
+      return createResponse(false, msg_('missingImageUrl'));
     }
 
     Logger.log('🖼️ Fetching signature image: ' + imageUrl);
@@ -4473,7 +4569,7 @@ function handleFetchSignatureImage(requestBody) {
     const responseCode = response.getResponseCode();
     if (responseCode !== 200) {
       Logger.log('❌ Failed to fetch image: HTTP ' + responseCode);
-      return createResponse(false, 'Failed to fetch image: HTTP ' + responseCode);
+      return createResponse(false, msg_('failedFetchImage', responseCode));
     }
 
     // Convert to base64
@@ -4488,7 +4584,7 @@ function handleFetchSignatureImage(requestBody) {
   } catch (error) {
     Logger.log('❌ Error fetching signature image: ' + error.toString());
     Logger.log('❌ Error stack: ' + error.stack);
-    return createResponse(false, 'Error: ' + error.message);
+    return createResponse(false, msg_('errPrefixCash') + error.message);
   }
 }
 

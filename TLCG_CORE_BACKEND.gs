@@ -39,6 +39,35 @@ var MSG_ = {
     invalidToken: 'Token không hợp lệ hoặc đã hết hạn. Vui lòng thử lại.',
     missingRequired: 'Thiếu thông tin bắt buộc',
     errSendEmail: 'Error sending email: ',
+    diagnosticFailedPrefix: 'Diagnostic failed: ',
+    invalidActionPrefixCore: 'Invalid action: ',
+    testFailedPrefix: 'Test failed: ',
+    webAppCtxFailedPrefix: 'Web app execution context test failed: ',
+    cannotAccessSpreadsheet: 'Không thể truy cập spreadsheet: ',
+    cannotParseBody: 'Could not parse request body. Check logs for details.',
+    changePwFieldsRequired: 'Email, current password, and new password are required',
+    dataRequired: 'Data is required',
+    emailOtpRequired: 'Email và mã OTP là bắt buộc',
+    emailRequired: 'Email is required',
+    errApproveVoucher: 'Error approving voucher: ',
+    errChangePassword: 'Error changing password: ',
+    errFetchMasterData: 'Error fetching master data: ',
+    errLogin: 'Login error: ',
+    errRejectVoucher: 'Error rejecting voucher: ',
+    errSendingEmail: 'Error sending email: ',
+    errServerCore: 'Server error: ',
+    errSyncSheets: 'Error syncing to sheets: ',
+    newPwSameAsDefault: 'Mật khẩu mới không được trùng mật khẩu mặc định',
+    otpExpired: 'Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới.',
+    otpIncorrect: 'Mã OTP không đúng.',
+    recipientEmailRequired: 'Recipient email is required',
+    rejectReasonRequired: 'Reject reason is required',
+    requestorEmailRequired: 'Requestor email is required',
+    spreadsheetIdRequired: 'Spreadsheet ID is required',
+    tooManyAttempts: 'Quá nhiều lần thử. Vui lòng yêu cầu mã mới.',
+    tooManyRequests: 'Quá nhiều yêu cầu. Vui lòng thử lại sau 30 phút.',
+    userNotFound: 'User not found',
+    voucherDataRequired: 'Voucher data is required',
   },
   en: {
     errGeneric: 'Error: ',
@@ -46,6 +75,35 @@ var MSG_ = {
     invalidToken: 'Invalid or expired token. Please try again.',
     missingRequired: 'Missing required information',
     errSendEmail: 'Error sending email: ',
+    diagnosticFailedPrefix: 'Diagnostic failed: ',
+    invalidActionPrefixCore: 'Invalid action: ',
+    testFailedPrefix: 'Test failed: ',
+    webAppCtxFailedPrefix: 'Web app execution context test failed: ',
+    cannotAccessSpreadsheet: 'Cannot access the spreadsheet: ',
+    cannotParseBody: 'Could not parse request body. Check logs for details.',
+    changePwFieldsRequired: 'Email, current password, and new password are required',
+    dataRequired: 'Data is required',
+    emailOtpRequired: 'Email and OTP code are required',
+    emailRequired: 'Email is required',
+    errApproveVoucher: 'Error approving voucher: ',
+    errChangePassword: 'Error changing password: ',
+    errFetchMasterData: 'Error fetching master data: ',
+    errLogin: 'Login error: ',
+    errRejectVoucher: 'Error rejecting voucher: ',
+    errSendingEmail: 'Error sending email: ',
+    errServerCore: 'Server error: ',
+    errSyncSheets: 'Error syncing to sheets: ',
+    newPwSameAsDefault: 'The new password must not match the default password',
+    otpExpired: 'The OTP code has expired. Please request a new one.',
+    otpIncorrect: 'Incorrect OTP code.',
+    recipientEmailRequired: 'Recipient email is required',
+    rejectReasonRequired: 'Reject reason is required',
+    requestorEmailRequired: 'Requestor email is required',
+    spreadsheetIdRequired: 'Spreadsheet ID is required',
+    tooManyAttempts: 'Too many attempts. Please request a new code.',
+    tooManyRequests: 'Too many requests. Please try again in 30 minutes.',
+    userNotFound: 'User not found',
+    voucherDataRequired: 'Voucher data is required',
   }
 };
 
@@ -245,7 +303,7 @@ function doPost(e) {
     if (!requestBody) {
       Logger.log('Error: Could not parse request body');
       Logger.log('e object keys: ' + Object.keys(e).join(', '));
-      return createResponse(false, 'Could not parse request body. Check logs for details.');
+      return createResponse(false, msg_('cannotParseBody'));
     }
     
     Logger.log('========================================');
@@ -328,7 +386,7 @@ function doPost(e) {
           result = createResponse(diagnosticResult.success, diagnosticResult.error || diagnosticResult.message, diagnosticResult);
         } catch (diagError) {
           Logger.log('Diagnostic failed: ' + diagError.message);
-          result = createResponse(false, 'Diagnostic failed: ' + diagError.message);
+          result = createResponse(false, msg_('diagnosticFailedPrefix') + diagError.message);
         }
         break;
       
@@ -364,7 +422,7 @@ function doPost(e) {
             Logger.log('Error: ' + openError.message);
             Logger.log('Error toString: ' + openError.toString());
             
-            result = createResponse(false, 'Web app execution context test failed: ' + openError.message, {
+            result = createResponse(false, msg_('webAppCtxFailedPrefix') + openError.message, {
               context: contextInfo,
               error: {
                 message: openError.message,
@@ -375,12 +433,12 @@ function doPost(e) {
           }
         } catch (testError) {
           Logger.log('Test login context failed: ' + testError.message);
-          result = createResponse(false, 'Test failed: ' + testError.message);
+          result = createResponse(false, msg_('testFailedPrefix') + testError.message);
         }
         break;
       
       default:
-        result = createResponse(false, 'Invalid action: ' + action);
+        result = createResponse(false, msg_('invalidActionPrefixCore') + action);
     }
     
     // Set CORS headers
@@ -405,7 +463,7 @@ function doPost(e) {
       Logger.log('Then re-deploy with "Execute as: Me"');
     }
     
-    return createResponse(false, 'Server error: ' + error.message + (error.stack ? '\nStack: ' + error.stack.substring(0, 200) : ''));
+    return createResponse(false, msg_('errServerCore') + error.message + (error.stack ? '\nStack: ' + error.stack.substring(0, 200) : ''));
   }
 }
 
@@ -747,7 +805,7 @@ function generateOTP() {
 function handleRequestPasswordReset(requestBody) {
   try {
     const email = (requestBody.email || '').toString().trim().toLowerCase();
-    if (!email) return createResponse(false, 'Email is required');
+    if (!email) return createResponse(false, msg_('emailRequired'));
 
     // Always return same message to prevent user enumeration
     const genericMsg = 'Nếu email tồn tại trong hệ thống, mã OTP đã được gửi.';
@@ -787,7 +845,7 @@ function handleRequestPasswordReset(requestBody) {
     const attempts = parseInt(cache.get(rateLimitKey) || '0');
     if (attempts >= 3) {
       Logger.log('OTP rate limit hit for: ' + email);
-      return createResponse(false, 'Quá nhiều yêu cầu. Vui lòng thử lại sau 30 phút.');
+      return createResponse(false, msg_('tooManyRequests'));
     }
 
     // Generate OTP and store with 10 min expiry
@@ -830,7 +888,7 @@ function handleVerifyOTP(requestBody) {
   try {
     const email = (requestBody.email || '').toString().trim().toLowerCase();
     const otp   = (requestBody.otp   || '').toString().trim();
-    if (!email || !otp) return createResponse(false, 'Email và mã OTP là bắt buộc');
+    if (!email || !otp) return createResponse(false, msg_('emailOtpRequired'));
 
     const cache = CacheService.getScriptCache();
 
@@ -838,17 +896,17 @@ function handleVerifyOTP(requestBody) {
     const attemptsKey = 'otp_attempts_' + email;
     const attempts = parseInt(cache.get(attemptsKey) || '0');
     if (attempts >= 3) {
-      return createResponse(false, 'Quá nhiều lần thử. Vui lòng yêu cầu mã mới.');
+      return createResponse(false, msg_('tooManyAttempts'));
     }
 
     const storedOTP = cache.get('otp_' + email);
     if (!storedOTP) {
-      return createResponse(false, 'Mã OTP đã hết hạn. Vui lòng yêu cầu mã mới.');
+      return createResponse(false, msg_('otpExpired'));
     }
     if (otp !== storedOTP) {
       cache.put(attemptsKey, (attempts + 1).toString(), 600);
       Logger.log('OTP mismatch for: ' + email);
-      return createResponse(false, 'Mã OTP không đúng.');
+      return createResponse(false, msg_('otpIncorrect'));
     }
 
     // OTP valid — generate one-time reset token (valid 5 min), invalidate OTP
@@ -907,7 +965,7 @@ function handleResetPassword(requestBody) {
         return createResponse(true, 'Đặt lại mật khẩu thành công');
       }
     }
-    return createResponse(false, 'User not found');
+    return createResponse(false, msg_('userNotFound'));
   } catch (error) {
     Logger.log('Error in handleResetPassword: ' + error.toString());
     return createResponse(false, msg_('errGeneric') + error.message);
@@ -933,7 +991,7 @@ function handleLogin(requestBody) {
     
     if (!email || email === null || email === undefined || email.toString().trim() === '') {
       Logger.log('ERROR: Email is missing, null, or empty');
-      return createResponse(false, 'Email is required');
+      return createResponse(false, msg_('emailRequired'));
     }
     
     if (!password || password === null || password === undefined || password.toString().trim() === '') {
@@ -975,7 +1033,7 @@ function handleLogin(requestBody) {
     
     // For other errors, return with prefix
     Logger.log('Returning generic error message');
-    return createResponse(false, 'Login error: ' + error.message);
+    return createResponse(false, msg_('errLogin') + error.message);
   }
 }
 
@@ -1101,7 +1159,7 @@ function handleChangePassword(requestBody) {
     const newPassword = requestBody.newPassword;
 
     if (!email || !currentPassword || !newPassword) {
-      return createResponse(false, 'Email, current password, and new password are required');
+      return createResponse(false, msg_('changePwFieldsRequired'));
     }
 
     // Validate new password rules
@@ -1147,7 +1205,7 @@ function handleChangePassword(requestBody) {
           }
           // Prevent setting same password as default
           if (newPassword === colKPlainText) {
-            return createResponse(false, 'Mật khẩu mới không được trùng mật khẩu mặc định');
+            return createResponse(false, msg_('newPwSameAsDefault'));
           }
         }
 
@@ -1165,10 +1223,10 @@ function handleChangePassword(requestBody) {
       }
     }
 
-    return createResponse(false, 'User not found');
+    return createResponse(false, msg_('userNotFound'));
   } catch (error) {
     Logger.log('Change password error: ' + error.toString());
-    return createResponse(false, 'Error changing password: ' + error.message);
+    return createResponse(false, msg_('errChangePassword') + error.message);
   }
 }
 
@@ -1188,7 +1246,7 @@ function handleSendEmail(requestBody) {
     const body = emailData.body;
 
     if (!to) {
-      return createResponse(false, 'Recipient email is required');
+      return createResponse(false, msg_('recipientEmailRequired'));
     }
 
     GmailApp.sendEmail(to, subject, '', {
@@ -1200,7 +1258,7 @@ function handleSendEmail(requestBody) {
     return createResponse(true, 'Email sent successfully');
   } catch (error) {
     Logger.log('Error sending email: ' + error.toString());
-    return createResponse(false, 'Error sending email: ' + error.message);
+    return createResponse(false, msg_('errSendingEmail') + error.message);
   }
 }
 
@@ -1215,7 +1273,7 @@ function handleApproveVoucher(requestBody) {
     const voucher = requestBody.voucher;
     if (!voucher) {
       Logger.log('Error: voucher object is missing');
-      return createResponse(false, 'Voucher data is required');
+      return createResponse(false, msg_('voucherDataRequired'));
     }
     
     const voucherNumber = voucher.voucherNumber || 'N/A';
@@ -1233,7 +1291,7 @@ function handleApproveVoucher(requestBody) {
 
     if (!requestorEmail || requestorEmail.trim() === '') {
       Logger.log('Error: Requestor email is missing or empty');
-      return createResponse(false, 'Requestor email is required');
+      return createResponse(false, msg_('requestorEmailRequired'));
     }
 
     // Create approval email
@@ -1299,12 +1357,12 @@ function handleApproveVoucher(requestBody) {
     } catch (emailError) {
       Logger.log('❌ Error sending email: ' + emailError.toString());
       Logger.log('Error details: ' + JSON.stringify(emailError));
-      return createResponse(false, 'Error sending email: ' + emailError.message);
+      return createResponse(false, msg_('errSendingEmail') + emailError.message);
     }
     
   } catch (error) {
     Logger.log('Error approving voucher: ' + error.toString());
-    return createResponse(false, 'Error approving voucher: ' + error.message);
+    return createResponse(false, msg_('errApproveVoucher') + error.message);
   }
 }
 
@@ -1325,11 +1383,11 @@ function handleRejectVoucher(requestBody) {
     const rejectedBy = voucher.rejectedBy;
 
     if (!requestorEmail) {
-      return createResponse(false, 'Requestor email is required');
+      return createResponse(false, msg_('requestorEmailRequired'));
     }
 
     if (!rejectReason) {
-      return createResponse(false, 'Reject reason is required');
+      return createResponse(false, msg_('rejectReasonRequired'));
     }
 
     // Create rejection email
@@ -1391,7 +1449,7 @@ function handleRejectVoucher(requestBody) {
     
   } catch (error) {
     Logger.log('Error rejecting voucher: ' + error.toString());
-    return createResponse(false, 'Error rejecting voucher: ' + error.message);
+    return createResponse(false, msg_('errRejectVoucher') + error.message);
   }
 }
 
@@ -1409,11 +1467,11 @@ function handleSyncToSheets(requestBody) {
     const data = requestBody.data;
 
     if (!spreadsheetId) {
-      return createResponse(false, 'Spreadsheet ID is required');
+      return createResponse(false, msg_('spreadsheetIdRequired'));
     }
 
     if (!data) {
-      return createResponse(false, 'Data is required');
+      return createResponse(false, msg_('dataRequired'));
     }
 
     // Mở spreadsheet
@@ -1421,7 +1479,7 @@ function handleSyncToSheets(requestBody) {
     try {
       spreadsheet = safeOpenSpreadsheet(spreadsheetId, 'syncToGoogleSheets');
     } catch (error) {
-      return createResponse(false, 'Không thể truy cập spreadsheet: ' + error.message);
+      return createResponse(false, msg_('cannotAccessSpreadsheet') + error.message);
     }
 
     // Lấy hoặc tạo sheet
@@ -1439,7 +1497,7 @@ function handleSyncToSheets(requestBody) {
     return createResponse(true, 'Data synced successfully');
   } catch (error) {
     Logger.log('Error syncing to sheets: ' + error.toString());
-    return createResponse(false, 'Error syncing to sheets: ' + error.message);
+    return createResponse(false, msg_('errSyncSheets') + error.message);
   }
 }
 
@@ -1767,7 +1825,7 @@ function handleGetMasterData(requestBody) {
   } catch (error) {
     Logger.log('❌ Error in handleGetMasterData: ' + error.toString());
     Logger.log('Stack: ' + error.stack);
-    return createResponse(false, 'Error fetching master data: ' + error.message);
+    return createResponse(false, msg_('errFetchMasterData') + error.message);
   }
 }
 

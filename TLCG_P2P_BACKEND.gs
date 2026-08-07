@@ -45,7 +45,99 @@ var MSG_ = {
     amAlreadyUsed: 'Biên bản nghiệm thu này đã được sử dụng trong đề nghị thanh toán khác.',
     exceedsCeiling: 'Tổng thanh toán vượt quá giá trị hợp đồng/PR ({0} ₫).',
     prInvalidDirect: 'PR không hợp lệ cho thanh toán trực tiếp.',
-    needAmOrPr: 'Vui lòng nhập số Biên Bản Nghiệm Thu (AM No) hoặc số PR (hàng hóa < 2tr).'
+    needAmOrPr: 'Vui lòng nhập số Biên Bản Nghiệm Thu (AM No) hoặc số PR (hàng hóa < 2tr).',
+    supplierExists: 'Supplier "{0}" already exists',
+    sheetMissing: 'Sheet "{0}" không tồn tại',
+    roleNotAssignedForRequest: 'Vai trò "{0}" chưa được phân công cho đề nghị này.',
+    notAssignedApprover: 'Bạn không được phân công là người duyệt "{0}" cho đề nghị này.',
+    notAssignedRole: 'Bạn không được phân công vai trò "{0}" cho đề nghị này.',
+    prNotApprovedYet: 'Phiếu đề nghị {0} chưa hoàn thành phê duyệt (trạng thái: {1}).',
+    contractNotApproved: 'Hợp đồng {0} chưa được phê duyệt (trạng thái: {1}).',
+    contractNotForPr: 'Hợp đồng {0} không thuộc PR {1}.',
+    amNoExists: 'Số biên bản {0} đã tồn tại.',
+    amNotFoundPrefix: 'Không tìm thấy biên bản: ',
+    contractExistsPrefix: 'Đã tồn tại hợp đồng cho PR này: ',
+    contractNotFoundPrefix: 'Không tìm thấy hợp đồng: ',
+    errPrefix: 'Lỗi: ',
+    errorPrefixEn: 'Error: ',
+    invalidActionPrefix: 'Invalid action: ',
+    invalidStagePrefix: 'Invalid approval stage: ',
+    prDocNotFoundPrefix: 'Không tìm thấy phiếu đề nghị mua hàng: ',
+    prIdNotFoundPrefix: 'Không tìm thấy PR: ',
+    prNotFoundPrefix: 'Không tìm thấy đề nghị: ',
+    requestIdExistsPrefix: 'Request ID already exists: ',
+    requestNotFoundPrefix: 'Request not found: ',
+    validationErrorPrefix: 'Validation error: ',
+    alreadyApprovedByYou: 'Bạn đã duyệt đề nghị này rồi.',
+    amAlreadyConfirmed: 'Biên bản này đã được xác nhận rồi.',
+    amRejectedCannotApprove: 'Biên bản đã bị từ chối. Không thể phê duyệt.',
+    amendmentNotFound: 'Không tìm thấy phụ lục.',
+    amendmentNotPendingReview: 'Phụ lục không ở trạng thái chờ thẩm định.',
+    amendmentOnlySignedContract: 'Chỉ có thể tạo phụ lục cho hợp đồng đã ký.',
+    amendmentPendingReview: 'Đang có phụ lục chờ thẩm định.',
+    approverSignatureRequired: 'Chữ ký người phê duyệt là bắt buộc.',
+    atLeastOneItem: 'Vui lòng nhập ít nhất 1 hàng hóa / dịch vụ.',
+    chooseAmConfirmer: 'Vui lòng chọn người phụ trách xác nhận nghiệm thu.',
+    chooseBudgetApprover: 'Vui lòng chọn người phê duyệt ngân sách.',
+    chooseVendorApprover: 'Vui lòng chọn người phê duyệt NCC.',
+    contractNoExists: 'Số hợp đồng đã tồn tại.',
+    contractNotFound: 'Không tìm thấy hợp đồng.',
+    contractNotPendingReview: 'Hợp đồng không ở trạng thái chờ thẩm định.',
+    contractValuePositive: 'Giá trị hợp đồng phải lớn hơn 0.',
+    docPendingInfoCannotApprove: 'Phiếu đang chờ người đề nghị bổ sung thông tin, không thể duyệt.',
+    docPendingInfoCannotReject: 'Phiếu đang chờ người đề nghị bổ sung thông tin, không thể từ chối.',
+    enterRejectReason: 'Vui lòng nhập lý do từ chối.',
+    enterSendBackReason: 'Vui lòng nhập lý do trả lại.',
+    errCreateAm: 'Lỗi khi tạo biên bản nghiệm thu: ',
+    errSaveContract: 'Lỗi khi lưu đề nghị mua hàng: ',
+    fullFlowNeedsContractNo: 'Quy trình đầy đủ yêu cầu số Hợp đồng (Contract No).',
+    invalidDocNoFlow: 'Invalid docNo or flow.',
+    invalidGetRequest: 'Invalid GET request',
+    invalidGoodsData: 'Dữ liệu hàng hóa không hợp lệ: ',
+    invalidRole: 'Vai trò không hợp lệ.',
+    invalidRoleList: 'Vai trò không hợp lệ. Phải là "budget", "supplier", "contract" hoặc "purchasing".',
+    missingActorEmail: 'Thiếu email người thực hiện.',
+    missingAmNo: 'Thiếu amNo.',
+    missingAmendmentNo: 'Thiếu số phụ lục.',
+    missingApproverEmail: 'Thiếu email người phê duyệt.',
+    missingApproverEmail2: 'Thiếu email người duyệt.',
+    missingCompanyName: 'Thiếu tên công ty.',
+    missingContractNo: 'Thiếu số hợp đồng.',
+    missingPrNo: 'Thiếu số PR.',
+    missingPrNoFull: 'Thiếu số đề nghị mua hàng (PR No).',
+    missingPrNoShort: 'Thiếu prNo.',
+    missingPurchaseDocNo: 'Thiếu số phiếu mua hàng.',
+    missingReceiverEmail: 'Thiếu email người nhận hàng.',
+    missingReceiverName: 'Thiếu tên người nhận hàng.',
+    missingRejecterEmail: 'Thiếu email người từ chối.',
+    missingRequesterEmail: 'Thiếu email người đề nghị.',
+    missingRequesterName: 'Thiếu tên người đề nghị.',
+    missingRequiredDate: 'Thiếu ngày cần hàng.',
+    missingSupplierName: 'Thiếu tên nhà cung cấp.',
+    noRejectPermission: 'Bạn không có quyền từ chối đề nghị này.',
+    notAmConfirmer: 'Bạn không phải là người phụ trách xác nhận biên bản này.',
+    notAssignedContractReview: 'Bạn không được phân công thẩm định hợp đồng này.',
+    notOriginalRequester: 'Bạn không phải người đề nghị ban đầu của phiếu này.',
+    notYourTurn: 'Chưa đến lượt của bạn trong quy trình phê duyệt.',
+    prNotFullyApproved: 'PR chưa hoàn thành phê duyệt.',
+    prSimplifiedNoContract: 'PR này thuộc quy trình rút gọn — không cần hợp đồng.',
+    receiverSignatureRequired: 'Chữ ký người nhận hàng là bắt buộc.',
+    requestAlreadyApproved: 'Đề nghị này đã được duyệt rồi.',
+    requestAlreadyRejected: 'Đề nghị này đã bị từ chối.',
+    requestAlreadyRejected2: 'Đề nghị này đã bị từ chối rồi.',
+    requestAlreadyReturned: 'Đề nghị này đã được trả lại rồi, đang chờ người đề nghị cập nhật.',
+    requestApprovedCannotReject: 'Đề nghị đã được duyệt, không thể từ chối.',
+    requestCompleted: 'Đề nghị này đã hoàn thành.',
+    requestRejectedCannotApprove: 'Đề nghị này đã bị từ chối, không thể duyệt.',
+    resubmitOnlyWhenReturned: 'Chỉ có thể gửi lại khi phiếu ở trạng thái "Trả lại bổ sung".',
+    sendBackStepInvalid: 'Bước trả lại không hợp lệ.',
+    sendBackStepInvalidRole: 'Bước trả lại không hợp lệ với vai trò của bạn.',
+    sheetMasterVendorBankMissing: 'Sheet "Master Vendor_Bank" không tồn tại',
+    sheetMasterVendorMissing: 'Sheet "Master Vendor" không tồn tại',
+    sheetPrHistoryNotFound: 'Không tìm thấy sheet Purchase_Request_History.',
+    sheetSuppliersNotFound: 'Sheet "Nhà cung cấp" not found',
+    signatureRequiredApproval: 'Signature is required for approval',
+    supplierNameRequired: 'Supplier name is required',
   },
   en: {
     errParse: 'Failed to parse data: ',
@@ -61,7 +153,99 @@ var MSG_ = {
     amAlreadyUsed: 'These Acceptance Minutes have already been used in another payment request.',
     exceedsCeiling: 'Total payment exceeds the contract/PR value ({0} ₫).',
     prInvalidDirect: 'This PR is not eligible for direct payment.',
-    needAmOrPr: 'Please enter an Acceptance Minutes number (AM No) or a PR number (goods < 2M).'
+    needAmOrPr: 'Please enter an Acceptance Minutes number (AM No) or a PR number (goods < 2M).',
+    supplierExists: 'Supplier "{0}" already exists',
+    sheetMissing: 'The "{0}" sheet does not exist',
+    roleNotAssignedForRequest: 'The "{0}" role has not been assigned for this request.',
+    notAssignedApprover: 'You are not assigned as the "{0}" approver for this request.',
+    notAssignedRole: 'You are not assigned the "{0}" role for this request.',
+    prNotApprovedYet: 'Purchase request {0} has not completed approval (status: {1}).',
+    contractNotApproved: 'Contract {0} has not been approved (status: {1}).',
+    contractNotForPr: 'Contract {0} does not belong to PR {1}.',
+    amNoExists: 'Acceptance minutes number {0} already exists.',
+    amNotFoundPrefix: 'Acceptance minutes not found: ',
+    contractExistsPrefix: 'A contract already exists for this PR: ',
+    contractNotFoundPrefix: 'Contract not found: ',
+    errPrefix: 'Error: ',
+    errorPrefixEn: 'Error: ',
+    invalidActionPrefix: 'Invalid action: ',
+    invalidStagePrefix: 'Invalid approval stage: ',
+    prDocNotFoundPrefix: 'Purchase request document not found: ',
+    prIdNotFoundPrefix: 'PR not found: ',
+    prNotFoundPrefix: 'Request not found: ',
+    requestIdExistsPrefix: 'Request ID already exists: ',
+    requestNotFoundPrefix: 'Request not found: ',
+    validationErrorPrefix: 'Validation error: ',
+    alreadyApprovedByYou: 'You have already approved this request.',
+    amAlreadyConfirmed: 'These acceptance minutes have already been confirmed.',
+    amRejectedCannotApprove: 'These acceptance minutes were rejected and cannot be approved.',
+    amendmentNotFound: 'Amendment not found.',
+    amendmentNotPendingReview: 'This amendment is not awaiting review.',
+    amendmentOnlySignedContract: 'Amendments can only be created for signed contracts.',
+    amendmentPendingReview: 'An amendment is already awaiting review.',
+    approverSignatureRequired: 'The approver\'s signature is required.',
+    atLeastOneItem: 'Please enter at least one item or service.',
+    chooseAmConfirmer: 'Please select the acceptance confirming officer.',
+    chooseBudgetApprover: 'Please select a budget approver.',
+    chooseVendorApprover: 'Please select a vendor approver.',
+    contractNoExists: 'That contract number already exists.',
+    contractNotFound: 'Contract not found.',
+    contractNotPendingReview: 'This contract is not awaiting review.',
+    contractValuePositive: 'Contract value must be greater than 0.',
+    docPendingInfoCannotApprove: 'This document is awaiting more information from the requester and cannot be approved.',
+    docPendingInfoCannotReject: 'This document is awaiting more information from the requester and cannot be rejected.',
+    enterRejectReason: 'Please enter a rejection reason.',
+    enterSendBackReason: 'Please enter a reason for sending it back.',
+    errCreateAm: 'Failed to create the acceptance minutes: ',
+    errSaveContract: 'Failed to save the purchase request: ',
+    fullFlowNeedsContractNo: 'The full workflow requires a Contract No.',
+    invalidDocNoFlow: 'Invalid docNo or flow.',
+    invalidGetRequest: 'Invalid GET request',
+    invalidGoodsData: 'Invalid goods data: ',
+    invalidRole: 'Invalid role.',
+    invalidRoleList: 'Invalid role. Must be "budget", "supplier", "contract" or "purchasing".',
+    missingActorEmail: 'Missing actor email.',
+    missingAmNo: 'Missing AM number.',
+    missingAmendmentNo: 'Missing amendment number.',
+    missingApproverEmail: 'Missing approver email.',
+    missingApproverEmail2: 'Missing approver email.',
+    missingCompanyName: 'Missing company name.',
+    missingContractNo: 'Missing contract number.',
+    missingPrNo: 'Missing PR number.',
+    missingPrNoFull: 'Missing purchase request number (PR No).',
+    missingPrNoShort: 'Missing PR number.',
+    missingPurchaseDocNo: 'Missing purchase document number.',
+    missingReceiverEmail: 'Missing receiver email.',
+    missingReceiverName: 'Missing receiver name.',
+    missingRejecterEmail: 'Missing rejecter email.',
+    missingRequesterEmail: 'Missing requester email.',
+    missingRequesterName: 'Missing requester name.',
+    missingRequiredDate: 'Missing required-by date.',
+    missingSupplierName: 'Missing supplier name.',
+    noRejectPermission: 'You do not have permission to reject this request.',
+    notAmConfirmer: 'You are not the confirming officer for these acceptance minutes.',
+    notAssignedContractReview: 'You are not assigned to review this contract.',
+    notOriginalRequester: 'You are not the original requester of this document.',
+    notYourTurn: 'It is not your turn in the approval workflow.',
+    prNotFullyApproved: 'This PR has not completed approval.',
+    prSimplifiedNoContract: 'This PR uses the simplified flow — no contract is required.',
+    receiverSignatureRequired: 'The receiver\'s signature is required.',
+    requestAlreadyApproved: 'This request has already been approved.',
+    requestAlreadyRejected: 'This request has been rejected.',
+    requestAlreadyRejected2: 'This request has already been rejected.',
+    requestAlreadyReturned: 'This request has already been returned and is awaiting the requester\'s update.',
+    requestApprovedCannotReject: 'This request is already approved and cannot be rejected.',
+    requestCompleted: 'This request is already completed.',
+    requestRejectedCannotApprove: 'This request was rejected and cannot be approved.',
+    resubmitOnlyWhenReturned: 'You can only resubmit when the document status is "Returned for revision".',
+    sendBackStepInvalid: 'Invalid send-back step.',
+    sendBackStepInvalidRole: 'That send-back step is not valid for your role.',
+    sheetMasterVendorBankMissing: 'The "Master Vendor_Bank" sheet does not exist',
+    sheetMasterVendorMissing: 'The "Master Vendor" sheet does not exist',
+    sheetPrHistoryNotFound: 'Purchase_Request_History sheet not found.',
+    sheetSuppliersNotFound: 'The "Nhà cung cấp" sheet was not found',
+    signatureRequiredApproval: 'Signature is required for approval',
+    supplierNameRequired: 'Supplier name is required',
   }
 };
 
@@ -270,7 +454,7 @@ function doPost(e) {
       case 'getP2PHistory':
         return handleGetP2PHistory(data);
       default:
-        return createResponse(false, 'Invalid action: ' + action);
+        return createResponse(false, msg_('invalidActionPrefix') + action);
     }
     
   } catch (error) {
@@ -299,7 +483,7 @@ function doGet(e) {
       return handleGetVendorBanks(e.parameter);
     }
     
-    return createResponse(false, 'Invalid GET request');
+    return createResponse(false, msg_('invalidGetRequest'));
     
   } catch (error) {
     Logger.log('[Payment Request] Error in doGet: ' + error.message);
@@ -318,7 +502,7 @@ function handleSendPaymentRequest(data) {
     // Validate required fields
     const validation = validatePaymentRequest(data);
     if (!validation.valid) {
-      return createResponse(false, 'Validation error: ' + validation.errors.join(', '));
+      return createResponse(false, msg_('validationErrorPrefix') + validation.errors.join(', '));
     }
     
     // Get or create sheet
@@ -326,7 +510,7 @@ function handleSendPaymentRequest(data) {
     
     // Check for duplicate
     if (findRequestByIdInSheet(sheet, data.requestId)) {
-      return createResponse(false, 'Request ID already exists: ' + data.requestId);
+      return createResponse(false, msg_('requestIdExistsPrefix') + data.requestId);
     }
     
     // Store file attachments in Google Drive
@@ -517,7 +701,7 @@ function handleApprovePaymentRequest(data) {
     const rowIndex = findRequestByIdInSheet(sheet, data.requestId);
     
     if (rowIndex === -1) {
-      return createResponse(false, 'Request not found: ' + data.requestId);
+      return createResponse(false, msg_('requestNotFoundPrefix') + data.requestId);
     }
     
     const row = sheet.getRange(rowIndex, 1, 1, 36).getValues()[0];
@@ -563,7 +747,7 @@ function handleApprovePaymentRequest(data) {
         stageName = 'Final Approval';
         break;
       default:
-        return createResponse(false, 'Invalid approval stage: ' + data.stage);
+        return createResponse(false, msg_('invalidStagePrefix') + data.stage);
     }
     
     // Check current status
@@ -577,7 +761,7 @@ function handleApprovePaymentRequest(data) {
     
     // Validate signature
     if (!data.signature) {
-      return createResponse(false, 'Signature is required for approval');
+      return createResponse(false, msg_('signatureRequiredApproval'));
     }
     
     // Store signature
@@ -650,7 +834,7 @@ function handleRejectPaymentRequest(data) {
     const rowIndex = findRequestByIdInSheet(sheet, data.requestId);
     
     if (rowIndex === -1) {
-      return createResponse(false, 'Request not found: ' + data.requestId);
+      return createResponse(false, msg_('requestNotFoundPrefix') + data.requestId);
     }
     
     const row = sheet.getRange(rowIndex, 1, 1, 36).getValues()[0];
@@ -684,7 +868,7 @@ function handleRejectPaymentRequest(data) {
         stageName = 'Final Approval';
         break;
       default:
-        return createResponse(false, 'Invalid approval stage: ' + data.stage);
+        return createResponse(false, msg_('invalidStagePrefix') + data.stage);
     }
     
     // Check current status
@@ -845,7 +1029,7 @@ function handleGetPaymentRequestDetails(data) {
     const rowIndex = findRequestByIdInSheet(sheet, data.requestId);
     
     if (rowIndex === -1) {
-      return createResponse(false, 'Request not found: ' + data.requestId);
+      return createResponse(false, msg_('requestNotFoundPrefix') + data.requestId);
     }
     
     const row = sheet.getRange(rowIndex, 1, 1, 36).getValues()[0];
@@ -1323,7 +1507,7 @@ function handleGetSuppliers(data) {
 
     if (!sheet) {
       Logger.log('[Payment Request] Sheet "Master Vendor" not found');
-      return createResponse(false, 'Sheet "Master Vendor" không tồn tại');
+      return createResponse(false, msg_('sheetMasterVendorMissing'));
     }
 
     const rows = sheet.getDataRange().getValues();
@@ -1356,7 +1540,7 @@ function handleGetSuppliers(data) {
 
   } catch (error) {
     Logger.log('[Payment Request] Error getting suppliers: ' + error.message);
-    return createResponse(false, 'Error: ' + error.message);
+    return createResponse(false, msg_('errorPrefixEn') + error.message);
   }
 }
 
@@ -1372,7 +1556,7 @@ function handleGetVendorBanks(data) {
 
     if (!sheet) {
       Logger.log('[Payment Request] Sheet "Master Vendor_Bank" not found');
-      return createResponse(false, 'Sheet "Master Vendor_Bank" không tồn tại');
+      return createResponse(false, msg_('sheetMasterVendorBankMissing'));
     }
 
     const rows = sheet.getDataRange().getValues();
@@ -1405,7 +1589,7 @@ function handleGetVendorBanks(data) {
 
   } catch (error) {
     Logger.log('[Payment Request] Error getting vendor banks: ' + error.message);
-    return createResponse(false, 'Error: ' + error.message);
+    return createResponse(false, msg_('errorPrefixEn') + error.message);
   }
 }
 
@@ -1420,7 +1604,7 @@ function handleAddSupplier(data) {
     
     // Validate required field
     if (!name || name.trim() === '') {
-      return createResponse(false, 'Supplier name is required');
+      return createResponse(false, msg_('supplierNameRequired'));
     }
     
     const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
@@ -1428,7 +1612,7 @@ function handleAddSupplier(data) {
     
     if (!suppliersSheet) {
       Logger.log('[Payment Request] Sheet "Nhà cung cấp" not found');
-      return createResponse(false, 'Sheet "Nhà cung cấp" not found');
+      return createResponse(false, msg_('sheetSuppliersNotFound'));
     }
     
     // Check for duplicates in Column C
@@ -1441,7 +1625,7 @@ function handleAddSupplier(data) {
       
       if (isDuplicate) {
         Logger.log('[Payment Request] Supplier already exists: ' + name);
-        return createResponse(false, 'Supplier "' + name + '" already exists');
+        return createResponse(false, msg_('supplierExists', name));
       }
     }
     
@@ -1489,7 +1673,7 @@ function handleAddSupplier(data) {
     
   } catch (error) {
     Logger.log('[Payment Request] Error adding supplier: ' + error.message);
-    return createResponse(false, 'Error: ' + error.message);
+    return createResponse(false, msg_('errorPrefixEn') + error.message);
   }
 }
 
@@ -1507,7 +1691,7 @@ function handleGetEmployees(requestBody) {
     
     if (!sheet) {
       Logger.log('[Payment Request] ❌ Sheet "' + CONFIG.EMPLOYEES_SHEET_NAME + '" not found');
-      return createResponse(false, 'Sheet "' + CONFIG.EMPLOYEES_SHEET_NAME + '" không tồn tại');
+      return createResponse(false, msg_('sheetMissing', CONFIG.EMPLOYEES_SHEET_NAME));
     }
     
     const data = sheet.getDataRange().getValues();
@@ -1568,7 +1752,7 @@ function handleGetPurchaseOrderTypes(data) {
     
     if (!sheet) {
       Logger.log('[Payment Request] ❌ Sheet "' + CONFIG.PURCHASE_ORDER_SHEET_NAME + '" not found');
-      return createResponse(false, 'Sheet "' + CONFIG.PURCHASE_ORDER_SHEET_NAME + '" không tồn tại');
+      return createResponse(false, msg_('sheetMissing', CONFIG.PURCHASE_ORDER_SHEET_NAME));
     }
     
     const dataRange = sheet.getDataRange();
@@ -1823,23 +2007,23 @@ function handlePurchaseRequest(data) {
     var items        = (data.items         || '[]').toString();
     var grandTotal   = parseFloat(data.grandTotal) || 0;
 
-    if (!companyName)   return createResponse(false, 'Thiếu tên công ty.');
-    if (!requesterName) return createResponse(false, 'Thiếu tên người đề nghị.');
-    if (!requiredDate)  return createResponse(false, 'Thiếu ngày cần hàng.');
+    if (!companyName)   return createResponse(false, msg_('missingCompanyName'));
+    if (!requesterName) return createResponse(false, msg_('missingRequesterName'));
+    if (!requiredDate)  return createResponse(false, msg_('missingRequiredDate'));
     if (!(data.budgetApprover || '').toString().trim())
-      return createResponse(false, 'Vui lòng chọn người phê duyệt ngân sách.');
+      return createResponse(false, msg_('chooseBudgetApprover'));
     if (!(data.supplierApprover || '').toString().trim())
-      return createResponse(false, 'Vui lòng chọn người phê duyệt NCC.');
+      return createResponse(false, msg_('chooseVendorApprover'));
 
     // Parse items to validate JSON
     var parsedItems;
     try {
       parsedItems = JSON.parse(items);
     } catch (e) {
-      return createResponse(false, 'Dữ liệu hàng hóa không hợp lệ: ' + e.message);
+      return createResponse(false, msg_('invalidGoodsData') + e.message);
     }
     if (!Array.isArray(parsedItems) || parsedItems.length === 0) {
-      return createResponse(false, 'Vui lòng nhập ít nhất 1 hàng hóa / dịch vụ.');
+      return createResponse(false, msg_('atLeastOneItem'));
     }
 
     var purchaseType = (data.purchaseType || 'goods').toString().trim().toLowerCase();
@@ -2043,7 +2227,7 @@ function handlePurchaseRequest(data) {
   } catch (error) {
     Logger.log('[P2P] ❌ ERROR in handlePurchaseRequest: ' + error.toString());
     Logger.log('[P2P] Stack: ' + error.stack);
-    return createResponse(false, 'Lỗi khi lưu đề nghị mua hàng: ' + error.message);
+    return createResponse(false, msg_('errSaveContract') + error.message);
   }
 }
 
@@ -2373,46 +2557,46 @@ function handleApprovePurchaseRequest(data) {
     var approverRole  = (data.approverRole  || '').toString().trim(); // 'budget' | 'supplier' | 'contract' | 'purchasing'
     var note          = (data.note          || '').toString().trim();
 
-    if (!prNo)          return createResponse(false, 'Thiếu số phiếu mua hàng.');
-    if (!approverEmail) return createResponse(false, 'Thiếu email người duyệt.');
+    if (!prNo)          return createResponse(false, msg_('missingPurchaseDocNo'));
+    if (!approverEmail) return createResponse(false, msg_('missingApproverEmail2'));
 
     var validRoles = ['budget', 'supplier', 'contract', 'purchasing'];
     if (validRoles.indexOf(approverRole) === -1) {
-      return createResponse(false, 'Vai trò không hợp lệ. Phải là "budget", "supplier", "contract" hoặc "purchasing".');
+      return createResponse(false, msg_('invalidRoleList'));
     }
 
     var ss    = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
     var sheet = ss.getSheetByName(PR_SHEET_NAME);
-    if (!sheet) return createResponse(false, 'Không tìm thấy sheet Purchase_Request_History.');
+    if (!sheet) return createResponse(false, msg_('sheetPrHistoryNotFound'));
 
     var values   = sheet.getDataRange().getValues();
     var rowIndex = -1;
     for (var i = 1; i < values.length; i++) {
       if ((values[i][0] || '').toString().trim() === prNo) { rowIndex = i; break; }
     }
-    if (rowIndex === -1) return createResponse(false, 'Không tìm thấy đề nghị: ' + prNo);
+    if (rowIndex === -1) return createResponse(false, msg_('prNotFoundPrefix') + prNo);
 
     var row           = values[rowIndex];
     var currentStatus = (row[14] || '').toString();
 
     if (currentStatus === 'Đã từ chối' || currentStatus === 'Rejected') {
-      return createResponse(false, 'Đề nghị này đã bị từ chối, không thể duyệt.');
+      return createResponse(false, msg_('requestRejectedCannotApprove'));
     }
     if (currentStatus === 'Hoàn thành' || currentStatus === 'Approved') {
-      return createResponse(false, 'Đề nghị này đã được duyệt rồi.');
+      return createResponse(false, msg_('requestAlreadyApproved'));
     }
     if (currentStatus === 'Trả lại bổ sung') {
-      return createResponse(false, 'Phiếu đang chờ người đề nghị bổ sung thông tin, không thể duyệt.');
+      return createResponse(false, msg_('docPendingInfoCannotApprove'));
     }
 
     // Verify email matches the assigned column for this role
     var approverColMap = { budget: 10, supplier: 11, contract: 17, purchasing: 18 };
     var assignedEmail = (row[approverColMap[approverRole]] || '').toString().toLowerCase().trim();
     if (!assignedEmail) {
-      return createResponse(false, 'Vai trò "' + approverRole + '" chưa được phân công cho đề nghị này.');
+      return createResponse(false, msg_('roleNotAssignedForRequest', approverRole));
     }
     if (approverEmail !== assignedEmail) {
-      return createResponse(false, 'Bạn không được phân công là người duyệt "' + approverRole + '" cho đề nghị này.');
+      return createResponse(false, msg_('notAssignedApprover', approverRole));
     }
 
     var metadata;
@@ -2435,7 +2619,7 @@ function handleApprovePurchaseRequest(data) {
 
     // Check role is not already approved
     if (metadata[approverRole + 'Status'] === 'Approved') {
-      return createResponse(false, 'Bạn đã duyệt đề nghị này rồi.');
+      return createResponse(false, msg_('alreadyApprovedByYou'));
     }
 
     var now = new Date().toISOString();
@@ -2533,19 +2717,19 @@ function handleRejectPurchaseRequest(data) {
     var approverEmail = (data.approverEmail || '').toString().trim().toLowerCase();
     var note          = (data.note          || '').toString().trim();
 
-    if (!prNo)          return createResponse(false, 'Thiếu số phiếu mua hàng.');
-    if (!approverEmail) return createResponse(false, 'Thiếu email người từ chối.');
+    if (!prNo)          return createResponse(false, msg_('missingPurchaseDocNo'));
+    if (!approverEmail) return createResponse(false, msg_('missingRejecterEmail'));
 
     var ss    = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
     var sheet = ss.getSheetByName(PR_SHEET_NAME);
-    if (!sheet) return createResponse(false, 'Không tìm thấy sheet Purchase_Request_History.');
+    if (!sheet) return createResponse(false, msg_('sheetPrHistoryNotFound'));
 
     var values   = sheet.getDataRange().getValues();
     var rowIndex = -1;
     for (var i = 1; i < values.length; i++) {
       if ((values[i][0] || '').toString().trim() === prNo) { rowIndex = i; break; }
     }
-    if (rowIndex === -1) return createResponse(false, 'Không tìm thấy đề nghị: ' + prNo);
+    if (rowIndex === -1) return createResponse(false, msg_('prNotFoundPrefix') + prNo);
 
     var row           = values[rowIndex];
     var currentStatus = (row[14] || '').toString();
@@ -2565,22 +2749,22 @@ function handleRejectPurchaseRequest(data) {
     if (stateNow.purchasingEmail) emailRoleMap[stateNow.purchasingEmail] = 'purchasing';
 
     if (!emailRoleMap[approverEmail]) {
-      return createResponse(false, 'Bạn không có quyền từ chối đề nghị này.');
+      return createResponse(false, msg_('noRejectPermission'));
     }
 
     var rejectRole = emailRoleMap[approverEmail];
     var rejectRoleStage = (rejectRole === 'budget' || rejectRole === 'supplier') ? 'parallel' : rejectRole;
     if (rejectRoleStage !== activeStage) {
-      return createResponse(false, 'Chưa đến lượt của bạn trong quy trình phê duyệt.');
+      return createResponse(false, msg_('notYourTurn'));
     }
     if (currentStatus === 'Đã từ chối' || currentStatus === 'Rejected') {
-      return createResponse(false, 'Đề nghị này đã bị từ chối rồi.');
+      return createResponse(false, msg_('requestAlreadyRejected2'));
     }
     if (currentStatus === 'Hoàn thành' || currentStatus === 'Approved') {
-      return createResponse(false, 'Đề nghị đã được duyệt, không thể từ chối.');
+      return createResponse(false, msg_('requestApprovedCannotReject'));
     }
     if (currentStatus === 'Trả lại bổ sung') {
-      return createResponse(false, 'Phiếu đang chờ người đề nghị bổ sung thông tin, không thể từ chối.');
+      return createResponse(false, msg_('docPendingInfoCannotReject'));
     }
 
     metadata0.rejectedAt    = new Date().toISOString();
@@ -2638,41 +2822,41 @@ function handleSendBackPurchaseRequest(data) {
     var targetStep    = parseInt(data.targetStep, 10);
     var note          = (data.sentBackNote  || '').toString().trim();
 
-    if (!prNo)          return createResponse(false, 'Thiếu số phiếu mua hàng.');
-    if (!approverEmail) return createResponse(false, 'Thiếu email người thực hiện.');
-    if (!note)          return createResponse(false, 'Vui lòng nhập lý do trả lại.');
+    if (!prNo)          return createResponse(false, msg_('missingPurchaseDocNo'));
+    if (!approverEmail) return createResponse(false, msg_('missingActorEmail'));
+    if (!note)          return createResponse(false, msg_('enterSendBackReason'));
     if (isNaN(targetStep) || targetStep < 1 || targetStep > 3) {
-      return createResponse(false, 'Bước trả lại không hợp lệ.');
+      return createResponse(false, msg_('sendBackStepInvalid'));
     }
 
     var validRoles = ['budget', 'supplier', 'contract', 'purchasing'];
     if (validRoles.indexOf(approverRole) === -1) {
-      return createResponse(false, 'Vai trò không hợp lệ.');
+      return createResponse(false, msg_('invalidRole'));
     }
 
     var ss    = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
     var sheet = ss.getSheetByName(PR_SHEET_NAME);
-    if (!sheet) return createResponse(false, 'Không tìm thấy sheet Purchase_Request_History.');
+    if (!sheet) return createResponse(false, msg_('sheetPrHistoryNotFound'));
 
     var values   = sheet.getDataRange().getValues();
     var rowIndex = -1;
     for (var i = 1; i < values.length; i++) {
       if ((values[i][0] || '').toString().trim() === prNo) { rowIndex = i; break; }
     }
-    if (rowIndex === -1) return createResponse(false, 'Không tìm thấy đề nghị: ' + prNo);
+    if (rowIndex === -1) return createResponse(false, msg_('prNotFoundPrefix') + prNo);
 
     var row           = values[rowIndex];
     var currentStatus = (row[14] || '').toString();
 
     // Block on terminal/already-returned statuses
     if (currentStatus === 'Đã từ chối' || currentStatus === 'Rejected') {
-      return createResponse(false, 'Đề nghị này đã bị từ chối.');
+      return createResponse(false, msg_('requestAlreadyRejected'));
     }
     if (currentStatus === 'Hoàn thành' || currentStatus === 'Approved') {
-      return createResponse(false, 'Đề nghị này đã hoàn thành.');
+      return createResponse(false, msg_('requestCompleted'));
     }
     if (currentStatus === 'Trả lại bổ sung') {
-      return createResponse(false, 'Đề nghị này đã được trả lại rồi, đang chờ người đề nghị cập nhật.');
+      return createResponse(false, msg_('requestAlreadyReturned'));
     }
 
     var metadata;
@@ -2683,21 +2867,21 @@ function handleSendBackPurchaseRequest(data) {
     var activeStage = stateNow.stage;
     var roleStage   = (approverRole === 'budget' || approverRole === 'supplier') ? 'parallel' : approverRole;
     if (roleStage !== activeStage) {
-      return createResponse(false, 'Chưa đến lượt của bạn trong quy trình phê duyệt.');
+      return createResponse(false, msg_('notYourTurn'));
     }
 
     // Validate sender email matches the assigned column for their role
     var approverColMap = { budget: 10, supplier: 11, contract: 17, purchasing: 18 };
     var assignedEmail  = (row[approverColMap[approverRole]] || '').toString().toLowerCase().trim();
     if (!assignedEmail || approverEmail !== assignedEmail) {
-      return createResponse(false, 'Bạn không được phân công vai trò "' + approverRole + '" cho đề nghị này.');
+      return createResponse(false, msg_('notAssignedRole', approverRole));
     }
 
     // Validate targetStep is reachable from this role
     // budget/supplier → only step 1; contract → 1 or 2; purchasing → 1, 2, or 3
     var maxTarget = { budget: 1, supplier: 1, contract: 2, purchasing: 3 };
     if (targetStep > maxTarget[approverRole]) {
-      return createResponse(false, 'Bước trả lại không hợp lệ với vai trò của bạn.');
+      return createResponse(false, msg_('sendBackStepInvalidRole'));
     }
 
     var newStatus;
@@ -2785,8 +2969,8 @@ function handleResubmitPurchaseRequest(data) {
     var prNo          = (data.prNo          || '').toString().trim();
     var requesterEmail = (data.requesterEmail || '').toString().trim().toLowerCase();
 
-    if (!prNo)           return createResponse(false, 'Thiếu số phiếu mua hàng.');
-    if (!requesterEmail) return createResponse(false, 'Thiếu email người đề nghị.');
+    if (!prNo)           return createResponse(false, msg_('missingPurchaseDocNo'));
+    if (!requesterEmail) return createResponse(false, msg_('missingRequesterEmail'));
 
     var companyName   = (data.companyName   || '').toString().trim();
     var requesterName = (data.requesterName || '').toString().trim();
@@ -2794,20 +2978,20 @@ function handleResubmitPurchaseRequest(data) {
     var items         = (data.items         || '[]').toString();
     var grandTotal    = parseFloat(data.grandTotal) || 0;
 
-    if (!companyName)   return createResponse(false, 'Thiếu tên công ty.');
-    if (!requesterName) return createResponse(false, 'Thiếu tên người đề nghị.');
-    if (!requiredDate)  return createResponse(false, 'Thiếu ngày cần hàng.');
+    if (!companyName)   return createResponse(false, msg_('missingCompanyName'));
+    if (!requesterName) return createResponse(false, msg_('missingRequesterName'));
+    if (!requiredDate)  return createResponse(false, msg_('missingRequiredDate'));
     if (!(data.budgetApprover || '').toString().trim())
-      return createResponse(false, 'Vui lòng chọn người phê duyệt ngân sách.');
+      return createResponse(false, msg_('chooseBudgetApprover'));
     if (!(data.supplierApprover || '').toString().trim())
-      return createResponse(false, 'Vui lòng chọn người phê duyệt NCC.');
+      return createResponse(false, msg_('chooseVendorApprover'));
 
     var parsedItems;
     try { parsedItems = JSON.parse(items); } catch (e) {
-      return createResponse(false, 'Dữ liệu hàng hóa không hợp lệ: ' + e.message);
+      return createResponse(false, msg_('invalidGoodsData') + e.message);
     }
     if (!Array.isArray(parsedItems) || parsedItems.length === 0) {
-      return createResponse(false, 'Vui lòng nhập ít nhất 1 hàng hóa / dịch vụ.');
+      return createResponse(false, msg_('atLeastOneItem'));
     }
 
     var purchaseType = (data.purchaseType || 'goods').toString().trim().toLowerCase();
@@ -2820,20 +3004,20 @@ function handleResubmitPurchaseRequest(data) {
 
     var ss    = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
     var sheet = ss.getSheetByName(PR_SHEET_NAME);
-    if (!sheet) return createResponse(false, 'Không tìm thấy sheet Purchase_Request_History.');
+    if (!sheet) return createResponse(false, msg_('sheetPrHistoryNotFound'));
 
     var values   = sheet.getDataRange().getValues();
     var rowIndex = -1;
     for (var i = 1; i < values.length; i++) {
       if ((values[i][0] || '').toString().trim() === prNo) { rowIndex = i; break; }
     }
-    if (rowIndex === -1) return createResponse(false, 'Không tìm thấy đề nghị: ' + prNo);
+    if (rowIndex === -1) return createResponse(false, msg_('prNotFoundPrefix') + prNo);
 
     var row           = values[rowIndex];
     var currentStatus = (row[14] || '').toString();
 
     if (currentStatus !== 'Trả lại bổ sung') {
-      return createResponse(false, 'Chỉ có thể gửi lại khi phiếu ở trạng thái "Trả lại bổ sung".');
+      return createResponse(false, msg_('resubmitOnlyWhenReturned'));
     }
 
     var existingMetadata;
@@ -2842,7 +3026,7 @@ function handleResubmitPurchaseRequest(data) {
     // Caller must be the original requester
     var storedRequesterEmail = (existingMetadata.requesterEmail || '').toString().toLowerCase().trim();
     if (storedRequesterEmail && requesterEmail !== storedRequesterEmail) {
-      return createResponse(false, 'Bạn không phải người đề nghị ban đầu của phiếu này.');
+      return createResponse(false, msg_('notOriginalRequester'));
     }
 
     // Upload any new attachments to Drive
@@ -3166,13 +3350,13 @@ function handleCreateAcceptanceMinutes(data) {
     var deptHeadEmail= (data.deptHeadEmail || '').toString().trim().toLowerCase();
     var itemsRaw     = (data.items         || '[]').toString();
 
-    if (!companyName)   return createResponse(false, 'Thiếu tên công ty.');
-    if (!prNo)          return createResponse(false, 'Thiếu số đề nghị mua hàng (PR No).');
-    if (!receiverName)  return createResponse(false, 'Thiếu tên người nhận hàng.');
-    if (!receiverEmail) return createResponse(false, 'Thiếu email người nhận hàng.');
-    if (!deptHeadEmail) return createResponse(false, 'Vui lòng chọn người phụ trách xác nhận nghiệm thu.');
+    if (!companyName)   return createResponse(false, msg_('missingCompanyName'));
+    if (!prNo)          return createResponse(false, msg_('missingPrNoFull'));
+    if (!receiverName)  return createResponse(false, msg_('missingReceiverName'));
+    if (!receiverEmail) return createResponse(false, msg_('missingReceiverEmail'));
+    if (!deptHeadEmail) return createResponse(false, msg_('chooseAmConfirmer'));
     if (!(data.receiverSignature || '').toString().trim())
-      return createResponse(false, 'Chữ ký người nhận hàng là bắt buộc.');
+      return createResponse(false, msg_('receiverSignatureRequired'));
 
     var contractNo = (data.contractNo || '').toString().trim();
     var prInfoEarly = null;
@@ -3180,10 +3364,10 @@ function handleCreateAcceptanceMinutes(data) {
     // Validate items
     var parsedItems;
     try { parsedItems = JSON.parse(itemsRaw); } catch (e) {
-      return createResponse(false, 'Dữ liệu hàng hóa không hợp lệ: ' + e.message);
+      return createResponse(false, msg_('invalidGoodsData') + e.message);
     }
     if (!Array.isArray(parsedItems) || parsedItems.length === 0)
-      return createResponse(false, 'Vui lòng nhập ít nhất 1 hàng hóa / dịch vụ.');
+      return createResponse(false, msg_('atLeastOneItem'));
 
     // Validate PR exists and is Hoàn thành
     var ss      = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
@@ -3196,27 +3380,27 @@ function handleCreateAcceptanceMinutes(data) {
           prFound = true;
           var prStatus = (prData[pi][14] || '').toString().trim();
           if (prStatus !== 'Hoàn thành') {
-            return createResponse(false, 'Phiếu đề nghị ' + prNo + ' chưa hoàn thành phê duyệt (trạng thái: ' + prStatus + ').');
+            return createResponse(false, msg_('prNotApprovedYet', prNo, prStatus));
           }
           break;
         }
       }
-      if (!prFound) return createResponse(false, 'Không tìm thấy phiếu đề nghị mua hàng: ' + prNo);
+      if (!prFound) return createResponse(false, msg_('prDocNotFoundPrefix') + prNo);
     }
 
     prInfoEarly = findPRByNo_(prNo);
     var p2pBranchAM = prInfoEarly ? (prInfoEarly.metadata.p2pBranch || 'full') : 'full';
     if (p2pBranchAM === 'full') {
       if (!contractNo) {
-        return createResponse(false, 'Quy trình đầy đủ yêu cầu số Hợp đồng (Contract No).');
+        return createResponse(false, msg_('fullFlowNeedsContractNo'));
       }
       var ctCheck = getContractByNo_(contractNo);
-      if (!ctCheck) return createResponse(false, 'Không tìm thấy hợp đồng: ' + contractNo);
+      if (!ctCheck) return createResponse(false, msg_('contractNotFoundPrefix') + contractNo);
       if (ctCheck.status !== 'Đã ký' && ctCheck.status !== 'Có phụ lục') {
-        return createResponse(false, 'Hợp đồng ' + contractNo + ' chưa được phê duyệt (trạng thái: ' + ctCheck.status + ').');
+        return createResponse(false, msg_('contractNotApproved', contractNo, ctCheck.status));
       }
       if ((ctCheck.prNo || '') !== prNo) {
-        return createResponse(false, 'Hợp đồng ' + contractNo + ' không thuộc PR ' + prNo + '.');
+        return createResponse(false, msg_('contractNotForPr', contractNo, prNo));
       }
     }
 
@@ -3228,7 +3412,7 @@ function handleCreateAcceptanceMinutes(data) {
     }
 
     // Check duplicate
-    if (getAMByNo_(amNo)) return createResponse(false, 'Số biên bản ' + amNo + ' đã tồn tại.');
+    if (getAMByNo_(amNo)) return createResponse(false, msg_('amNoExists', amNo));
 
     var submittedAt = new Date().toISOString();
 
@@ -3298,7 +3482,7 @@ function handleCreateAcceptanceMinutes(data) {
     return createResponse(true, 'Biên bản nghiệm thu đã được tạo thành công.', { amNo: amNo });
   } catch (e) {
     Logger.log('[AM] handleCreateAcceptanceMinutes error: ' + e.message);
-    return createResponse(false, 'Lỗi khi tạo biên bản nghiệm thu: ' + e.message);
+    return createResponse(false, msg_('errCreateAm') + e.message);
   }
 }
 
@@ -3337,7 +3521,7 @@ function handleGetAcceptanceMinutesHistory(data) {
     return createResponse(true, 'OK', { acceptanceMinutes: results });
   } catch (e) {
     Logger.log('[AM] handleGetAcceptanceMinutesHistory error: ' + e.message);
-    return createResponse(false, 'Lỗi: ' + e.message);
+    return createResponse(false, msg_('errPrefix') + e.message);
   }
 }
 
@@ -3345,9 +3529,9 @@ function handleGetAcceptanceMinutesHistory(data) {
 function handleGetAcceptanceMinutesDetail(data) {
   try {
     var amNo = (data.amNo || '').toString().trim();
-    if (!amNo) return createResponse(false, 'Thiếu amNo.');
+    if (!amNo) return createResponse(false, msg_('missingAmNo'));
     var rec = getAMByNo_(amNo);
-    if (!rec) return createResponse(false, 'Không tìm thấy biên bản: ' + amNo);
+    if (!rec) return createResponse(false, msg_('amNotFoundPrefix') + amNo);
     var r = rec.row;
     var meta = rec.metadata;
     return createResponse(true, 'OK', {
@@ -3368,7 +3552,7 @@ function handleGetAcceptanceMinutesDetail(data) {
     });
   } catch (e) {
     Logger.log('[AM] handleGetAcceptanceMinutesDetail error: ' + e.message);
-    return createResponse(false, 'Lỗi: ' + e.message);
+    return createResponse(false, msg_('errPrefix') + e.message);
   }
 }
 
@@ -3376,7 +3560,7 @@ function handleGetAcceptanceMinutesDetail(data) {
 function handleGetAcceptanceMinutesByPR(data) {
   try {
     var prNo  = (data.prNo || '').toString().trim();
-    if (!prNo) return createResponse(false, 'Thiếu prNo.');
+    if (!prNo) return createResponse(false, msg_('missingPrNoShort'));
     var sheet = getOrCreateAMSheet_();
     var rows  = sheet.getDataRange().getValues();
     var results = [];
@@ -3399,7 +3583,7 @@ function handleGetAcceptanceMinutesByPR(data) {
     return createResponse(true, 'OK', { acceptanceMinutes: results });
   } catch (e) {
     Logger.log('[AM] handleGetAcceptanceMinutesByPR error: ' + e.message);
-    return createResponse(false, 'Lỗi: ' + e.message);
+    return createResponse(false, msg_('errPrefix') + e.message);
   }
 }
 
@@ -3411,20 +3595,20 @@ function handleApproveAcceptanceMinutes(data) {
     var approverSig   = (data.approverSignature || '').toString().trim();
     var note          = (data.note          || '').toString().trim();
 
-    if (!amNo)          return createResponse(false, 'Thiếu amNo.');
-    if (!approverEmail) return createResponse(false, 'Thiếu email người phê duyệt.');
-    if (!approverSig)   return createResponse(false, 'Chữ ký người phê duyệt là bắt buộc.');
+    if (!amNo)          return createResponse(false, msg_('missingAmNo'));
+    if (!approverEmail) return createResponse(false, msg_('missingApproverEmail'));
+    if (!approverSig)   return createResponse(false, msg_('approverSignatureRequired'));
 
     var rec = getAMByNo_(amNo);
-    if (!rec) return createResponse(false, 'Không tìm thấy biên bản: ' + amNo);
+    if (!rec) return createResponse(false, msg_('amNotFoundPrefix') + amNo);
 
     var deptHead = (rec.row[AM_COL.DEPT_HEAD_EMAIL] || '').toString().trim().toLowerCase();
     if (approverEmail !== deptHead)
-      return createResponse(false, 'Bạn không phải là người phụ trách xác nhận biên bản này.');
+      return createResponse(false, msg_('notAmConfirmer'));
     if (rec.status === 'Đã nghiệm thu')
-      return createResponse(false, 'Biên bản này đã được xác nhận rồi.');
+      return createResponse(false, msg_('amAlreadyConfirmed'));
     if (rec.status === 'Từ chối')
-      return createResponse(false, 'Biên bản đã bị từ chối. Không thể phê duyệt.');
+      return createResponse(false, msg_('amRejectedCannotApprove'));
 
     // Upload signature
     var sigUrl = uploadAMFile_(approverSig, 'depthead_sig.jpg', 'image/jpeg', amNo);
@@ -3467,7 +3651,7 @@ function handleApproveAcceptanceMinutes(data) {
     return createResponse(true, 'Biên bản ' + amNo + ' đã được xác nhận.', { amNo: amNo, status: 'Đã nghiệm thu' });
   } catch (e) {
     Logger.log('[AM] handleApproveAcceptanceMinutes error: ' + e.message);
-    return createResponse(false, 'Lỗi: ' + e.message);
+    return createResponse(false, msg_('errPrefix') + e.message);
   }
 }
 
@@ -3478,18 +3662,18 @@ function handleRejectAcceptanceMinutes(data) {
     var approverEmail = (data.approverEmail || '').toString().trim().toLowerCase();
     var note          = (data.note          || '').toString().trim();
 
-    if (!amNo)          return createResponse(false, 'Thiếu amNo.');
-    if (!approverEmail) return createResponse(false, 'Thiếu email người phê duyệt.');
-    if (!note)          return createResponse(false, 'Vui lòng nhập lý do từ chối.');
+    if (!amNo)          return createResponse(false, msg_('missingAmNo'));
+    if (!approverEmail) return createResponse(false, msg_('missingApproverEmail'));
+    if (!note)          return createResponse(false, msg_('enterRejectReason'));
 
     var rec = getAMByNo_(amNo);
-    if (!rec) return createResponse(false, 'Không tìm thấy biên bản: ' + amNo);
+    if (!rec) return createResponse(false, msg_('amNotFoundPrefix') + amNo);
 
     var deptHead = (rec.row[AM_COL.DEPT_HEAD_EMAIL] || '').toString().trim().toLowerCase();
     if (approverEmail !== deptHead)
-      return createResponse(false, 'Bạn không phải là người phụ trách xác nhận biên bản này.');
+      return createResponse(false, msg_('notAmConfirmer'));
     if (rec.status === 'Đã nghiệm thu')
-      return createResponse(false, 'Biên bản này đã được xác nhận rồi.');
+      return createResponse(false, msg_('amAlreadyConfirmed'));
 
     var meta = rec.metadata;
     meta.deptHeadStatus = 'Rejected';
@@ -3526,7 +3710,7 @@ function handleRejectAcceptanceMinutes(data) {
     return createResponse(true, 'Biên bản ' + amNo + ' đã bị từ chối.', { amNo: amNo, status: 'Từ chối' });
   } catch (e) {
     Logger.log('[AM] handleRejectAcceptanceMinutes error: ' + e.message);
-    return createResponse(false, 'Lỗi: ' + e.message);
+    return createResponse(false, msg_('errPrefix') + e.message);
   }
 }
 
@@ -3725,7 +3909,7 @@ function _validatePRForDirectPayment_(prNo) {
 
 function handleValidatePRForDirectPayment(data) {
   var prNo = (data.prNo || '').toString().trim();
-  if (!prNo) return createResponse(false, 'Thiếu số PR.');
+  if (!prNo) return createResponse(false, msg_('missingPrNo'));
   var result = _validatePRForDirectPayment_(prNo);
   if (!result.ok) return createResponse(false, result.message);
   return createResponse(true, 'OK', result.data);
@@ -3734,9 +3918,9 @@ function handleValidatePRForDirectPayment(data) {
 function handleGetPaymentProgressByPR(data) {
   try {
     var prNo = (data.prNo || '').toString().trim();
-    if (!prNo) return createResponse(false, 'Thiếu số PR.');
+    if (!prNo) return createResponse(false, msg_('missingPrNo'));
     var prInfo = findPRByNo_(prNo);
-    if (!prInfo) return createResponse(false, 'Không tìm thấy PR: ' + prNo);
+    if (!prInfo) return createResponse(false, msg_('prIdNotFoundPrefix') + prNo);
 
     var ceiling = parseFloat(prInfo.row[13]) || 0;
     var contracts = getContractsByPR_(prNo);
@@ -3761,7 +3945,7 @@ function handleGetPaymentProgressByPR(data) {
       remaining: Math.max(0, ceiling - paidTotal)
     });
   } catch (e) {
-    return createResponse(false, 'Lỗi: ' + e.message);
+    return createResponse(false, msg_('errPrefix') + e.message);
   }
 }
 
@@ -3841,7 +4025,7 @@ function handleGetP2PHistory(data) {
       CT:  { sheetName: CT_SHEET_NAME,       baseWidth: 16 }
     };
     var cfg = cfgMap[flow];
-    if (!cfg || !docNo) return createResponse(false, 'Invalid docNo or flow.');
+    if (!cfg || !docNo) return createResponse(false, msg_('invalidDocNoFlow'));
     var ss    = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
     var sheet = ss.getSheetByName(cfg.sheetName);
     if (!sheet || sheet.getLastRow() <= 1) return createResponse(true, 'OK', { history: [] });
@@ -3869,7 +4053,7 @@ function handleGetP2PHistory(data) {
     return createResponse(true, 'OK', { history: history });
   } catch (e) {
     Logger.log('[P2P] handleGetP2PHistory error: ' + e.message);
-    return createResponse(false, 'Lỗi: ' + e.message);
+    return createResponse(false, msg_('errPrefix') + e.message);
   }
 }
 
@@ -4029,28 +4213,28 @@ function handleCreateContract(data) {
     var prNo = (data.prNo || '').toString().trim();
     var vendorName = (data.vendorName || '').toString().trim();
     var contractValue = parseFloat(data.contractValue) || 0;
-    if (!prNo) return createResponse(false, 'Thiếu số PR.');
-    if (!vendorName) return createResponse(false, 'Thiếu tên nhà cung cấp.');
-    if (contractValue <= 0) return createResponse(false, 'Giá trị hợp đồng phải lớn hơn 0.');
+    if (!prNo) return createResponse(false, msg_('missingPrNo'));
+    if (!vendorName) return createResponse(false, msg_('missingSupplierName'));
+    if (contractValue <= 0) return createResponse(false, msg_('contractValuePositive'));
 
     var prInfo = findPRByNo_(prNo);
-    if (!prInfo) return createResponse(false, 'Không tìm thấy PR: ' + prNo);
+    if (!prInfo) return createResponse(false, msg_('prIdNotFoundPrefix') + prNo);
     if ((prInfo.row[14] || '').toString().trim() !== 'Hoàn thành') {
-      return createResponse(false, 'PR chưa hoàn thành phê duyệt.');
+      return createResponse(false, msg_('prNotFullyApproved'));
     }
     if ((prInfo.metadata.p2pBranch || 'full') !== 'full') {
-      return createResponse(false, 'PR này thuộc quy trình rút gọn — không cần hợp đồng.');
+      return createResponse(false, msg_('prSimplifiedNoContract'));
     }
 
     var existing = getContractsByPR_(prNo).filter(function(c) {
       return c.status === 'Chờ thẩm định' || c.status === 'Đã ký' || c.status === 'Có phụ lục';
     });
     if (existing.length > 0) {
-      return createResponse(false, 'Đã tồn tại hợp đồng cho PR này: ' + existing[0].contractNo);
+      return createResponse(false, msg_('contractExistsPrefix') + existing[0].contractNo);
     }
 
     var contractNo = (data.contractNo || '').toString().trim() || generateContractNo_();
-    if (getContractByNo_(contractNo)) return createResponse(false, 'Số hợp đồng đã tồn tại.');
+    if (getContractByNo_(contractNo)) return createResponse(false, msg_('contractNoExists'));
 
     var prGrandTotal = parseFloat(prInfo.row[13]) || 0;
     var metadata = {
@@ -4097,7 +4281,7 @@ function handleCreateContract(data) {
 
     return createResponse(true, 'Hợp đồng đã được tạo.', { contractNo: contractNo });
   } catch (e) {
-    return createResponse(false, 'Lỗi: ' + e.message);
+    return createResponse(false, msg_('errPrefix') + e.message);
   }
 }
 
@@ -4105,8 +4289,8 @@ function handleApproveContract(data) {
   try {
     var contractNo = (data.contractNo || '').toString().trim();
     var approverEmail = (data.approverEmail || '').toString().trim().toLowerCase();
-    if (!contractNo) return createResponse(false, 'Thiếu số hợp đồng.');
-    if (!approverEmail) return createResponse(false, 'Thiếu email người duyệt.');
+    if (!contractNo) return createResponse(false, msg_('missingContractNo'));
+    if (!approverEmail) return createResponse(false, msg_('missingApproverEmail2'));
 
     var sheet = getOrCreateContractSheet_();
     var rows = sheet.getDataRange().getValues();
@@ -4114,19 +4298,19 @@ function handleApproveContract(data) {
     for (var i = 1; i < rows.length; i++) {
       if ((rows[i][CT_COL.CONTRACT_NO] || '').toString().trim() === contractNo) { rowIndex = i; break; }
     }
-    if (rowIndex === -1) return createResponse(false, 'Không tìm thấy hợp đồng.');
+    if (rowIndex === -1) return createResponse(false, msg_('contractNotFound'));
 
     var row = rows[rowIndex];
     var status = (row[CT_COL.STATUS] || '').toString();
     if (status !== 'Chờ thẩm định') {
-      return createResponse(false, 'Hợp đồng không ở trạng thái chờ thẩm định.');
+      return createResponse(false, msg_('contractNotPendingReview'));
     }
 
     var prNo = (row[CT_COL.PR_NO] || '').toString().trim();
     var prInfo = findPRByNo_(prNo);
     var assigned = prInfo ? (prInfo.row[17] || '').toString().trim().toLowerCase() : '';
     if (assigned && approverEmail !== assigned) {
-      return createResponse(false, 'Bạn không được phân công thẩm định hợp đồng này.');
+      return createResponse(false, msg_('notAssignedContractReview'));
     }
 
     var now = new Date().toISOString();
@@ -4152,7 +4336,7 @@ function handleApproveContract(data) {
 
     return createResponse(true, 'Hợp đồng đã được phê duyệt.', { contractNo: contractNo, status: 'Đã ký' });
   } catch (e) {
-    return createResponse(false, 'Lỗi: ' + e.message);
+    return createResponse(false, msg_('errPrefix') + e.message);
   }
 }
 
@@ -4160,7 +4344,7 @@ function handleRejectContract(data) {
   try {
     var contractNo = (data.contractNo || '').toString().trim();
     var approverEmail = (data.approverEmail || '').toString().trim().toLowerCase();
-    if (!contractNo) return createResponse(false, 'Thiếu số hợp đồng.');
+    if (!contractNo) return createResponse(false, msg_('missingContractNo'));
 
     var sheet = getOrCreateContractSheet_();
     var rows = sheet.getDataRange().getValues();
@@ -4168,7 +4352,7 @@ function handleRejectContract(data) {
     for (var i = 1; i < rows.length; i++) {
       if ((rows[i][CT_COL.CONTRACT_NO] || '').toString().trim() === contractNo) { rowIndex = i; break; }
     }
-    if (rowIndex === -1) return createResponse(false, 'Không tìm thấy hợp đồng.');
+    if (rowIndex === -1) return createResponse(false, msg_('contractNotFound'));
 
     var prevStatus = (rows[rowIndex][CT_COL.STATUS] || '').toString();
     sheet.getRange(rowIndex + 1, CT_COL.STATUS + 1).setValue('Từ chối');
@@ -4188,16 +4372,16 @@ function handleRejectContract(data) {
 
     return createResponse(true, 'Đã từ chối hợp đồng.', { contractNo: contractNo });
   } catch (e) {
-    return createResponse(false, 'Lỗi: ' + e.message);
+    return createResponse(false, msg_('errPrefix') + e.message);
   }
 }
 
 function handleGetContractDetails(data) {
   try {
     var contractNo = (data.contractNo || '').toString().trim();
-    if (!contractNo) return createResponse(false, 'Thiếu số hợp đồng.');
+    if (!contractNo) return createResponse(false, msg_('missingContractNo'));
     var ct = getContractByNo_(contractNo);
-    if (!ct) return createResponse(false, 'Không tìm thấy hợp đồng.');
+    if (!ct) return createResponse(false, msg_('contractNotFound'));
     var prInfo = findPRByNo_(ct.prNo);
     var approverFromPr = prInfo ? (prInfo.row[17] || '').toString().trim() : '';
     ct.contractApproverEmail = approverFromPr || (ct.metadata && ct.metadata.contractApproverEmail) || '';
@@ -4214,17 +4398,17 @@ function handleGetContractDetails(data) {
       }
     });
   } catch (e) {
-    return createResponse(false, 'Lỗi: ' + e.message);
+    return createResponse(false, msg_('errPrefix') + e.message);
   }
 }
 
 function handleGetContractsByPR(data) {
   try {
     var prNo = (data.prNo || '').toString().trim();
-    if (!prNo) return createResponse(false, 'Thiếu số PR.');
+    if (!prNo) return createResponse(false, msg_('missingPrNo'));
     return createResponse(true, 'OK', { contracts: getContractsByPR_(prNo) });
   } catch (e) {
-    return createResponse(false, 'Lỗi: ' + e.message);
+    return createResponse(false, msg_('errPrefix') + e.message);
   }
 }
 
@@ -4257,25 +4441,25 @@ function getContractAmendments_(contractNo) {
 
 function handleGetContractAmendments(data) {
   var contractNo = (data.contractNo || '').toString().trim();
-  if (!contractNo) return createResponse(false, 'Thiếu số hợp đồng.');
+  if (!contractNo) return createResponse(false, msg_('missingContractNo'));
   return createResponse(true, 'OK', { amendments: getContractAmendments_(contractNo) });
 }
 
 function handleCreateContractAmendment(data) {
   try {
     var contractNo = (data.contractNo || '').toString().trim();
-    if (!contractNo) return createResponse(false, 'Thiếu số hợp đồng.');
+    if (!contractNo) return createResponse(false, msg_('missingContractNo'));
     var ct = getContractByNo_(contractNo);
-    if (!ct) return createResponse(false, 'Không tìm thấy hợp đồng.');
+    if (!ct) return createResponse(false, msg_('contractNotFound'));
     if (ct.status !== 'Đã ký' && ct.status !== 'Có phụ lục') {
-      return createResponse(false, 'Chỉ có thể tạo phụ lục cho hợp đồng đã ký.');
+      return createResponse(false, msg_('amendmentOnlySignedContract'));
     }
 
     var pending = getContractAmendments_(contractNo).filter(function(a) {
       return a.status === 'Chờ thẩm định';
     });
     if (pending.length > 0) {
-      return createResponse(false, 'Đang có phụ lục chờ thẩm định.');
+      return createResponse(false, msg_('amendmentPendingReview'));
     }
 
     var version = (ct.metadata.currentVersion || 1) + 1;
@@ -4311,14 +4495,14 @@ function handleCreateContractAmendment(data) {
 
     return createResponse(true, 'Phụ lục đã được tạo.', { amendmentNo: amendNo });
   } catch (e) {
-    return createResponse(false, 'Lỗi: ' + e.message);
+    return createResponse(false, msg_('errPrefix') + e.message);
   }
 }
 
 function handleApproveContractAmendment(data) {
   try {
     var amendmentNo = (data.amendmentNo || '').toString().trim();
-    if (!amendmentNo) return createResponse(false, 'Thiếu số phụ lục.');
+    if (!amendmentNo) return createResponse(false, msg_('missingAmendmentNo'));
 
     var sheet = getOrCreateContractAmendmentSheet_();
     var rows = sheet.getDataRange().getValues();
@@ -4326,11 +4510,11 @@ function handleApproveContractAmendment(data) {
     for (var i = 1; i < rows.length; i++) {
       if ((rows[i][CT_AMD_COL.AMENDMENT_NO] || '').toString().trim() === amendmentNo) { rowIndex = i; break; }
     }
-    if (rowIndex === -1) return createResponse(false, 'Không tìm thấy phụ lục.');
+    if (rowIndex === -1) return createResponse(false, msg_('amendmentNotFound'));
 
     var row = rows[rowIndex];
     if ((row[CT_AMD_COL.STATUS] || '').toString() !== 'Chờ thẩm định') {
-      return createResponse(false, 'Phụ lục không ở trạng thái chờ thẩm định.');
+      return createResponse(false, msg_('amendmentNotPendingReview'));
     }
 
     var contractNo = (row[CT_AMD_COL.CONTRACT_NO] || '').toString().trim();
@@ -4383,14 +4567,14 @@ function handleApproveContractAmendment(data) {
 
     return createResponse(true, 'Phụ lục đã được phê duyệt.', { amendmentNo: amendmentNo });
   } catch (e) {
-    return createResponse(false, 'Lỗi: ' + e.message);
+    return createResponse(false, msg_('errPrefix') + e.message);
   }
 }
 
 function handleRejectContractAmendment(data) {
   try {
     var amendmentNo = (data.amendmentNo || '').toString().trim();
-    if (!amendmentNo) return createResponse(false, 'Thiếu số phụ lục.');
+    if (!amendmentNo) return createResponse(false, msg_('missingAmendmentNo'));
 
     var sheet = getOrCreateContractAmendmentSheet_();
     var rows = sheet.getDataRange().getValues();
@@ -4401,8 +4585,8 @@ function handleRejectContractAmendment(data) {
         return createResponse(true, 'Đã từ chối phụ lục.', { amendmentNo: amendmentNo });
       }
     }
-    return createResponse(false, 'Không tìm thấy phụ lục.');
+    return createResponse(false, msg_('amendmentNotFound'));
   } catch (e) {
-    return createResponse(false, 'Lỗi: ' + e.message);
+    return createResponse(false, msg_('errPrefix') + e.message);
   }
 }
