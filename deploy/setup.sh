@@ -87,7 +87,7 @@ Next steps
   4. Reverse proxy — pick one:
        Caddy: append deploy/Caddyfile to /etc/caddy/Caddyfile
        nginx: see deploy/nginx-tlcg-workflow.conf
-  5. Point workflow.egg-ventures.com DNS at this server
+  5. Point workflow.tl-c.us DNS at this server
 Logs: journalctl -u $SERVICE -f
 ────────────────────────────────────────────────────────────
 TXT

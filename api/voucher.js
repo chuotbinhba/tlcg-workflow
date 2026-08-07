@@ -236,22 +236,34 @@ export default async function handler(req, res) {
     }
   }
   
-  // CORS headers - allow your domain
+  // CORS. The app is served same-origin (workflow.tl-c.us/api/*), so browsers
+  // normally send no Origin header at all and CORS never engages. This list
+  // exists for local development and any future split-origin setup.
+  //
+  // Extra origins can be added via APP_ALLOWED_ORIGINS (comma-separated)
+  // without editing code.
   const origin = req.headers.origin || '';
+  const PRIMARY_ORIGIN = process.env.APP_BASE_URL || 'https://workflow.tl-c.us';
   const allowedOrigins = [
-    'https://workflow.egg-ventures.com',
+    PRIMARY_ORIGIN,
     'http://localhost:3000',
     'http://localhost:8080'
-  ];
-  
-  // Set CORS headers
+  ].concat(
+    (process.env.APP_ALLOWED_ORIGINS || '')
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean)
+  );
+
+  // Echo the origin only when it is explicitly allowed. Unknown origins get
+  // the primary origin, which the browser rejects — deliberately NOT '*',
+  // which would let any site call this API from a logged-in user's browser.
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
-  } else if (!origin || origin.includes('workflow.egg-ventures.com')) {
-    res.setHeader('Access-Control-Allow-Origin', 'https://workflow.egg-ventures.com');
   } else {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', PRIMARY_ORIGIN);
   }
+  res.setHeader('Vary', 'Origin');
   
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');

@@ -7,16 +7,23 @@ them on Express unchanged.
 ## What runs where
 
 ```
-Internet
+Browser
+   │  https://workflow.tl-c.us
+   ▼
+Cloudflare (DNS + proxy, orange cloud)
    │
    ▼
-nginx / Caddy  ← already fronting n8n
-   ├── n8n.<domain>                → n8n        :5678
-   └── workflow.egg-ventures.com   → this app   :3000
-                                          │
-                                          ▼
-                            Google Apps Script ×3  →  Sheets / Drive
+Ubuntu server — nginx / Caddy  ← already fronting n8n
+   ├── n8n.<domain>          → n8n        :5678
+   └── workflow.tl-c.us      → this app   :3000
+                                    │
+                                    ▼
+                    Google Apps Script ×3  →  Sheets / Drive
 ```
+
+The frontend and the API share one origin: the pages call relative
+`/api/voucher`, so there is no cross-origin request and CORS never engages
+in normal use.
 
 There is **no database**. Google Sheets is the datastore, so the server is
 stateless — if it dies, redeploy and nothing is lost.
@@ -57,7 +64,7 @@ Pick one and add it next to the existing n8n config:
   TLS is automatic.
 - **nginx** — copy `deploy/nginx-tlcg-workflow.conf` to `sites-available`,
   symlink into `sites-enabled`, `nginx -t && systemctl reload nginx`, then
-  `sudo certbot --nginx -d workflow.egg-ventures.com`.
+  `sudo certbot --nginx -d workflow.tl-c.us`.
 
 Both set a 12 MB body limit (the app declares 10 MB) and a 120 s read timeout,
 because Apps Script can be slow to respond.
@@ -81,13 +88,39 @@ cd /opt/tlcg-workflow && bash deploy/update.sh
 
 Pulls `main`, syncs prod deps, restarts the service.
 
+## Cloudflare
+
+DNS for `workflow.tl-c.us` is managed in Cloudflare.
+
+1. **DNS** — `A` record for `workflow` → the server's public IP, proxy
+   **enabled** (orange cloud). That hides the origin IP and gives free DDoS
+   protection.
+2. **SSL/TLS mode** — set to **Full (strict)**. The server holds a real
+   Let's Encrypt certificate (Caddy automatically, nginx via certbot), so
+   Cloudflare should verify it. "Flexible" would leave the Cloudflare →
+   origin hop unencrypted; do not use it.
+3. **Origin firewall** — allow 80/443 from Cloudflare's published IP ranges
+   only, so nobody can reach the origin directly and bypass the proxy.
+4. **Real client IP** — the supplied Caddy and nginx configs forward
+   `CF-Connecting-IP`, so the app's 30 req/min per-IP rate limit sees the
+   visitor rather than Cloudflare's edge. Without this every request shares
+   one bucket.
+5. **Caching** — leave the default. The app sends `no-cache` for HTML and
+   the API is POST, which Cloudflare does not cache. Do not add a blanket
+   "Cache Everything" rule; it would serve stale approval screens.
+6. **Upload size** — Cloudflare's free plan caps request bodies at 100 MB,
+   well above this app's 10 MB limit, so no change needed.
+
 ## Cutover from Vercel
 
 1. Deploy here and test via the server IP or a temporary hostname.
 2. Copy every env var out of Vercel **before** touching DNS.
-3. Point `workflow.egg-ventures.com` at the server (consider Cloudflare's free
-   proxy in front for DDoS protection and to hide the origin IP).
-4. Keep the Vercel project up for a day or two as a rollback path.
+3. Set `APP_BASE_URL=https://workflow.tl-c.us` in `.env`, and set the
+   matching `APP_BASE_URL` Script Property in **both** the CASH and P2P
+   Apps Script projects — approval emails embed it, so a stale value sends
+   approvers to a dead link.
+4. Point `workflow.tl-c.us` at the server in Cloudflare.
+5. Keep the Vercel project up for a day or two as a rollback path.
 
 Apps Script deployment is unchanged and independent — `.gs` files are still
 pasted into `script.google.com` and deployed there.

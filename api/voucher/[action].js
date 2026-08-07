@@ -41,22 +41,29 @@ export default async function handler(req, res) {
     console.warn('[Proxy Warning] TLCG_CASH_BACKEND_URL not set. Using built-in fallback URL.');
   }
   
-  // CORS headers - allow your domain
+  // CORS — see api/voucher.js for the rationale. Served same-origin, so this
+  // matters only for local dev and any future split-origin setup.
   const origin = req.headers.origin || '';
+  const PRIMARY_ORIGIN = process.env.APP_BASE_URL || 'https://workflow.tl-c.us';
   const allowedOrigins = [
-    'https://workflow.egg-ventures.com',
+    PRIMARY_ORIGIN,
     'http://localhost:3000',
     'http://localhost:8080'
-  ];
-  
-  // Set CORS headers
+  ].concat(
+    (process.env.APP_ALLOWED_ORIGINS || '')
+      .split(',')
+      .map((o) => o.trim())
+      .filter(Boolean)
+  );
+
+  // Never '*' — that would let any site call this API from a logged-in
+  // user's browser.
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
-  } else if (!origin || origin.includes('workflow.egg-ventures.com')) {
-    res.setHeader('Access-Control-Allow-Origin', 'https://workflow.egg-ventures.com');
   } else {
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', PRIMARY_ORIGIN);
   }
+  res.setHeader('Vary', 'Origin');
   
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');

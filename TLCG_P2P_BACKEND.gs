@@ -297,6 +297,11 @@ function getCfg_(key, fallback) {
 
 const USERS_SHEET_ID = getCfg_('MASTER_SPREADSHEET_ID', '1ujmPbtEdkGLgEshfhvV8gRB6R0GLI31jsZM5rDOJS0g');
 
+// Single source of truth for the frontend URL used in all email links.
+// Override via Script Properties: APP_BASE_URL (same key as TLCG_CASH_BACKEND).
+// Approval emails embed this, so a wrong value sends approvers to a dead link.
+const BASE_URL = getCfg_('APP_BASE_URL', 'https://workflow.tl-c.us');
+
 const CONFIG = {
   SPREADSHEET_ID: getCfg_('MASTER_SPREADSHEET_ID', '1ujmPbtEdkGLgEshfhvV8gRB6R0GLI31jsZM5rDOJS0g'),
   SHEET_NAME: 'Payment_Request_History', // Main sheet for storing all payment requests
@@ -1297,7 +1302,7 @@ function sendApprovalEmails(data, requesterSignatureUrl) {
       { name: data.finalApprover, email: data.finalApproverEmail, stage: 'final' }
     ].filter(a => a.email);
     
-    const baseUrl = 'https://workflow.egg-ventures.com';
+    const baseUrl = BASE_URL;
     const approveUrl = `${baseUrl}/approve_payment_request.html?requestId=${data.requestId}`;
     const rejectUrl = `${baseUrl}/reject_payment_request.html?requestId=${data.requestId}`;
     

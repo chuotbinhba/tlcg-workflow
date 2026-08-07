@@ -161,7 +161,7 @@ function msg_(key, a, b) {
 
 // Single source of truth for the frontend URL used in all email links.
 // Override via Script Properties: APP_BASE_URL
-const BASE_URL = getCfg_('APP_BASE_URL', 'https://workflow.egg-ventures.com');
+const BASE_URL = getCfg_('APP_BASE_URL', 'https://workflow.tl-c.us');
 
 /**
  * Read a script property with a safe fallback. If PropertiesService throws

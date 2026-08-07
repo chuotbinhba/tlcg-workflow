@@ -4,7 +4,7 @@
 # Append to /etc/caddy/Caddyfile alongside your n8n block, then:
 #   sudo systemctl reload caddy
 
-workflow.egg-ventures.com {
+workflow.tl-c.us {
     encode gzip zstd
 
     # Uploads: api/voucher.js declares a 10mb limit; allow headroom.
@@ -12,8 +12,12 @@ workflow.egg-ventures.com {
         max_size 12MB
     }
 
+    # Cloudflare fronts this host, so the real client IP arrives in
+    # CF-Connecting-IP. Pass it through as X-Forwarded-For so the app's
+    # per-IP rate limit sees the visitor, not Cloudflare's edge.
     reverse_proxy 127.0.0.1:3000 {
-        header_up X-Real-IP {remote_host}
+        header_up X-Real-IP {http.request.header.CF-Connecting-IP}
+        header_up X-Forwarded-For {http.request.header.CF-Connecting-IP}
         # Long enough for Apps Script, which can be slow to respond.
         transport http {
             read_timeout 120s
