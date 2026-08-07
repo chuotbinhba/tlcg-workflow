@@ -1,0 +1,52 @@
+# systemd unit for TLCG Workflow
+#
+# Install:
+#   sudo cp deploy/tlcg-workflow.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now tlcg-workflow
+#
+# Logs:   journalctl -u tlcg-workflow -f
+# Adjust User= and WorkingDirectory= to match your server.
+
+[Unit]
+Description=TLCG Workflow (BPM)
+Documentation=https://github.com/theoneplusco/tlcg-workflow
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=chinhnguyen
+Group=chinhnguyen
+WorkingDirectory=/opt/tlcg-workflow
+
+EnvironmentFile=/opt/tlcg-workflow/.env
+ExecStart=/usr/bin/node server.js
+
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=20
+
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=tlcg-workflow
+
+# ── Hardening ────────────────────────────────────────────────
+# The app writes nothing to disk (Google Sheets is the datastore),
+# so it can run fully read-only.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=read-only
+ReadOnlyPaths=/opt/tlcg-workflow
+ProtectKernelTunables=true
+ProtectKernelModules=true
+ProtectControlGroups=true
+RestrictNamespaces=true
+RestrictSUIDSGID=true
+LockPersonality=true
+MemoryDenyWriteExecute=false
+
+[Install]
+WantedBy=multi-user.target

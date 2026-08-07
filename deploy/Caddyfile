@@ -1,0 +1,33 @@
+# Caddy site block for TLCG Workflow.
+# Caddy obtains and renews TLS certificates automatically.
+#
+# Append to /etc/caddy/Caddyfile alongside your n8n block, then:
+#   sudo systemctl reload caddy
+
+workflow.egg-ventures.com {
+    encode gzip zstd
+
+    # Uploads: api/voucher.js declares a 10mb limit; allow headroom.
+    request_body {
+        max_size 12MB
+    }
+
+    reverse_proxy 127.0.0.1:3000 {
+        header_up X-Real-IP {remote_host}
+        # Long enough for Apps Script, which can be slow to respond.
+        transport http {
+            read_timeout 120s
+        }
+    }
+
+    header {
+        X-Frame-Options "DENY"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+        -Server
+    }
+
+    log {
+        output file /var/log/caddy/tlcg-workflow.log
+    }
+}

@@ -31,11 +31,14 @@ export default async function handler(req, res) {
   // ⚠️ IMPORTANT: This is a SERVER-SIDE variable (no prefix needed for Vercel Serverless Functions)
   // If undefined, log warning and use fallback
   // Voucher workflow backend (same URL as api/voucher.js default route)
-  const GAS_URL = process.env.VOUCHER_BACKEND_URL ||
+  // Canonical name first, legacy alias second — matches api/voucher.js so both
+  // routes resolve to the same backend when only TLCG_CASH_BACKEND_URL is set.
+  const GAS_URL = process.env.TLCG_CASH_BACKEND_URL ||
+    process.env.VOUCHER_BACKEND_URL ||
     'https://script.google.com/macros/s/AKfycby8ed1o2d7Cf6dU0zZwnDnHYpuoQEo4wVQ99UmgMY0btzTolsC_90QBvb056UZyXMG7/exec';
-  
-  if (!process.env.VOUCHER_BACKEND_URL) {
-    console.warn('[Proxy Warning] VOUCHER_BACKEND_URL not set. Using built-in fallback URL.');
+
+  if (!process.env.TLCG_CASH_BACKEND_URL && !process.env.VOUCHER_BACKEND_URL) {
+    console.warn('[Proxy Warning] TLCG_CASH_BACKEND_URL not set. Using built-in fallback URL.');
   }
   
   // CORS headers - allow your domain
