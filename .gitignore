@@ -36,5 +36,7 @@ vast-torus-*.json
 
 # Secrets & local env (self-host)
 .env.local
+.env.backup-*
+.env.bak
 .env.*.local
 !.env.example
