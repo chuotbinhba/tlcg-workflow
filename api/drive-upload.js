@@ -35,35 +35,42 @@ function parseMultipart(req) {
 }
 
 /**
- * Repair a PEM private key that lost its line breaks.
+ * Load the service-account credentials.
  *
- * systemd's EnvironmentFile interprets backslash escapes, so the `\n`
- * sequences inside GOOGLE_SERVICE_ACCOUNT_KEY are consumed before the process
- * ever sees them and the PEM arrives as a single line. Node's crypto then
- * fails with "DECODER routines::unsupported". Vercel passed the value through
- * untouched, so this only shows up on a self-hosted/systemd deployment.
+ * Accepts either:
+ *   GOOGLE_SERVICE_ACCOUNT_KEY_B64 — the JSON, base64-encoded (preferred)
+ *   GOOGLE_SERVICE_ACCOUNT_KEY     — the raw JSON
  *
- * Re-wrap the base64 body at 64 characters when the header and body have been
- * flattened onto one line. A key that still has real newlines is returned
- * unchanged.
+ * Prefer the base64 form under systemd. systemd's EnvironmentFile interprets
+ * backslash escapes, so every "\n" inside the raw JSON is rewritten to a
+ * literal "n" — the PEM arrives the same length but with its line breaks
+ * replaced by stray 'n' characters glued to the base64. That is unrecoverable
+ * in code: the separators become indistinguishable from real base64 'n's, so
+ * there is no way to know where the lines were. Base64 has no backslashes for
+ * systemd to touch, which sidesteps the problem entirely.
  */
-function normalizePrivateKey(pk) {
-  if (typeof pk !== 'string' || pk.includes('\n')) return pk;
+function loadServiceAccount() {
+  const b64 = process.env.GOOGLE_SERVICE_ACCOUNT_KEY_B64;
+  if (b64) {
+    return JSON.parse(Buffer.from(b64.trim(), 'base64').toString('utf8'));
+  }
 
-  const m = pk.match(/^(-----BEGIN [^-]+-----)\s*(.*?)\s*(-----END [^-]+-----)\s*$/);
-  if (!m) return pk;
+  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
+  if (!raw) throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY(_B64) is not set');
 
-  const [, header, body, footer] = m;
-  const wrapped = body.replace(/\s+/g, '').match(/.{1,64}/g) || [];
-  return `${header}\n${wrapped.join('\n')}\n${footer}\n`;
+  const key = JSON.parse(raw);
+  const pk = key.private_key;
+  if (typeof pk === 'string' && !pk.includes('\n')) {
+    throw new Error(
+      'private_key has no line breaks — systemd stripped them. ' +
+      'Set GOOGLE_SERVICE_ACCOUNT_KEY_B64 (base64 of the JSON) instead.'
+    );
+  }
+  return key;
 }
 
 function getDriveClient() {
-  const raw = process.env.GOOGLE_SERVICE_ACCOUNT_KEY;
-  if (!raw) throw new Error('GOOGLE_SERVICE_ACCOUNT_KEY is not set');
-
-  const key = JSON.parse(raw);
-  if (key.private_key) key.private_key = normalizePrivateKey(key.private_key);
+  const key = loadServiceAccount();
 
   const auth = new google.auth.GoogleAuth({
     credentials: key,
@@ -107,7 +114,7 @@ export default async function handler(req, res) {
     if (!parentFolderId || !subfolderName) {
       return res.status(400).json({ error: 'parentFolderId and subfolderName are required' });
     }
-    if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
+    if (!process.env.GOOGLE_SERVICE_ACCOUNT_KEY_B64 && !process.env.GOOGLE_SERVICE_ACCOUNT_KEY) {
       return res.status(500).json({ error: 'Service account not configured' });
     }
 
