@@ -4309,6 +4309,15 @@
                 loadAndDisplayApprovalStatus(viewStatusVoucher);
             }
 
+            // ✅ approveVoucher — reminder emails from TLCG_CASH_BACKEND link to
+            // voucher.html?approveVoucher=<no>. Without this the link opened the
+            // page and did nothing, so approvers had no way in from the reminder.
+            // Open the same status modal, which carries the approve action.
+            const approveVoucherNo = urlParams.get('approveVoucher');
+            if (approveVoucherNo && !viewStatusVoucher) {
+                loadAndDisplayApprovalStatus(approveVoucherNo);
+            }
+
             // ✅ PHASE 2b: Check for acknowledgeReceipt URL parameter (from email link)
             const acknowledgeReceiptVoucher = urlParams.get('acknowledgeReceipt');
             if (acknowledgeReceiptVoucher) {

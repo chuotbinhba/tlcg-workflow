@@ -928,6 +928,19 @@
             transition: transform 0.2s, opacity 0.2s, background-color 0.2s;
         }
 
+        /* Recent Vouchers rows link through to the voucher approval screen. */
+        .recent-voucher-row {
+            transition: background-color 0.15s ease;
+        }
+        .recent-voucher-row:hover,
+        .recent-voucher-row:focus-visible {
+            background: rgba(0, 122, 255, 0.06);
+        }
+        .recent-voucher-row:focus-visible {
+            outline: 2px solid var(--ios-blue);
+            outline-offset: -2px;
+        }
+
         .ios-segmented-item.active {
             background: var(--ios-background);
             box-shadow: 0 1px 2px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.08);
@@ -5597,18 +5610,32 @@
                 if (hrs < 24)   return `${hrs}h ago`;
                 return `${Math.floor(hrs / 24)}d ago`;
             };
+            // Rows link through to voucher.html, which opens the approval
+            // status modal for that voucher via its ?viewStatus= handler.
+            const esc = (s) => String(s == null ? '' : s)
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
             el.innerHTML = recent.slice(0, 5).map((v, i, arr) => {
                 const { bg, color, icon } = statusStyle(v);
                 const border = i < arr.length - 1 ? 'border-bottom: 0.5px solid rgba(60,60,67,0.18);' : '';
-                return `<div style="display:flex;align-items:center;gap:12px;padding:12px 16px;${border}">
+                const no = v.voucherNumber || '';
+                const href = no
+                    ? `voucher.html?viewStatus=${encodeURIComponent(no)}`
+                    : 'voucher.html';
+                return `<a href="${esc(href)}"
+                    class="recent-voucher-row"
+                    style="display:flex;align-items:center;gap:12px;padding:12px 16px;${border}text-decoration:none;color:inherit;cursor:pointer;"
+                    title="${esc(no ? 'Xem trạng thái phê duyệt: ' + no : 'Mở danh sách phiếu')}">
                     <div style="width:40px;height:40px;background:${bg};border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;">
                         <i class="fas ${icon}" style="color:${color};"></i>
                     </div>
                     <div style="flex:1;min-width:0;">
-                        <p style="font-size:15px;font-weight:500;color:#000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${v.voucherNumber || 'Voucher'} — ${v.status || ''}</p>
-                        <p style="font-size:13px;color:#8E8E93;">${v.employee || ''} • ${timeAgo(v.timestamp)}</p>
+                        <p style="font-size:15px;font-weight:500;color:#000;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${esc(no || 'Voucher')} — ${esc(TLCI18n.tStatus(v.status || ''))}</p>
+                        <p style="font-size:13px;color:#8E8E93;">${esc(v.employee || '')} • ${esc(timeAgo(v.timestamp))}</p>
                     </div>
-                </div>`;
+                    <i class="fas fa-chevron-right" style="color:#C7C7CC;font-size:13px;flex-shrink:0;" aria-hidden="true"></i>
+                </a>`;
             }).join('');
         }
 
