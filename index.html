@@ -5714,8 +5714,15 @@
                         recentList.innerHTML = data.recent.map((voucher, index) => {
                             const voucherId = `voucher-${voucher.voucherNumber || index}`;
                             const badge = deriveVoucherBadgeFromSummary(voucher);
+                            // Link each row to voucher.html, which opens this
+                            // voucher's approval modal via its ?viewStatus= handler.
+                            const no = voucher.voucherNumber || '';
+                            const href = no
+                                ? `voucher.html?viewStatus=${encodeURIComponent(no)}`
+                                : 'voucher.html';
                             return `
-                                <div id="${voucherId}" class="flex items-center justify-between p-4 bg-white border border-slate-200 rounded-lg hover:shadow-md transition">
+                                <a id="${voucherId}" href="${href}" class="recent-voucher-row flex items-center justify-between p-4 bg-white border border-slate-200 rounded-lg hover:shadow-md transition"
+                                   style="text-decoration:none;color:inherit;cursor:pointer;">
                                     <div class="flex items-center gap-4 flex-1">
                                         <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
                                             <i class="fas fa-file-invoice text-purple-600"></i>
@@ -5735,10 +5742,11 @@
                                             <p class="text-xs text-slate-500 mt-1 approval-status-detail">${badge.detail || ''}</p>
                                         </div>
                                     </div>
-                                    <div class="text-right">
+                                    <div class="text-right flex items-center gap-3">
                                         <p class="text-xs text-slate-500">${formatTimestamp(voucher.timestamp || '')}</p>
+                                        <i class="fas fa-chevron-right text-slate-300 text-sm" aria-hidden="true"></i>
                                     </div>
-                                </div>
+                                </a>
                             `;
                         }).join('');
                     } else {
